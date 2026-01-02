@@ -1,58 +1,91 @@
-const ruleta = document.getElementById("ruleta");
-const botonGirar = document.getElementById("girar");
-const resultadoTexto = document.getElementById("resultado");
+/* ============================
+   CONFIGURACIÓN GENERAL
+   ============================ */
+const TOTAL_NUMEROS = 37;
+const GRADOS = 360 / TOTAL_NUMEROS;
+const PREMIOS = {
+    numero: 35,
+    color: 2,
+    paridad: 2,
+    rango: 2
+};
 
-const tipoApuesta = document.getElementById("tipoApuesta");
-const valorApuesta = document.getElementById("valorApuesta");
-const cantidadInput = document.getElementById("cantidad");
-const listaApuestas = document.getElementById("listaApuestas");
-
-const totalNumeros = 37;
-const gradosPorNumero = 360 / totalNumeros;
-
-const resultadosDiv = document.getElementById("resultados");
-const MAX_RESULTADOS = 10;
-let historial = [];
-
-
-let rotacionActual = 0;
+/* ============================
+   VARIABLES DE ESTADO
+   ============================ */
 let apuestas = [];
+let historial = [];
+let rotacionActual = 0;
 
-/* =========================
-   CREAR NÚMEROS EN LA RULETA
-   ========================= */
-for (let i = 0; i < totalNumeros; i++) {
-    const numero = document.createElement("div");
-    numero.classList.add("numero");
-    numero.style.transform = `rotate(${i * gradosPorNumero}deg)`;
+/* ============================
+   ELEMENTOS DOM
+   ============================ */
+const ruleta = document.getElementById("ruleta");
+const girarBtn = document.getElementById("girar");
+const resultadoTxt = document.getElementById("resultado");
+const listaApuestas = document.getElementById("listaApuestas");
+const cantidadInput = document.getElementById("cantidad");
+const resultadosDiv = document.getElementById("resultados");
+
+/* ============================
+   DATOS DE RULETA EUROPEA
+   ============================ */
+const ROJOS = [
+    1,3,5,7,9,12,14,16,18,
+    19,21,23,25,27,30,32,34,36
+];
+
+const esRojo = n => ROJOS.includes(n);
+
+/* ============================
+   CREAR RULETA VISUAL
+   ============================ */
+for (let i = 0; i < TOTAL_NUMEROS; i++) {
+    const div = document.createElement("div");
+    div.className = "numero";
+    div.style.transform = `rotate(${i * GRADOS}deg)`;
 
     const span = document.createElement("span");
     span.textContent = i;
 
     if (i === 0) span.style.color = "green";
-    else if (i % 2 === 0) span.style.color = "red";
-    else span.style.color = "white";
+    else span.style.color = esRojo(i) ? "red" : "white";
 
-    numero.appendChild(span);
-    ruleta.appendChild(numero);
+    div.appendChild(span);
+    ruleta.appendChild(div);
 }
 
-/* =========================
-   AÑADIR APUESTAS
-   ========================= */
-document.getElementById("añadirApuesta").addEventListener("click", () => {
+/* ============================
+   CREAR BOTONES DE NÚMEROS
+   ============================ */
+const contNumeros = document.getElementById("numeros");
 
-    const tipo = tipoApuesta.value;
-    const valor = valorApuesta.value.toLowerCase();
-    const cantidad = Number(cantidadInput.value);
+for (let i = 0; i < TOTAL_NUMEROS; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.dataset.tipo = "numero";
+    btn.dataset.valor = i;
+    contNumeros.appendChild(btn);
+}
 
-    if (!valor || cantidad <= 0) return;
+/* ============================
+   GESTIÓN DE APUESTAS
+   ============================ */
+document.querySelectorAll("[data-tipo]").forEach(btn => {
+    btn.addEventListener("click", () => {
 
-    apuestas.push({ tipo, valor, cantidad });
-    actualizarLista();
+        const cantidad = Number(cantidadInput.value);
+        if (cantidad <= 0) return;
 
-    valorApuesta.value = "";
-    cantidadInput.value = "";
+        apuestas.push({
+            tipo: btn.dataset.tipo,
+            valor: btn.dataset.valor,
+            cantidad
+        });
+
+        btn.classList.add("apostado");
+        actualizarLista();
+    });
 });
 
 function actualizarLista() {
@@ -64,119 +97,94 @@ function actualizarLista() {
     });
 }
 
-/* =========================
-   LÓGICA DE COLOR
-   ========================= */
-const numerosRojos = [
-    1, 3, 5, 7, 9, 12, 14, 16, 18,
-    19, 21, 23, 25, 27, 30, 32, 34, 36
-];
-
-function esRojo(n) {
-    return numerosRojos.includes(n);
-}
-
-
-/* =========================
+/* ============================
    GIRAR RULETA
-   ========================= */
-botonGirar.addEventListener("click", () => {
+   ============================ */
+girarBtn.addEventListener("click", () => {
 
-    if (apuestas.length === 0) {
-        resultadoTexto.textContent = "Añade al menos una apuesta";
-        return;
-    }
+    if (apuestas.length === 0) return;
 
-    const numeroRuleta = Math.floor(Math.random() * totalNumeros);
-
+    const numero = Math.floor(Math.random() * TOTAL_NUMEROS);
     const vueltas = 6;
-    const anguloNumero = numeroRuleta * gradosPorNumero;
-    const centroSector = gradosPorNumero / 2;
-    const anguloFlecha = 270;
 
     rotacionActual =
         vueltas * 360
-        - (anguloNumero + centroSector)
-        + anguloFlecha;
+        - (numero * GRADOS + GRADOS / 2)
+        + 270;
 
     ruleta.style.transform = `rotate(${rotacionActual}deg)`;
 
-    setTimeout(() => {
-        evaluarApuestas(numeroRuleta);
-    }, 4000);
+    setTimeout(() => evaluar(numero), 4000);
 });
 
-/* =========================
+/* ============================
    EVALUAR APUESTAS
-   ========================= */
-function evaluarApuestas(numeroRuleta) {
+   ============================ */
+function evaluar(numero) {
 
     let ganancia = 0;
 
     apuestas.forEach(a => {
+
         switch (a.tipo) {
 
             case "numero":
-                if (Number(a.valor) === numeroRuleta)
-                    ganancia += a.cantidad * 35;
+                if (+a.valor === numero)
+                    ganancia += a.cantidad * PREMIOS.numero;
                 break;
 
             case "color":
-                if (a.valor === "rojo" && esRojo(numeroRuleta))
-                    ganancia += a.cantidad * 2;
-                if (a.valor === "negro" && !esRojo(numeroRuleta) && numeroRuleta !== 0)
-                    ganancia += a.cantidad * 2;
+                if (
+                    (a.valor === "rojo" && esRojo(numero)) ||
+                    (a.valor === "negro" && !esRojo(numero) && numero !== 0)
+                ) ganancia += a.cantidad * PREMIOS.color;
                 break;
 
             case "paridad":
-                if (numeroRuleta !== 0) {
-                    if (a.valor === "par" && numeroRuleta % 2 === 0)
-                        ganancia += a.cantidad * 2;
-                    if (a.valor === "impar" && numeroRuleta % 2 !== 0)
-                        ganancia += a.cantidad * 2;
-                }
+                if (numero !== 0 &&
+                    ((a.valor === "par" && numero % 2 === 0) ||
+                     (a.valor === "impar" && numero % 2 !== 0)))
+                    ganancia += a.cantidad * PREMIOS.paridad;
                 break;
 
             case "rango":
-                if (a.valor === "1-18" && numeroRuleta >= 1 && numeroRuleta <= 18)
-                    ganancia += a.cantidad * 2;
-                if (a.valor === "19-36" && numeroRuleta >= 19 && numeroRuleta <= 36)
-                    ganancia += a.cantidad * 2;
+                if (
+                    (a.valor === "1-18" && numero >= 1 && numero <= 18) ||
+                    (a.valor === "19-36" && numero >= 19 && numero <= 36)
+                ) ganancia += a.cantidad * PREMIOS.rango;
                 break;
         }
     });
 
-    historial.unshift(numeroRuleta);
-if (historial.length > MAX_RESULTADOS) historial.pop();
-renderizarHistorial();
+    resultadoTxt.textContent = `Ha salido ${numero}. Ganancia: ${ganancia}€`;
 
-
-    resultadoTexto.textContent =
-        `Ha salido ${numeroRuleta}. Ganancia total: ${ganancia}€`;
+    historial.unshift(numero);
+    historial = historial.slice(0, 10);
+    renderizarHistorial();
 
     apuestas = [];
+    document.querySelectorAll(".apostado").forEach(b => b.classList.remove("apostado"));
     actualizarLista();
 }
 
-for (let i = 0; i < MAX_RESULTADOS; i++) {
-    historial.push(Math.floor(Math.random() * totalNumeros));
-}
-renderizarHistorial();
+/* ============================
+   HISTORIAL
+   ============================ */
+for (let i = 0; i < 10; i++)
+    historial.push(Math.floor(Math.random() * TOTAL_NUMEROS));
 
+renderizarHistorial();
 
 function renderizarHistorial() {
     resultadosDiv.innerHTML = "";
-
     historial.forEach(n => {
         const div = document.createElement("div");
-        div.classList.add("resultado");
+        div.className = "resultado";
         div.textContent = n;
 
-        if (n === 0) div.style.background = "green";
-        else if (esRojo(n)) div.style.background = "red";
-        else div.style.background = "black";
+        div.style.background =
+            n === 0 ? "green" : esRojo(n) ? "red" : "black";
 
         resultadosDiv.appendChild(div);
     });
 }
-

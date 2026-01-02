@@ -17,13 +17,13 @@
   <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
       <div class="container">
-        <a class="navbar-brand fw-bold" href="index.html">🎰 Casino DAW</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#casinoNavbar">
+        <a class="navbar-brand fw-bold" href="index.html" aria-label="Inicio Casino DAW">🎰 Casino DAW</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#casinoNavbar" aria-controls="casinoNavbar" aria-expanded="false" aria-label="Mostrar navegación">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="casinoNavbar">
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-            <li class="nav-item"><a class="nav-link active" href="index.html">Inicio</a></li>
+            <li class="nav-item"><a class="nav-link active" aria-current="page" href="index.html">Inicio</a></li>
             <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
             <li class="nav-item"><a class="nav-link" href="register.html">Registro</a></li>
           </ul>
@@ -33,82 +33,86 @@
   </header>
 
   <!-- ===== HERO SECTION ===== -->
-  <section class="py-5 text-center bg-gradient">
+  <section class="text-center bg-gradient py-5">
     <div class="container">
-      <h1 class="display-4 fw-bold">Bienvenido al Casino DAW</h1>
-      <p class="lead mt-3">Plataforma web de simulación de juegos de azar desarrollada como Proyecto de Fin de Grado</p>
-      <a href="login.html" class="btn btn-success btn-lg mt-3">Entrar al Casino</a>
+      <h1 class="display-4 fw-bold">Bienvenido al Casino Sobrino</h1>
+      <p class="lead mt-3">Aplicación web de simulación de juegos de azar desarrollada como Proyecto de Fin de Grado</p>
+      <a href="login.html" class="btn btn-casino btn-lg mt-3" aria-label="Acceder al casino">Entrar al Casino</a>
     </div>
   </section>
 
   <!-- ===== GAMES SECTION ===== -->
   <section class="container py-5">
-    <h2 class="text-center mb-5">Juegos disponibles</h2>
+    <header class="text-center mb-5">
+      <h2>Juegos disponibles</h2>
+      <div class="divider"></div>
+    </header>
+
     <div class="row g-4">
 
       <!-- Ruleta -->
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 bg-black border-secondary text-light">
+        <article class="card h-100 bg-black border-secondary text-light">
           <div class="card-body">
-            <h5 class="card-title">🎡 Ruleta</h5>
+            <h3 class="card-title h5">🎡 Ruleta</h3>
             <p class="card-text">Apuesta a números, colores o combinaciones y prueba tu suerte.</p>
           </div>
           <div class="card-footer bg-transparent border-secondary">
-            <a href="/ruleta" class="btn btn-outline-success w-100">Jugar</a>
+            <a href="../RuletaJava/ruleta.html" class="btn btn-casino w-100" aria-label="Jugar a la ruleta">Jugar</a>
           </div>
-        </div>
+        </article>
       </div>
 
       <!-- Tragaperras -->
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 bg-black border-secondary text-light">
+        <article class="card h-100 bg-black border-secondary text-light">
           <div class="card-body">
-            <h5 class="card-title">🎰 Tragaperras</h5>
+            <h3 class="card-title h5">🎰 Tragaperras</h3>
             <p class="card-text">Gira los carretes y consigue combinaciones ganadoras.</p>
           </div>
           <div class="card-footer bg-transparent border-secondary">
-            <a href="/tragaperras" class="btn btn-outline-success w-100">Jugar</a>
+            <a href="tragaperras.html" class="btn btn-casino w-100" aria-label="Jugar a la tragaperras">Jugar</a>
           </div>
-        </div>
+        </article>
       </div>
 
       <!-- Blackjack -->
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 bg-black border-secondary text-light">
+        <article class="card h-100 bg-black border-secondary text-light">
           <div class="card-body">
-            <h5 class="card-title">🃏 Blackjack</h5>
+            <h3 class="card-title h5">🃏 Blackjack</h3>
             <p class="card-text">Consigue 21 puntos o acércate más que la banca.</p>
           </div>
           <div class="card-footer bg-transparent border-secondary">
-            <a href="/blackjack" class="btn btn-outline-success w-100">Jugar</a>
+            <a href="blackjack.html" class="btn btn-casino w-100" aria-label="Jugar al blackjack">Jugar</a>
           </div>
-        </div>
+        </article>
       </div>
 
       <!-- Poker Clásico -->
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 bg-black border-secondary text-light">
+        <article class="card h-100 bg-black border-secondary text-light">
           <div class="card-body">
-            <h5 class="card-title">♠️ Póker Clásico</h5>
-            <p class="card-text">Juego de póker 5-Card Draw contra la banca.</p>
+            <h3 class="card-title h5">♠️ Póker clásico</h3>
+            <p class="card-text">Modalidad tradicional de póker 5-Card Draw contra la banca.</p>
           </div>
           <div class="card-footer bg-transparent border-secondary">
-            <a href="/poker/classic" class="btn btn-outline-success w-100">Jugar</a>
+            <a href="poker-classic.html" class="btn btn-casino w-100" aria-label="Jugar al póker clásico">Jugar</a>
           </div>
-        </div>
+        </article>
       </div>
 
       <!-- Texas Hold'em -->
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 bg-black border-secondary text-light">
+        <article class="card h-100 bg-black border-secondary text-light">
           <div class="card-body">
-            <h5 class="card-title">♣️ Texas Hold'em</h5>
+            <h3 class="card-title h5">♣️ Texas Hold'em</h3>
             <p class="card-text">Modalidad moderna de póker con cartas comunitarias.</p>
           </div>
           <div class="card-footer bg-transparent border-secondary">
-            <a href="/poker/texas" class="btn btn-outline-success w-100">Jugar</a>
+            <a href="poker-texas.html" class="btn btn-casino w-100" aria-label="Jugar a Texas Hold'em">Jugar</a>
           </div>
-        </div>
+        </article>
       </div>
 
     </div>
@@ -118,7 +122,7 @@
   <footer class="bg-black border-top border-secondary py-4">
     <div class="container text-center">
       <p class="mb-1">Casino DAW &copy; 2025</p>
-      <p class="mb-0 text-secondary">Proyecto de Fin de Grado - Desarrollo de Aplicaciones Web</p>
+      <p class="mb-0 text-secondary">Proyecto de Fin de Grado · Desarrollo de Aplicaciones Web</p>
     </div>
   </footer>
 

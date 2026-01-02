@@ -2,46 +2,58 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ruleta Casino</title>
+    <title>Ruleta Europea - DWEC</title>
     <link rel="stylesheet" href="ruleta.css">
 </head>
 <body>
 
-<div class="ruleta-container">
-    <h1>🎰 Ruleta</h1>
+<div class="app">
 
+    <h1>🎰 Ruleta Europea</h1>
+
+    <!-- RULETA -->
     <div class="ruleta-wrapper">
         <div class="flecha">▼</div>
         <div id="ruleta" class="ruleta"></div>
     </div>
 
-    <!-- ZONA APUESTAS -->
-    <div class="apuestas">
-        <h3>Apuestas</h3>
+    <!-- PANEL DE APUESTAS -->
+    <section class="panel-apuestas">
+        <h2>Apuestas</h2>
 
-        <select id="tipoApuesta">
-            <option value="numero">Número</option>
-            <option value="color">Color (rojo/negro)</option>
-            <option value="paridad">Par / Impar</option>
-            <option value="rango">1-18 / 19-36</option>
-        </select>
+        <input type="number" id="cantidad" min="1" placeholder="€ apuesta">
 
-        <input id="valorApuesta" placeholder="Valor">
-        <input id="cantidad" type="number" placeholder="€" min="1">
+        <div class="tablero">
+            <!-- NÚMEROS -->
+            <div class="bloque">
+                <h3>Números</h3>
+                <div id="numeros"></div>
+            </div>
 
-        <button id="añadirApuesta">Añadir apuesta</button>
+            <!-- APUESTAS SIMPLES -->
+            <div class="bloque">
+                <h3>Apuestas simples</h3>
+                <button data-tipo="color" data-valor="rojo" class="rojo">Rojo</button>
+                <button data-tipo="color" data-valor="negro" class="negro">Negro</button>
+                <button data-tipo="paridad" data-valor="par">Par</button>
+                <button data-tipo="paridad" data-valor="impar">Impar</button>
+                <button data-tipo="rango" data-valor="1-18">1–18</button>
+                <button data-tipo="rango" data-valor="19-36">19–36</button>
+            </div>
+        </div>
 
         <ul id="listaApuestas"></ul>
-    </div>
+    </section>
 
     <button id="girar">Girar ruleta</button>
-
     <p id="resultado"></p>
-</div>
 
-<div class="historial">
-    <h3>Últimos resultados</h3>
-    <div id="resultados"></div>
+    <!-- HISTORIAL -->
+    <section class="historial">
+        <h3>Últimos resultados</h3>
+        <div id="resultados"></div>
+    </section>
+
 </div>
 
 <script src="ruleta.js"></script>
