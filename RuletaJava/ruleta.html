@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ruleta Casino</title>
+    <link rel="stylesheet" href="ruleta.css">
+</head>
+<body>
+
+<div class="ruleta-container">
+    <h1>🎰 Ruleta</h1>
+
+    <div class="ruleta-wrapper">
+        <div class="flecha">▼</div>
+        <div id="ruleta" class="ruleta"></div>
+    </div>
+
+    <!-- ZONA APUESTAS -->
+    <div class="apuestas">
+        <h3>Apuestas</h3>
+
+        <select id="tipoApuesta">
+            <option value="numero">Número</option>
+            <option value="color">Color (rojo/negro)</option>
+            <option value="paridad">Par / Impar</option>
+            <option value="rango">1-18 / 19-36</option>
+        </select>
+
+        <input id="valorApuesta" placeholder="Valor">
+        <input id="cantidad" type="number" placeholder="€" min="1">
+
+        <button id="añadirApuesta">Añadir apuesta</button>
+
+        <ul id="listaApuestas"></ul>
+    </div>
+
+    <button id="girar">Girar ruleta</button>
+
+    <p id="resultado"></p>
+</div>
+
+<div class="historial">
+    <h3>Últimos resultados</h3>
+    <div id="resultados"></div>
+</div>
+
+<script src="ruleta.js"></script>
+</body>
+</html>
