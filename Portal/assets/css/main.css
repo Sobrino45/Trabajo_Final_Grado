@@ -42,4 +42,100 @@ footer {
 section {
   padding-top: 4rem;
   padding-bottom: 4rem;
+}
+
+/* ===== BOTONES ===== */
+.btn-casino {
+  background-color: #198754;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+.btn-casino:hover {
+  background-color: rgb(18.625, 100.575, 62.58);
+  transform: translateY(-2px);
+}
+
+/* ===== TARJETAS DE JUEGO ===== */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.card-title {
+  font-weight: 700;
+}
+
+.card-text {
+  color: #d1d1d1;
+}
+
+/* ===== SEPARADORES ===== */
+.divider {
+  height: 2px;
+  width: 80px;
+  background-color: #198754;
+  margin: 1rem auto;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+  background-color: #1e1e1e;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #333;
+}
+.navbar .nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.navbar .nav-logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #198754;
+  text-decoration: none;
+}
+.navbar .nav-menu {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+.navbar .nav-menu a {
+  color: #e0e0e0;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+.navbar .nav-menu a:hover {
+  color: #198754;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  margin-top: auto;
+  padding: 1rem;
+  background-color: #1e1e1e;
+  border-top: 1px solid #333;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+.footer p {
+  margin: 0.3rem 0;
+}
+.footer a {
+  color: #198754;
+  text-decoration: none;
+}
+.footer a:hover {
+  text-decoration: underline;
 }/*# sourceMappingURL=main.css.map */
