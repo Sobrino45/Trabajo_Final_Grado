@@ -1,12 +1,31 @@
-<nav class="navbar">
-  <div class="nav-container">
-    <a href="index.html" class="nav-logo">TFG Portal</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="index.html">🎰 Casino DAW</a>
 
-    <ul class="nav-menu">
-      <li><a href="index.html">Inicio</a></li>
-      <li><a href="dashboard.html">Dashboard</a></li>
-      <li><a href="login.html">Login</a></li>
-      <li><a href="register.html">Registro</a></li>
-    </ul>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#casinoNavbar"
+      aria-controls="casinoNavbar"
+      aria-expanded="false"
+      aria-label="Mostrar navegación"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="casinoNavbar">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" href="index.html">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="login.html">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="register.html">Registro</a>
+        </li>
+      </ul>
+    </div>
   </div>
 </nav>
