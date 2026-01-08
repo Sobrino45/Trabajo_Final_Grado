@@ -1,0 +1,12 @@
+@use "../abstracts/variables" as *;
+
+.btn-casino {
+  background: linear-gradient(135deg, $color-gold, $color-red);
+  color: #000;
+  font-weight: bold;
+  transition: $transition-base;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

@@ -1,0 +1,15 @@
+@use "../abstracts/variables" as *;
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(255, 215, 0, 0.08), transparent 40%),
+    radial-gradient(circle at bottom, rgba(220, 20, 60, 0.08), transparent 40%),
+    linear-gradient(180deg, $color-bg-main, $color-bg-soft);
+  background-attachment: fixed;
+}
+
+.bg-gradient {
+  background:
+    radial-gradient(circle at center, rgba(255, 215, 0, 0.15), transparent 60%),
+    linear-gradient(135deg, #1a1a1a, #0d0d0d);
+}

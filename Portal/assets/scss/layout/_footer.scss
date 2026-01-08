@@ -1,0 +1,6 @@
+@use "../abstracts/variables" as *;
+
+footer {
+  background-color: rgba(0, 0, 0, 0.9);
+  color: $text-muted;
+}

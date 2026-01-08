@@ -1,7 +1,25 @@
-@use "variables";
-@use "mixins";
-@use "base";
-@use "layout";
-@use "components";
-@use "games";
-@use "utilities";
+/* ABSTRACTS */
+@use "abstracts/variables";
+@use "abstracts/mixins";
+
+/* BASE */
+@use "base/reset";
+@use "base/base";
+@use "base/typography";
+
+/* LAYOUT */
+@use "layout/backgrounds";
+@use "layout/navbar";
+@use "layout/footer";
+@use "layout/grid";
+
+/* COMPONENTS */
+@use "components/buttons";
+@use "components/cards";
+@use "components/badges";
+
+/* PAGES */
+@use "pages/index";
+@use "pages/login";
+@use "pages/register";
+@use "pages/dashboard";

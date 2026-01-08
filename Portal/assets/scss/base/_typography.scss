@@ -1,0 +1,9 @@
+@use "../abstracts/variables" as *;
+
+h1, h2, h3, h4 {
+  font-weight: 700;
+}
+
+p {
+  color: $text-muted;
+}

@@ -1,0 +1,8 @@
+@use "../abstracts/variables" as *;
+
+body {
+  min-height: 100vh;
+  color: $text-light;
+  background-color: $color-bg-main;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
