@@ -1,6 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="index.html">🎰 Casino DAW</a>
+    <a class="navbar-brand fw-bold text-uppercase" href="index.html">
+        🎰 Casino DAW
+    </a>
 
     <button
       class="navbar-toggler"
@@ -17,29 +19,27 @@
     <div class="collapse navbar-collapse" id="casinoNavbar">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
 
-        <!-- VISITANTE -->
         <li class="nav-item guest-only">
-          <a class="nav-link" href="login.html">Login</a>
+          <a class="nav-link" href="login.html">Iniciar Sesión</a>
         </li>
         <li class="nav-item guest-only">
-          <a class="nav-link" href="register.html">Registro</a>
+          <a class="nav-link btn btn-sm btn-primary text-white px-3 ms-2" href="register.html">Registro</a>
         </li>
 
-        <!-- USUARIO LOGUEADO -->
         <li class="nav-item user-only d-none">
-          <span class="nav-link">
-            👤 <strong id="nav-username"></strong>
+          <span class="nav-link text-light">
+            👤 <span id="nav-username" class="fw-bold">Usuario</span>
           </span>
         </li>
 
         <li class="nav-item user-only d-none">
-          <span class="nav-link text-warning fw-bold">
+          <span class="nav-link text-warning fw-bold border border-warning rounded px-2">
             💰 <span id="nav-saldo">0.00</span> €
           </span>
         </li>
 
         <li class="nav-item user-only d-none">
-          <button class="btn btn-sm btn-outline-light" onclick="logout()">
+            <button id="btnLogout" class="btn btn-sm btn-outline-danger ms-2">
             Cerrar sesión
           </button>
         </li>

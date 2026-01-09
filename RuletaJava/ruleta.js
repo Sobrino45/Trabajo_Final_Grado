@@ -10,12 +10,18 @@ const PREMIOS = {
     rango: 2
 };
 
+// --- NUEVA VARIABLE DE CALIBRACIÓN ---
+// Si el número se queda corto, suma grados (ej: 90).
+// Si se pasa, resta grados (ej: -90 o 270).
+const AJUSTE_VISUAL = -90;
+
 /* ============================
    VARIABLES DE ESTADO
    ============================ */
 let apuestas = [];
 let historial = [];
 let rotacionActual = 0;
+let girando = false;
 
 /* ============================
    ELEMENTOS DOM
@@ -26,164 +32,258 @@ const resultadoTxt = document.getElementById("resultado");
 const listaApuestas = document.getElementById("listaApuestas");
 const cantidadInput = document.getElementById("cantidad");
 const resultadosDiv = document.getElementById("resultados");
-
-/* ============================
-   DATOS DE RULETA EUROPEA
-   ============================ */
-const ROJOS = [
-    1,3,5,7,9,12,14,16,18,
-    19,21,23,25,27,30,32,34,36
-];
-
-const esRojo = n => ROJOS.includes(n);
-
-/* ============================
-   CREAR RULETA VISUAL
-   ============================ */
-for (let i = 0; i < TOTAL_NUMEROS; i++) {
-    const div = document.createElement("div");
-    div.className = "numero";
-    div.style.transform = `rotate(${i * GRADOS}deg)`;
-
-    const span = document.createElement("span");
-    span.textContent = i;
-
-    if (i === 0) span.style.color = "green";
-    else span.style.color = esRojo(i) ? "red" : "white";
-
-    div.appendChild(span);
-    ruleta.appendChild(div);
-}
-
-/* ============================
-   CREAR BOTONES DE NÚMEROS
-   ============================ */
 const contNumeros = document.getElementById("numeros");
 
-for (let i = 0; i < TOTAL_NUMEROS; i++) {
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    btn.dataset.tipo = "numero";
-    btn.dataset.valor = i;
-    contNumeros.appendChild(btn);
+/* ============================
+   INICIALIZACIÓN Y SEGURIDAD
+   ============================ */
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Proteger ruta: Si no hay usuario, fuera.
+    // Verificamos si Auth existe para evitar errores si abres el archivo localmente sin el resto del proyecto
+    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
+        window.location.href = '../Portal/login.html';
+        return;
+    }
+
+    inicializarJuego();
+});
+
+function inicializarJuego() {
+    crearRuletaVisual();
+    crearBotonesNumeros();      // Genera botones 0-36
+    configurarBotonesApuestas(); // Conecta botones Rojo/Negro/Par...
+    renderizarHistorial();
 }
 
 /* ============================
-   GESTIÓN DE APUESTAS
+   LÓGICA DE JUEGO (VISUAL)
    ============================ */
-document.querySelectorAll("[data-tipo]").forEach(btn => {
-    btn.addEventListener("click", () => {
+const ROJOS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+const esRojo = n => ROJOS.includes(n);
 
-        const cantidad = Number(cantidadInput.value);
-        if (cantidad <= 0) return;
+function crearRuletaVisual() {
+    for (let i = 0; i < TOTAL_NUMEROS; i++) {
+        const div = document.createElement("div");
+        div.className = "numero";
+        div.style.transform = `rotate(${i * GRADOS}deg)`;
+        
+        const span = document.createElement("span");
+        span.textContent = i;
+        if (i === 0) span.style.color = "#2ecc71"; // Verde
+        else span.style.color = esRojo(i) ? "#e74c3c" : "white"; // Rojo/Blanco
 
-        apuestas.push({
-            tipo: btn.dataset.tipo,
-            valor: btn.dataset.valor,
-            cantidad
-        });
+        div.appendChild(span);
+        ruleta.appendChild(div);
+    }
+}
 
-        btn.classList.add("apostado");
-        actualizarLista();
+function crearBotonesNumeros() {
+    // Limpiamos por si acaso
+    contNumeros.innerHTML = "";
+
+    for (let i = 0; i < TOTAL_NUMEROS; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.dataset.tipo = "numero";
+        btn.dataset.valor = i;
+        // Estilos Bootstrap
+        btn.className = `btn btn-sm m-1 fw-bold ${
+            i === 0 ? 'btn-success' : esRojo(i) ? 'btn-danger' : 'btn-dark border-secondary'
+        }`;
+        
+        btn.onclick = () => procesarApuesta(btn);
+        contNumeros.appendChild(btn);
+    }
+}
+
+function configurarBotonesApuestas() {
+    // CORRECCIÓN: Buscamos botones por su atributo data-tipo explícitamente
+    // independientemente de en qué div estén metidos.
+    const selectores = 'button[data-tipo="color"], button[data-tipo="paridad"], button[data-tipo="rango"]';
+    const botonesEstaticos = document.querySelectorAll(selectores);
+    
+    botonesEstaticos.forEach(btn => {
+        // Usamos onclick para evitar acumulación de eventos si se reinicia
+        btn.onclick = () => procesarApuesta(btn);
     });
-});
+}
+
+/* ============================
+   GESTIÓN DE APUESTAS (CORE)
+   ============================ */
+function procesarApuesta(btn) {
+    if (girando) return;
+
+    const cantidad = parseFloat(cantidadInput.value);
+    
+    // Validaciones
+    if (isNaN(cantidad) || cantidad <= 0) {
+        alert("Introduce una cantidad válida.");
+        return;
+    }
+
+    // Verificar Wallet
+    if (typeof Wallet !== 'undefined') {
+        const saldoActual = Wallet.getBalance();
+        if (cantidad > saldoActual) {
+            alert(`Saldo insuficiente. Tienes ${saldoActual.toFixed(2)}€`);
+            return;
+        }
+        // Descontar dinero
+        Wallet.updateBalance(-cantidad);
+        // Actualizar UI Navbar
+        if(window.NavbarManager) NavbarManager.init();
+    }
+
+    // Registrar apuesta
+    apuestas.push({
+        tipo: btn.dataset.tipo,
+        valor: btn.dataset.valor,
+        cantidad
+    });
+
+    // Feedback
+    actualizarLista();
+    const nombreApuesta = btn.textContent || btn.dataset.valor;
+    resultadoTxt.innerHTML = `<span class="text-info">Apostado ${cantidad}€ a <b>${nombreApuesta}</b></span>`;
+    resultadoTxt.className = "text-center mt-3";
+}
 
 function actualizarLista() {
     listaApuestas.innerHTML = "";
     apuestas.forEach(a => {
         const li = document.createElement("li");
-        li.textContent = `${a.tipo} → ${a.valor} (${a.cantidad}€)`;
+        li.className = "mb-1";
+        li.innerHTML = `
+            <span class="badge bg-secondary">${a.tipo.toUpperCase()}</span> 
+            <span class="fw-bold text-warning">${a.valor.toUpperCase()}</span> 
+            ➝ ${a.cantidad}€
+        `;
         listaApuestas.appendChild(li);
     });
 }
 
 /* ============================
-   GIRAR RULETA
+   GIRAR RULETA (CON AJUSTE VISUAL)
    ============================ */
 girarBtn.addEventListener("click", () => {
+    if (girando) return;
+    if (apuestas.length === 0) {
+        resultadoTxt.textContent = "¡Haz al menos una apuesta para jugar!";
+        resultadoTxt.className = "text-center text-warning fw-bold mt-3";
+        return;
+    }
 
-    if (apuestas.length === 0) return;
+    girando = true;
+    girarBtn.disabled = true;
+    resultadoTxt.textContent = "¡Girando!...";
+    resultadoTxt.className = "text-center text-light fw-bold mt-3";
 
-    const numero = Math.floor(Math.random() * TOTAL_NUMEROS);
-    const vueltas = 6;
+    const numeroGanador = Math.floor(Math.random() * TOTAL_NUMEROS);
+    
+    // --- LÓGICA DE GIRO CON CALIBRACIÓN ---
+    const anguloDestino = numeroGanador * GRADOS;
+    
+    // AQUI APLICAMOS EL AJUSTE:
+    // (360 - anguloDestino) lleva el número al 0º (Arriba)
+    // + AJUSTE_VISUAL mueve el número hacia donde esté tu flecha realmente
+    const targetRotation = (360 - anguloDestino) + AJUSTE_VISUAL; 
+    
+    const rotacionActualMod = rotacionActual % 360;
+    
+    let distanciaGiro = targetRotation - rotacionActualMod;
+    // Normalizar el giro para que siempre sea positivo (derecha)
+    if (distanciaGiro < 0) distanciaGiro += 360; 
+    if (distanciaGiro < 0) distanciaGiro += 360; // Doble check por si el ajuste es negativo grande
 
-    rotacionActual =
-        vueltas * 360
-        - (numero * GRADOS + GRADOS / 2)
-        + 270;
+    // Añadimos vueltas extra para el efecto visual
+    const vueltasExtra = 5 * 360;
+    rotacionActual += vueltasExtra + distanciaGiro;
 
     ruleta.style.transform = `rotate(${rotacionActual}deg)`;
 
-    setTimeout(() => evaluar(numero), 4000);
+    setTimeout(() => {
+        evaluar(numeroGanador);
+        girando = false;
+        girarBtn.disabled = false;
+    }, 4000);
 });
 
 /* ============================
-   EVALUAR APUESTAS
+   EVALUAR RESULTADOS
    ============================ */
 function evaluar(numero) {
-
-    let ganancia = 0;
+    let gananciaTotal = 0;
 
     apuestas.forEach(a => {
+        let gano = false;
+        const valorApuesta = a.valor.toString(); 
 
         switch (a.tipo) {
-
             case "numero":
-                if (+a.valor === numero)
-                    ganancia += a.cantidad * PREMIOS.numero;
+                if (parseInt(valorApuesta) === numero) gano = true;
                 break;
-
             case "color":
-                if (
-                    (a.valor === "rojo" && esRojo(numero)) ||
-                    (a.valor === "negro" && !esRojo(numero) && numero !== 0)
-                ) ganancia += a.cantidad * PREMIOS.color;
+                if ((valorApuesta === "rojo" && esRojo(numero)) ||
+                    (valorApuesta === "negro" && !esRojo(numero) && numero !== 0)) {
+                    gano = true;
+                }
                 break;
-
             case "paridad":
-                if (numero !== 0 &&
-                    ((a.valor === "par" && numero % 2 === 0) ||
-                     (a.valor === "impar" && numero % 2 !== 0)))
-                    ganancia += a.cantidad * PREMIOS.paridad;
+                if (numero !== 0) {
+                    if ((valorApuesta === "par" && numero % 2 === 0) ||
+                        (valorApuesta === "impar" && numero % 2 !== 0)) {
+                        gano = true;
+                    }
+                }
                 break;
-
             case "rango":
-                if (
-                    (a.valor === "1-18" && numero >= 1 && numero <= 18) ||
-                    (a.valor === "19-36" && numero >= 19 && numero <= 36)
-                ) ganancia += a.cantidad * PREMIOS.rango;
+                if ((valorApuesta === "1-18" && numero >= 1 && numero <= 18) ||
+                    (valorApuesta === "19-36" && numero >= 19 && numero <= 36)) {
+                    gano = true;
+                }
                 break;
+        }
+
+        if (gano) {
+            gananciaTotal += a.cantidad * PREMIOS[a.tipo];
         }
     });
 
-    resultadoTxt.textContent = `Ha salido ${numero}. Ganancia: ${ganancia}€`;
+    // Gestionar Ganancias
+    if (gananciaTotal > 0) {
+        if(typeof Wallet !== 'undefined') Wallet.updateBalance(gananciaTotal);
+        
+        resultadoTxt.innerHTML = `¡Nº <span class="badge bg-primary fs-4">${numero}</span>! <br> GANASTE <span class="text-success display-6 fw-bold">${gananciaTotal}€</span> 🎉`;
+    } else {
+        resultadoTxt.innerHTML = `Nº <span class="badge bg-primary fs-4">${numero}</span> <br> Suerte la próxima vez.`;
+        resultadoTxt.className = "text-center text-muted fw-bold mt-3";
+    }
 
+    if(window.NavbarManager) NavbarManager.init();
+
+    // Historial
     historial.unshift(numero);
-    historial = historial.slice(0, 10);
+    if(historial.length > 10) historial.pop();
     renderizarHistorial();
 
     apuestas = [];
-    document.querySelectorAll(".apostado").forEach(b => b.classList.remove("apostado"));
-    actualizarLista();
+    setTimeout(() => actualizarLista(), 4000); 
 }
-
-/* ============================
-   HISTORIAL
-   ============================ */
-for (let i = 0; i < 10; i++)
-    historial.push(Math.floor(Math.random() * TOTAL_NUMEROS));
-
-renderizarHistorial();
 
 function renderizarHistorial() {
     resultadosDiv.innerHTML = "";
     historial.forEach(n => {
         const div = document.createElement("div");
-        div.className = "resultado";
+        div.className = "rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm";
+        div.style.width = "35px";
+        div.style.height = "35px";
+        div.style.fontSize = "14px";
         div.textContent = n;
 
-        div.style.background =
-            n === 0 ? "green" : esRojo(n) ? "red" : "black";
+        if (n === 0) div.style.background = "#2ecc71";
+        else if (esRojo(n)) div.style.background = "#e74c3c";
+        else div.style.background = "#34495e";
 
         resultadosDiv.appendChild(div);
     });

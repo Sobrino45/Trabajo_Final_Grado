@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro | Casino DAW</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body class="page-register bg-dark text-light">
+
+    <div id="navbar"></div>
+
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <h1 class="mb-4 text-center">Crear cuenta nueva</h1>
+
+                <div class="card bg-secondary text-light shadow-lg border-0">
+                    <div class="card-body p-4">
+                        <form id="registerForm">
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">Nombre de Usuario</label>
+                                    <input type="text" id="username" class="form-control" placeholder="Ej: PokerKing" required>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Correo Electrónico</label>
+                                    <input type="email" id="email" class="form-control" placeholder="tu@email.com" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" id="password" class="form-control" placeholder="******" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                                <input type="password" id="confirmPassword" class="form-control" placeholder="******" required>
+                            </div>
+
+                            <hr class="border-light opacity-25">
+
+                            <div class="mb-4">
+                                <label for="saldo" class="form-label text-warning">💰 Saldo Inicial (Simulación)</label>
+                                <input type="number" id="saldo" class="form-control form-control-lg" 
+                                       placeholder="€" min="10" max="10000" value="1000" required>
+                                <div class="form-text text-light">Cantidad con la que empezarás a jugar.</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-warning w-100 fw-bold py-2">Registrarse y Jugar</button>
+
+                            <div id="msgContainer" class="mt-3 text-center" style="display: none;"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p>¿Ya tienes cuenta? <a href="login.html" class="text-info fw-bold">Inicia sesión aquí</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/wallet.js"></script>
+    
+    <script src="assets/js/register.js"></script>
+    
+    <script>
+        fetch("partials/navbar.html")
+            .then(r => r.text())
+            .then(t => document.getElementById("navbar").innerHTML = t);
+    </script>
+</body>
+</html>
