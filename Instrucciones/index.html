@@ -1,59 +1,237 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Instrucciones | Casino DAW</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instrucciones | Casino DAW</title>
 
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link rel="stylesheet" href="../Portal/assets/css/main.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../Portal/assets/css/main.css">
+
+    <style>
+        .nav-pills .nav-link.active { 
+            background-color: #f1c40f; 
+            color: #000; 
+            font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .nav-pills .nav-link { 
+            color: #ccc; 
+            margin-bottom: 5px;
+            transition: all 0.2s;
+        }
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+    </style>
 </head>
-
 <body class="bg-dark text-light">
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="../Portal/index.html">🎰 Casino DAW</a>
-    </div>
-  </nav>
+    <div id="navbar"></div>
 
-  <main class="container py-5">
-    <header class="text-center mb-5">
-      <h1>📘 Instrucciones y Reglas</h1>
-      <div class="divider"></div>
-    </header>
+    <main class="container py-5">
+        
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 border-bottom border-secondary pb-4 gap-3">
+            <div>
+                <h1 class="display-5 fw-bold text-info">📘 Instrucciones y Reglas</h1>
+                <p class="text-secondary m-0">Manual oficial del jugador.</p>
+            </div>
+            <a id="smart-back-btn" href="../Portal/index.html" class="btn btn-outline-light px-4">
+                ⬅ Volver al Inicio
+            </a>
+        </div>
 
-    <section class="mb-4">
-      <h2 class="h4">Normas generales</h2>
-      <ul>
-        <li>Esta aplicación es una simulación sin apuestas reales.</li>
-        <li>El saldo es ficticio y no tiene valor económico.</li>
-        <li>Cada juego tiene reglas específicas explicadas en su módulo.</li>
-      </ul>
-    </section>
+        <div class="row g-5">
+            <div class="col-md-3">
+                <div class="nav flex-column nav-pills me-3 sticky-top" style="top: 20px;" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active text-start" id="v-pills-general-tab" data-bs-toggle="pill" data-bs-target="#v-pills-general" type="button">📌 General</button>
+                    <button class="nav-link text-start" id="v-pills-ruleta-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ruleta" type="button">🎡 Ruleta</button>
+                    <button class="nav-link text-start" id="v-pills-slots-tab" data-bs-toggle="pill" data-bs-target="#v-pills-slots" type="button">🎰 Tragaperras</button>
+                    <button class="nav-link text-start" id="v-pills-crash-tab" data-bs-toggle="pill" data-bs-target="#v-pills-crash" type="button">🚀 Crash</button>
+                    <button class="nav-link text-start" id="v-pills-faq-tab" data-bs-toggle="pill" data-bs-target="#v-pills-faq" type="button">❓ FAQ</button>
+                </div>
+            </div>
 
-    <section class="mb-4">
-      <h2 class="h4">Uso del portal</h2>
-      <ul>
-        <li>Accede a los juegos desde el portal principal.</li>
-        <li>Es necesario iniciar sesión para jugar.</li>
-        <li>El uso indebido puede provocar la pérdida de sesión.</li>
-      </ul>
-    </section>
-  </main>
+            <div class="col-md-9">
+                <div class="tab-content" id="v-pills-tabContent">
+                    
+                    <div class="tab-pane fade show active" id="v-pills-general">
+                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                            <h3 class="mb-4 text-warning">Funcionamiento del Casino</h3>
+                            <p>Bienvenido a Casino DAW. Nuestro sistema utiliza una <strong>Billetera Única</strong>:</p>
+                            <ul class="list-group list-group-flush rounded">
+                                <li class="list-group-item bg-dark text-light border-secondary">👤 <strong>Registro:</strong> Necesitas una cuenta para jugar.</li>
+                                <li class="list-group-item bg-dark text-light border-secondary">💰 <strong>Saldo Unificado:</strong> Tu dinero viaja contigo entre juegos.</li>
+                                <li class="list-group-item bg-dark text-light border-secondary">💾 <strong>Guardado:</strong> Tu progreso se guarda en el navegador localmente.</li>
+                            </ul>
+                        </div>
+                    </div>
 
-  <footer class="footer">
-    <div class="container text-center">
-      <p class="mb-1">Casino DAW &copy; 2025</p>
-      <p class="mb-0 text-secondary">
-        Proyecto de Fin de Grado · Desarrollo de Aplicaciones Web
-      </p>
-    </div>
-  </footer>
+                    <div class="tab-pane fade" id="v-pills-ruleta">
+                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                            <h3 class="mb-4">🎡 Reglas de la Ruleta</h3>
+                            <p>Predice dónde caerá la bola en el cilindro de 37 números (0-36).</p>
+                            
+                            <h5 class="text-warning mt-4">Tabla de Pagos</h5>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped mt-2 table-sm">
+                                    <thead><tr><th>Apuesta</th><th>Ejemplo</th><th>Pago</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>Pleno</strong></td><td>A un número exacto (ej. 7)</td><td class="text-success fw-bold">35 a 1</td></tr>
+                                        <tr><td><strong>Columna/Docena</strong></td><td>1ª Docena, Columna 2</td><td class="text-info">2 a 1</td></tr>
+                                        <tr><td><strong>Sencillas</strong></td><td>Rojo/Negro, Par/Impar</td><td>1 a 1</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="alert alert-dark border-warning mt-3 d-flex gap-3 align-items-center">
+                                <span class="fs-2">⚠️</span>
+                                <div>
+                                    <strong>Ojo con el CERO (0):</strong><br>
+                                    Si sale el 0, pierden las apuestas a Docenas, Columnas y Sencillas.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                    <div class="tab-pane fade" id="v-pills-slots">
+                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                            <h3 class="mb-4">🎰 Funcionamiento Tragaperras</h3>
+                            <p>El juego consiste en alinear 3 símbolos idénticos en la línea central.</p>
+                            
+                            <div class="row g-3 mt-2">
+                                <div class="col-sm-6">
+                                    <div class="p-3 bg-dark rounded border border-secondary h-100">
+                                        <h5 class="text-info">Coste</h5>
+                                        <p class="display-6 fw-bold text-danger">-5.00 €</p>
+                                        <small class="text-secondary">Por cada giro</small>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="p-3 bg-dark rounded border border-secondary h-100">
+                                        <h5 class="text-warning">Tabla de Premios</h5>
+                                        <ul class="list-unstyled m-0 small">
+                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                                <span>💎 Diamantes</span> <span class="fw-bold text-warning">100 €</span>
+                                            </li>
+                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                                <span>⭐ Estrellas</span> <span class="fw-bold text-warning">50 €</span>
+                                            </li>
+                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                                <span>🔔 Campanas</span> <span class="fw-bold">20 €</span>
+                                            </li>
+                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
+                                                <span>🍋 Limones</span> <span class="fw-bold">10 €</span>
+                                            </li>
+                                            <li class="d-flex justify-content-between py-1">
+                                                <span>🍒 Cerezas</span> <span class="fw-bold">5 €</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="v-pills-crash">
+                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                            <h3 class="mb-4">🚀 Reglas del CRASH</h3>
+                            <p>Un cohete despega y un multiplicador empieza a subir (1.00x, 2.00x...). ¡Puede explotar en cualquier momento!</p>
+                            
+                            <div class="alert alert-dark border-warning d-flex gap-3 align-items-center">
+                                <span class="fs-1">💥</span>
+                                <div>
+                                    <strong>Objetivo:</strong><br>
+                                    Pulsa el botón <strong>RETIRAR</strong> antes de que el cohete explote.
+                                    Si retiras a tiempo, ganas: <code>Tu Apuesta x Multiplicador</code>.
+                                </div>
+                            </div>
+
+                            <h5 class="text-warning mt-4">Ejemplo de Partida</h5>
+                            <ul class="list-group list-group-flush rounded">
+                                <li class="list-group-item bg-dark text-light border-secondary">1. Apuestas <strong>10 €</strong>.</li>
+                                <li class="list-group-item bg-dark text-light border-secondary">2. El cohete sube... esperas... llega a <strong>2.50x</strong>.</li>
+                                <li class="list-group-item bg-dark text-light border-secondary">3. Pulsas "RETIRAR".</li>
+                                <li class="list-group-item bg-dark text-light border-secondary text-success fw-bold">4. ¡Ganas 25 €! (10 x 2.50)</li>
+                                <li class="list-group-item bg-dark text-light border-secondary text-danger">⚠️ Si hubieras esperado y explota a 2.51x... ¡Lo pierdes todo!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="v-pills-faq">
+                        <div class="accordion accordion-flush" id="accordionFlushExample">
+                            <div class="accordion-item bg-secondary text-white border-dark mb-2 rounded">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-white shadow-none rounded" type="button" data-bs-toggle="collapse" data-bs-target="#flush-one">
+                                        💸 ¿Qué pasa si me quedo sin saldo?
+                                    </button>
+                                </h2>
+                                <div id="flush-one" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                    <div class="accordion-body text-white-50">
+                                        Puedes recargar saldo ficticio gratuitamente desde el <strong>Dashboard</strong> en la sección "Gestión de Billetera".
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item bg-secondary text-white border-dark rounded">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-dark text-white shadow-none rounded" type="button" data-bs-toggle="collapse" data-bs-target="#flush-two">
+                                        💾 ¿Se guarda mi progreso?
+                                    </button>
+                                </h2>
+                                <div id="flush-two" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                    <div class="accordion-body text-white-50">
+                                        Sí, utilizamos <code>localStorage</code> del navegador. Si borras el caché o usas modo incógnito, perderás el saldo.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Portal/assets/js/auth.js"></script>
+    <script src="../Portal/assets/js/wallet.js"></script>
+
+    <script>
+        // 1. Cargar Navbar con Corrección de Rutas
+        fetch("../Portal/partials/navbar.html")
+            .then(r => r.text())
+            .then(html => {
+                // Truco de reemplazo de rutas para que funcionen desde subcarpeta
+                let fixedHtml = html.replace(/href="(?!(http|#|\.\.))([^"]+)"/g, 'href="../Portal/$2"');
+                
+                document.getElementById("navbar").innerHTML = fixedHtml;
+                if(window.NavbarManager) NavbarManager.init();
+            });
+
+        // 2. Cargar Footer
+        fetch("../Portal/partials/footer.html")
+            .then(r => r.text())
+            .then(html => {
+                document.getElementById("footer").innerHTML = html;
+            });
+
+        // 3. Lógica Botón "Volver" Inteligente
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("smart-back-btn");
+            
+            if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
+                btn.href = "../Portal/dashboard.html";
+                btn.innerHTML = "🎛 Volver al Dashboard";
+                btn.classList.replace("btn-outline-light", "btn-warning");
+                btn.classList.add("text-dark", "fw-bold");
+            } else {
+                btn.href = "../Portal/index.html";
+                btn.innerHTML = "🏠 Volver al Inicio";
+            }
+        });
+    </script>
+
 </body>
 </html>

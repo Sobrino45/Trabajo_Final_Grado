@@ -1,0 +1,30 @@
+/* ESTILOS ESPECÍFICOS CRASH */
+
+/* Botón que palpita cuando el juego está activo */
+.pulse-anim {
+    animation: pulseButton 1s infinite;
+}
+
+@keyframes pulseButton {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0.7); }
+    70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(241, 196, 15, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+}
+
+.shadow-inset {
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    background-color: #1a1a1a !important;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+}
+
+.tracking-widest {
+    letter-spacing: 0.3em;
+}
+
+/* Ajuste del canvas */
+canvas {
+    display: block; /* Quita márgenes extraños inline */
+}

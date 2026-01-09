@@ -1,29 +1,53 @@
 /**
- * wallet.js
- * Gestiona el saldo del usuario
- * Los juegos NUNCA deben modificar el saldo directamente
+ * WALLET SERVICE
+ * Gestiona el saldo del usuario.
+ * Se comunica con Auth.js para guardar los cambios.
  */
 
-import { getUser, saveUser } from "./user.js";
+const Wallet = {
+    
+    /**
+     * Devuelve el saldo actual del usuario logueado.
+     * Retorna 0.00 si no hay usuario.
+     */
+    getBalance: function() {
+        const user = Auth.getCurrentUser();
+        return user ? parseFloat(user.wallet) : 0.00;
+    },
 
-export function canBet(amount) {
-    const user = getUser();
-    return user && user.saldo >= amount;
-}
+    /**
+     * Intenta realizar un depósito (sumar dinero).
+     * @param {number} amount Cantidad a ingresar
+     * @returns {number|boolean} Nuevo saldo o false si falló.
+     */
+    deposit: function(amount) {
+        if (amount <= 0) return false;
+        
+        const current = this.getBalance();
+        const newBalance = current + amount;
+        
+        // Actualizar en Auth (BD y Sesión)
+        Auth.updateUser({ wallet: newBalance });
+        
+        return newBalance;
+    },
 
-export function subtractMoney(amount) {
-    const user = getUser();
-    if (!user || user.saldo < amount) return false;
+    /**
+     * Actualiza el saldo (Suma o Resta).
+     * Usada por los juegos (Ruleta, Slots...).
+     * @param {number} amount Cantidad (Positiva para premios, negativa para apuestas)
+     */
+    updateBalance: function(amount) {
+        const current = this.getBalance();
+        const newBalance = current + amount;
 
-    user.saldo -= amount;
-    saveUser(user);
-    return true;
-}
+        // Evitar saldos negativos por error
+        if (newBalance < 0) return false;
 
-export function addMoney(amount) {
-    const user = getUser();
-    if (!user) return;
+        Auth.updateUser({ wallet: newBalance });
+        return newBalance;
+    }
+};
 
-    user.saldo += amount;
-    saveUser(user);
-}
+// Hacer Wallet global
+window.Wallet = Wallet;
