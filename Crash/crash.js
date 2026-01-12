@@ -15,28 +15,35 @@ const historyDiv = document.getElementById('history');
    ========================================= */
 let gameRunning = false;
 let userBet = 0;
-let userInGame = false; // Si el usuario ha apostado en la ronda actual
-let userCashedOut = false; // Si ya se retiró
+let userInGame = false; 
+let userCashedOut = false; 
 let currentMultiplier = 1.00;
 let crashPoint = 0;
 let animationId;
 let startTime;
-
-// Variables de dibujo
-let graphData = []; // Guardará puntos [x, y] para dibujar la línea
+let saldoActual = 0;
 
 /* =========================================
    INICIALIZACIÓN
    ========================================= */
 document.addEventListener("DOMContentLoaded", () => {
-    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
-        window.location.href = '../Portal/login.html';
-        return;
-    }
-    updateWalletVisuals();
+    cargarDatosUsuario();
     resizeCanvas();
     drawIdleGraph();
 });
+
+function cargarDatosUsuario() {
+    fetch('../Backend/get_user_info.php')
+        .then(r => r.json())
+        .then(data => {
+            if(data.logged_in) {
+                saldoActual = parseFloat(data.saldo);
+                updateWalletVisuals();
+            } else {
+                window.location.href = '../Portal/login.html';
+            }
+        });
+}
 
 window.addEventListener('resize', resizeCanvas);
 
@@ -46,49 +53,38 @@ window.addEventListener('resize', resizeCanvas);
 
 btnAction.addEventListener('click', () => {
     if (gameRunning) {
-        // Si el juego corre y el usuario está dentro -> INTENTAR RETIRARSE
         if (userInGame && !userCashedOut) {
             cashOut();
         }
     } else {
-        // Si el juego está parado -> INICIAR APUESTA
         startGame();
     }
 });
 
 function startGame() {
-    // 1. Validar Saldo
     const bet = parseFloat(betInput.value);
     if (isNaN(bet) || bet <= 0) return alert("Apuesta inválida");
-    
-    if (typeof Wallet !== 'undefined') {
-        if (Wallet.getBalance() < bet) return alert("Saldo insuficiente");
-        Wallet.updateBalance(-bet); // Cobrar entrada
-    }
+    if (saldoActual < bet) return alert("Saldo insuficiente");
 
-    // 2. Configurar Estado Inicial
+    // Restamos visualmente la apuesta al empezar
+    // (OJO: Se descontará realmente en BD al terminar la partida para simplificar lógica)
+    saldoActual -= bet;
+    updateWalletVisuals();
+
     userBet = bet;
     userInGame = true;
     userCashedOut = false;
     gameRunning = true;
     currentMultiplier = 1.00;
-    graphData = [{x: 0, y: canvas.height}]; // Inicio abajo a la izquierda
 
-    // 3. Calcular Crash Point (Algoritmo simple ponderado)
-    // El 1% de las veces crashea instantáneamente (1.00x)
-    // Fórmula común: E = 100 / (random[1-100]) -> Genera distribución exponencial
+    // Calcular Crash Point
     const r = Math.random(); 
     crashPoint = 0.99 / (1 - r);
-    if (crashPoint > 100) crashPoint = 100; // Capar a x100 para no romperlo
-    if (Math.random() < 0.03) crashPoint = 1.00; // 3% probabilidad de crash instantáneo (La Casa Gana)
+    if (crashPoint > 100) crashPoint = 100; 
+    if (Math.random() < 0.03) crashPoint = 1.00; 
     
-    // DEBUG: Descomentar para ver cuándo va a explotar en consola
-    // console.log("Crash Point: " + crashPoint.toFixed(2));
-
-    // 4. UI Update
-    updateWalletVisuals();
     btnAction.classList.replace('btn-success', 'btn-warning');
-    btnAction.classList.add('pulse-anim'); // Animación de latido
+    btnAction.classList.add('pulse-anim'); 
     btnAction.innerHTML = "💰 RETIRAR";
     statusText.textContent = "¡SUBIENDO!";
     statusText.classList.remove('text-danger', 'text-secondary');
@@ -96,7 +92,6 @@ function startGame() {
     multiplierDisplay.classList.remove('text-danger');
     multiplierDisplay.classList.add('text-white');
 
-    // 5. Iniciar Loop
     startTime = Date.now();
     animate();
 }
@@ -104,24 +99,19 @@ function startGame() {
 function animate() {
     if (!gameRunning) return;
 
-    // Calcular tiempo transcurrido
     const now = Date.now();
-    const elapsed = (now - startTime) / 1000; // Segundos
+    const elapsed = (now - startTime) / 1000; 
 
-    // Fórmula de crecimiento exponencial: Multiplier sube con el tiempo
-    // Ajustar el divisor (8) para que vaya más lento o rápido
+    // Fórmula del multiplicador
     currentMultiplier = 1 + Math.pow(elapsed, 2) / 10; 
 
-    // Actualizar Texto
     multiplierDisplay.textContent = currentMultiplier.toFixed(2) + "x";
 
-    // ¿HEMOS CHOCADO?
     if (currentMultiplier >= crashPoint) {
         gameOver();
         return;
     }
 
-    // Dibujar Gráfica
     drawGraph(elapsed);
 
     animationId = requestAnimationFrame(animate);
@@ -133,20 +123,25 @@ function cashOut() {
     
     const winAmount = userBet * currentMultiplier;
     
-    // Pagar al usuario
-    if (typeof Wallet !== 'undefined') {
-        Wallet.updateBalance(winAmount);
-        updateWalletVisuals();
-        if(window.NavbarManager) NavbarManager.init(); // Actualizar navbar
-    }
+    // --- CONEXIÓN BACKEND (GANANCIA) ---
+    // El usuario gana, enviamos apuesta y ganancia
+    fetch('../Backend/game_logic.php', {
+        method: 'POST',
+        body: JSON.stringify({ bet: userBet, win: winAmount }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            saldoActual = parseFloat(data.new_balance);
+            updateWalletVisuals();
+        }
+    });
 
-    // UI Feedback
     btnAction.classList.replace('btn-warning', 'btn-secondary');
     btnAction.disabled = true;
     btnAction.innerHTML = `✅ GANADO: ${winAmount.toFixed(2)}€`;
     btnAction.classList.remove('pulse-anim');
-    
-    // Efecto visual en el multiplicador
     multiplierDisplay.classList.add('text-success');
 }
 
@@ -154,42 +149,50 @@ function gameOver() {
     gameRunning = false;
     cancelAnimationFrame(animationId);
 
-    // Fijar el número final exacto
     multiplierDisplay.textContent = crashPoint.toFixed(2) + "x";
     
-    // UI Feedback Crash
     statusText.textContent = "💥 CRASHED!";
     statusText.classList.remove('text-success');
     statusText.classList.add('text-danger');
     multiplierDisplay.classList.remove('text-white', 'text-success');
     multiplierDisplay.classList.add('text-danger');
     
-    // Botón Reset
     btnAction.classList.remove('btn-warning', 'pulse-anim');
     btnAction.disabled = false;
     
+    // Si el usuario NO se retiró, PERDIÓ
     if (!userCashedOut && userInGame) {
-        // Perdió
-        btnAction.classList.replace('btn-secondary', 'btn-danger'); // Si estaba disable
+        btnAction.classList.replace('btn-secondary', 'btn-danger'); 
         btnAction.classList.add('btn-danger');
         btnAction.innerHTML = "PERDISTE... JUGAR DE NUEVO";
+        
+        // --- CONEXIÓN BACKEND (PÉRDIDA) ---
+        // Enviamos la apuesta y ganancia 0
+        fetch('../Backend/game_logic.php', {
+            method: 'POST',
+            body: JSON.stringify({ bet: userBet, win: 0 }),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(data => {
+             saldoActual = parseFloat(data.new_balance);
+             updateWalletVisuals();
+        });
+
     } else if (userCashedOut) {
-        // Ya había ganado
         btnAction.classList.remove('btn-secondary');
         btnAction.classList.add('btn-success');
         btnAction.innerHTML = "¡JUGAR OTRA VEZ!";
     } else {
-        // Reset normal
         btnAction.classList.add('btn-success');
         btnAction.innerHTML = "APOSTAR";
     }
     
-    // Añadir al historial
     addToHistory(crashPoint);
 }
 
 /* =========================================
-   CANVAS Y DIBUJO
+   CANVAS Y DIBUJO (CON ZOOM)
    ========================================= */
 function resizeCanvas() {
     const parent = canvas.parentElement;
@@ -201,61 +204,63 @@ function resizeCanvas() {
 function drawGraph(elapsed) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Dibujar Grid
-    drawGrid();
+    const rawX = (elapsed * 30); 
+    const rawY = (Math.pow(elapsed, 2) * 5); 
 
-    // Dibujar Línea del Cohete
+    const maxVisibleHeight = canvas.height * 0.8;
+    let scale = 1;
+
+    if (rawY > maxVisibleHeight) {
+        scale = maxVisibleHeight / rawY;
+    }
+
+    drawGrid(scale);
+
+    const x = rawX * scale;
+    const y = canvas.height - (rawY * scale); 
+
     ctx.beginPath();
     ctx.moveTo(0, canvas.height);
-    
-    // Simular curva: x es tiempo, y es altura
-    // Normalizamos para que encaje en el canvas
-    const x = (elapsed * 30); // Velocidad horizontal
-    const y = canvas.height - (Math.pow(elapsed, 2) * 5); // Velocidad vertical (curva)
-
-    // Curva Bézier simple para suavizar
     ctx.quadraticCurveTo(x/2, canvas.height, x, y);
-    
     ctx.lineWidth = 5;
-    ctx.strokeStyle = userCashedOut ? '#2ecc71' : '#f1c40f'; // Verde si ganó, amarillo si jugando
+    ctx.strokeStyle = userCashedOut ? '#2ecc71' : '#f1c40f'; 
     ctx.stroke();
 
-    // Dibujar el Cohete (Círculo brillante en la punta)
     ctx.beginPath();
     ctx.arc(x, y, 8, 0, Math.PI * 2);
     ctx.fillStyle = '#fff';
     ctx.fill();
-    
-    // Glow effect
     ctx.shadowBlur = 20;
     ctx.shadowColor = userCashedOut ? '#2ecc71' : '#f1c40f';
 }
 
-function drawGrid() {
+function drawGrid(scale = 1) {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 1;
-    ctx.shadowBlur = 0; // Reset shadow
+    ctx.shadowBlur = 0; 
 
-    // Líneas horizontales
-    for(let i=0; i<canvas.height; i+=50) {
+    for(let i = 0; i < canvas.height * (1/scale) + 100; i += 50) {
+        let yPos = canvas.height - (i * scale);
+        if(yPos < 0) continue; 
         ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(canvas.width, i);
+        ctx.moveTo(0, yPos);
+        ctx.lineTo(canvas.width, yPos);
         ctx.stroke();
     }
-    // Líneas verticales
-    for(let i=0; i<canvas.width; i+=50) {
+
+    for(let i = 0; i < canvas.width * (1/scale) + 100; i += 50) {
+        let xPos = i * scale;
+        if(xPos > canvas.width) break;
         ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, canvas.height);
+        ctx.moveTo(xPos, 0);
+        ctx.lineTo(xPos, canvas.height);
         ctx.stroke();
     }
 }
 
 function drawIdleGraph() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid();
-    
+    drawGrid(1); 
     ctx.fillStyle = "rgba(255,255,255,0.05)";
     ctx.font = "20px Arial";
     ctx.fillText("Listo para despegar...", 20, canvas.height - 20);
@@ -272,9 +277,7 @@ function doubleBet() {
 }
 
 function updateWalletVisuals() {
-    if (typeof Wallet !== 'undefined' && walletDisplay) {
-        walletDisplay.textContent = Wallet.getBalance().toFixed(2) + " €";
-    }
+    walletDisplay.textContent = saldoActual.toFixed(2) + " €";
 }
 
 function addToHistory(val) {

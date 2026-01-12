@@ -2,8 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Si ya está logueado, redirigir al dashboard
-    if (Auth.isAuthenticated()) {
+    // 1. Si ya estás logueado, te manda directo dentro
+    if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
         window.location.href = 'dashboard.html';
         return;
     }
@@ -11,22 +11,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const errorMsg = document.getElementById('error');
 
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault(); // Evitar recarga de página
+    // Verificamos que el formulario exista para evitar errores
+    if (loginForm) {
+        // NOTA IMPORTANTE: Añadimos 'async' aquí para poder esperar al servidor
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Evitar recarga
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+            // 2. CAMBIO CLAVE: Usamos el ID correcto 'loginUser'
+            const identifier = document.getElementById('loginUser').value;
+            const password = document.getElementById('password').value;
 
-        // Intentar login usando la clase Auth (definida en auth.js)
-        const result = Auth.login(email, password);
+            // Limpiar errores previos
+            if(errorMsg) {
+                errorMsg.style.display = 'none';
+                errorMsg.textContent = '';
+            }
 
-        if (result.success) {
-            // Si es correcto, redirigir
-            window.location.href = 'dashboard.html';
-        } else {
-            // Si falla, mostrar error
-            errorMsg.textContent = result.message || "Error al iniciar sesión";
-            errorMsg.style.display = 'block';
-        }
-    });
+            try {
+                // 3. CAMBIO CLAVE: Usamos 'await' porque la petición al servidor tarda unos milisegundos
+                const result = await Auth.login(identifier, password);
+
+                if (result.success) {
+                    // Éxito: Vamos al dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Fallo: Mostramos el mensaje que nos devuelve PHP (ej: "Contraseña incorrecta")
+                    if(errorMsg) {
+                        errorMsg.textContent = result.message || "Error desconocido";
+                        errorMsg.style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error("Error en login:", error);
+                if(errorMsg) {
+                    errorMsg.textContent = "Error de conexión con el servidor";
+                    errorMsg.style.display = 'block';
+                }
+            }
+        });
+    }
 });

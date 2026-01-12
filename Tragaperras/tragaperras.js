@@ -9,16 +9,16 @@ const symbols = [
     { icon: "💎", weight: 5 }
 ];
   
-// Ajuste de premios para ser más realista con saldo en Euros
 const payouts = {
-    "💎": 100, // Jackpot
+    "💎": 100,
     "⭐": 50,
     "🔔": 20,
     "🍋": 10,
     "🍒": 5
 };
   
-const COST_PER_SPIN = 5; // Coste en Euros
+const COST_PER_SPIN = 5; 
+let saldoActual = 0;
   
 /* =========================================
     ELEMENTOS DOM
@@ -26,7 +26,7 @@ const COST_PER_SPIN = 5; // Coste en Euros
 const reels = document.querySelectorAll(".reel");
 const spinBtn = document.getElementById("spinBtn");
 const resultText = document.getElementById("result");
-const walletDisplay = document.getElementById("walletDisplay"); // El de arriba
+const walletDisplay = document.getElementById("walletDisplay");
 const paytable = document.getElementById("paytable");
 const paytableBtn = document.getElementById("paytableBtn");
   
@@ -34,14 +34,21 @@ const paytableBtn = document.getElementById("paytableBtn");
     INICIALIZACIÓN
     ========================================= */
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Seguridad
-    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
-        window.location.href = '../Portal/login.html';
-        return;
-    }
-    // 2. Cargar Saldo Inicial
-    updateGUI();
+    cargarDatosUsuario();
 });
+
+function cargarDatosUsuario() {
+    fetch('../Backend/get_user_info.php')
+        .then(r => r.json())
+        .then(data => {
+            if(data.logged_in) {
+                saldoActual = parseFloat(data.saldo);
+                updateGUI();
+            } else {
+                window.location.href = '../Portal/login.html';
+            }
+        });
+}
 
 // Event Listeners
 spinBtn.addEventListener("click", spin);
@@ -51,17 +58,14 @@ paytableBtn.addEventListener("click", togglePaytable);
     LÓGICA DEL JUEGO
     ========================================= */
 function spin() {
-    // Verificar saldo usando la clase Wallet
-    const currentBalance = Wallet.getBalance();
-
-    if (currentBalance < COST_PER_SPIN) {
-        resultText.innerHTML = "<span class='text-danger'>❌ Saldo insuficiente. Recarga en el Panel.</span>";
+    if (saldoActual < COST_PER_SPIN) {
+        resultText.innerHTML = "<span class='text-danger'>❌ Saldo insuficiente.</span>";
         return;
     }
   
-    // Cobrar la tirada
-    Wallet.updateBalance(-COST_PER_SPIN);
-    updateGUI(); // Actualizar visualmente el dinero bajando
+    // Restamos visualmente
+    saldoActual -= COST_PER_SPIN;
+    updateGUI();
     
     resultText.textContent = "";
     spinBtn.disabled = true;
@@ -69,7 +73,6 @@ function spin() {
     // Animación CSS
     reels.forEach(r => r.classList.add("spinning"));
   
-    // Esperar tiempo de giro (1.2s)
     setTimeout(() => {
         const result = [];
     
@@ -96,38 +99,44 @@ function getRandomSymbol() {
 }
   
 function checkWin(result) {
+    let winAmount = 0;
+    
     // Victoria: Todos los símbolos iguales
     if (result.every(s => s === result[0]) && payouts[result[0]]) {
-        const prize = payouts[result[0]];
-        
-        // Pagar premio
-        Wallet.updateBalance(prize);
-        updateGUI(); // Actualizar visualmente el dinero subiendo
-
-        resultText.innerHTML = `🎉 ¡PREMIO! Ganaste <span class="text-warning fs-4">${prize}€</span>`;
-        resultText.className = "result win";
-    } else {
-        resultText.textContent = "Suerte la próxima vez...";
-        resultText.className = "result lose";
+        winAmount = payouts[result[0]];
     }
-    
-    // Actualizar también el navbar si existe
-    if(window.NavbarManager) NavbarManager.init();
+
+    // --- CONEXIÓN AL BACKEND ---
+    fetch('../Backend/game_logic.php', {
+        method: 'POST',
+        body: JSON.stringify({ bet: COST_PER_SPIN, win: winAmount }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            saldoActual = parseFloat(data.new_balance); // Sincronizar saldo real
+            updateGUI();
+
+            if(winAmount > 0) {
+                resultText.innerHTML = `🎉 ¡PREMIO! Ganaste <span class="text-warning fs-4">${winAmount}€</span>`;
+                resultText.className = "result win";
+            } else {
+                resultText.textContent = "Suerte la próxima vez...";
+                resultText.className = "result lose";
+            }
+        }
+    });
 }
   
 function updateGUI() {
-    if (typeof Wallet !== 'undefined' && walletDisplay) {
-        const saldo = Wallet.getBalance();
-        walletDisplay.textContent = parseFloat(saldo).toFixed(2) + " €";
-        
-        // Color rojo si hay poco saldo
-        if (saldo < COST_PER_SPIN) {
-            walletDisplay.classList.remove("text-success");
-            walletDisplay.classList.add("text-danger");
-        } else {
-            walletDisplay.classList.remove("text-danger");
-            walletDisplay.classList.add("text-success");
-        }
+    walletDisplay.textContent = saldoActual.toFixed(2) + " €";
+    if (saldoActual < COST_PER_SPIN) {
+        walletDisplay.classList.remove("text-success");
+        walletDisplay.classList.add("text-danger");
+    } else {
+        walletDisplay.classList.remove("text-danger");
+        walletDisplay.classList.add("text-success");
     }
 }
   

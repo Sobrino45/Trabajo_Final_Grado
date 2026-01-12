@@ -16,7 +16,6 @@
         <div class="row g-5">
             
             <div class="col-lg-5 text-center">
-                
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <a href="../Portal/dashboard.html" class="btn btn-outline-secondary btn-sm">
                         ⬅ Volver al Dashboard
@@ -85,17 +84,14 @@
         </div>
     </main>
 
-    <script src="../Portal/assets/js/auth.js"></script>
-    <script src="../Portal/assets/js/wallet.js"></script>
-    <script src="../Portal/assets/js/logout.js"></script>
     <script src="ruleta.js"></script>
 
     <script>
+        // Cargar Navbar
         fetch("../Portal/partials/navbar.html")
             .then(r => r.text())
             .then(html => {
                 document.getElementById("navbar").innerHTML = html;
-                NavbarManager.init();
             });
     </script>
 </body>

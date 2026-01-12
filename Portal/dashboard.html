@@ -10,6 +10,8 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/main.css" />
+
+    <link rel="icon" type="image/png" href="/CasinoDaw/Portal/assets/img/icons/logo-casino.png">
   </head>
 
   <body class="page-dashboard bg-dark text-light">
@@ -21,14 +23,18 @@
           <h1 class="display-5">
             Hola, <span id="username" class="text-warning">Jugador</span>
           </h1>
-          <p class="lead mb-2">Bienvenido de nuevo a tu panel de control.</p>
+          <p class="lead mb-3">Bienvenido de nuevo a tu panel de control.</p>
 
-          <button
-            id="btnDashboardLogout"
-            class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
-          >
-            🚪 Cerrar Sesión
-          </button>
+          <div class="d-flex align-items-center gap-3">
+            <button
+              id="btnDashboardLogout"
+              class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
+            >
+              🚪 Cerrar Sesión
+            </button>
+
+            <div id="admin-btn-container"></div>
+          </div>
         </div>
 
         <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -83,11 +89,11 @@
                 <div class="display-1 mb-3">🎡</div>
                 <h4 class="card-title">Ruleta Europea</h4>
                 <p class="card-text small text-white-50">
-                  Motor de física realista en JS.
+                  Frontend: Motor físico JS.
                 </p>
                 <a
                   href="../RuletaJava/ruleta.html"
-                  class="btn btn-warning w-100 fw-bold"
+                  class="btn btn-warning w-100 fw-bold text-dark"
                   >Jugar Ahora</a
                 >
               </div>
@@ -102,11 +108,37 @@
                 <div class="display-1 mb-3">🎰</div>
                 <h4 class="card-title">Tragaperras</h4>
                 <p class="card-text small text-white-50">
-                  Clásico de frutas y premios.
+                  Frontend: Lógica JS y CSS.
                 </p>
                 <a
                   href="../Tragaperras/index.html"
                   class="btn btn-danger w-100 fw-bold"
+                  >Jugar Ahora</a
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div
+              class="card h-100 bg-secondary text-white border-warning shadow hover-scale"
+            >
+              <div class="card-body text-center">
+                <div class="display-1 mb-3">🚀</div>
+                <h4 class="card-title">
+                  CRASH
+                  <span
+                    class="badge bg-warning text-dark ms-1"
+                    style="font-size: 0.6em"
+                    >NUEVO</span
+                  >
+                </h4>
+                <p class="card-text small text-white-50">
+                  Frontend: Canvas y Gráficas.
+                </p>
+                <a
+                  href="../Crash/index.html"
+                  class="btn btn-warning w-100 fw-bold text-dark"
                   >Jugar Ahora</a
                 >
               </div>
@@ -120,12 +152,15 @@
               <div class="card-body text-center">
                 <div class="display-1 mb-3">🃏</div>
                 <h4 class="card-title">Blackjack</h4>
-                <p class="card-text small text-white-50">
-                  Versión Java Spring.
+                <p class="card-text small text-info fw-bold">
+                  Backend: PHP + MySQL
                 </p>
-                <button class="btn btn-secondary w-100" disabled>
-                  Próximamente
-                </button>
+                <a
+                  href="../Blackjack/index.html"
+                  class="btn btn-secondary w-100"
+                  disabled
+                  >Próximamente (PHP)</a
+                >
               </div>
             </div>
           </div>
@@ -137,7 +172,9 @@
               <div class="card-body text-center">
                 <div class="display-1 mb-3">♠️</div>
                 <h4 class="card-title">Poker Clásico</h4>
-                <p class="card-text small text-white-50">5-Card Draw vs CPU.</p>
+                <p class="card-text small text-info fw-bold">
+                  Backend: Java Sockets
+                </p>
                 <button class="btn btn-secondary w-100" disabled>
                   Próximamente
                 </button>
@@ -150,9 +187,11 @@
               class="card h-100 bg-secondary text-white border-0 shadow hover-scale opacity-75"
             >
               <div class="card-body text-center">
-                <div class="display-1 mb-3">♣️</div>
-                <h4 class="card-title">Texas Hold'em</h4>
-                <p class="card-text small text-white-50">Mesas multijugador.</p>
+                <div class="display-1 mb-3">🐎</div>
+                <h4 class="card-title">Carrera Caballos</h4>
+                <p class="card-text small text-info fw-bold">
+                  Backend: Java Threads
+                </p>
                 <button class="btn btn-secondary w-100" disabled>
                   Próximamente
                 </button>
@@ -160,23 +199,19 @@
             </div>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-md-4 mx-auto">
             <div
-              class="card h-100 bg-secondary text-white border-warning shadow hover-scale"
+              class="card h-100 bg-secondary text-white border-0 shadow hover-scale opacity-75"
             >
               <div class="card-body text-center">
-                <div class="display-1 mb-3">🚀</div>
-                <h4 class="card-title">CRASH</h4>
-                <p class="card-text small text-white-50">
-                  Retírate antes de explotar.
+                <div class="display-1 mb-3">♣️</div>
+                <h4 class="card-title">Texas Hold'em</h4>
+                <p class="card-text small text-info fw-bold">
+                  Backend: Java Spring Boot
                 </p>
-
-                <a
-                  href="../Crash/index.html"
-                  class="btn btn-warning w-100 fw-bold text-dark"
-                >
-                  Jugar Ahora
-                </a>
+                <button class="btn btn-secondary w-100" disabled>
+                  Próximamente
+                </button>
               </div>
             </div>
           </div>
@@ -188,8 +223,9 @@
 
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/wallet.js"></script>
-    <script src="assets/js/logout.js"></script>
-    <script src="assets/js/dashboard.js"></script>
+    <!-- <script src="assets/js/logout.js"></script>
+    <script src="assets/js/dashboard.js"></script> -->
+    <script src="assets/js/navbar_logic.js"></script>
 
     <script>
       // Cargar Navbar
@@ -209,15 +245,90 @@
       document
         .getElementById("btnDashboardLogout")
         .addEventListener("click", () => {
-          // Intenta usar la clase Auth si existe
           if (typeof Auth !== "undefined" && Auth.logout) {
             Auth.logout();
           } else {
-            // Fallback manual si no carga Auth
-            localStorage.removeItem("user_login"); // O la clave que uses
+            localStorage.removeItem("user_login");
             window.location.href = "login.html";
           }
         });
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        fetch("../Backend/get_user_info.php")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.logged_in) {
+              // 1. Datos básicos
+              document.getElementById("username").textContent = data.username;
+              let saldoNumerico = parseFloat(data.saldo);
+              document.getElementById("saldo").textContent =
+                saldoNumerico.toFixed(2);
+
+              // 2. LÓGICA DE ADMIN (NUEVO)
+              // Si el rol es 'admin', creamos el botón dinámicamente
+              if (data.rol === "admin") {
+                const container = document.getElementById(
+                  "admin-btn-container"
+                );
+                // CAMBIO: Usamos 'btn-outline-warning' para un estilo más elegante
+                container.innerHTML = `
+        <a href="admin.html" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-2 fw-bold">
+            👮 Panel Admin
+        </a>
+    `;
+              }
+            } else {
+              window.location.href = "../login.html";
+            }
+          })
+          .catch((error) => console.error("Error cargando datos:", error));
+      });
+
+      // LÓGICA DE DEPÓSITO
+      const btnDeposit = document.getElementById("btnDeposit");
+      const inputAmount = document.getElementById("depositAmount");
+
+      if (btnDeposit) {
+        btnDeposit.addEventListener("click", () => {
+          const amount = parseFloat(inputAmount.value);
+
+          if (!amount || amount <= 0) {
+            alert("Por favor, introduce una cantidad válida mayor que 0.");
+            return;
+          }
+
+          // Llamada al backend
+          fetch("../Backend/deposit.php", {
+            method: "POST",
+            body: JSON.stringify({ amount: amount }),
+            headers: { "Content-Type": "application/json" },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                // 1. Actualizar el saldo en pantalla visualmente
+                const saldoNumerico = parseFloat(data.new_balance);
+                document.getElementById("saldo").textContent =
+                  saldoNumerico.toFixed(2);
+
+                // 2. Limpiar el input
+                inputAmount.value = "";
+
+                // 3. Feedback al usuario (puedes usar un alert o algo más bonito)
+                alert(
+                  "¡Recarga exitosa! Tu nuevo saldo es: " +
+                    saldoNumerico.toFixed(2) +
+                    " €"
+                );
+              } else {
+                alert("Error: " + data.message);
+              }
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+      }
     </script>
   </body>
 </html>

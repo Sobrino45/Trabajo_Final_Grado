@@ -1,64 +1,71 @@
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // Verificar que Auth existe
-    if (typeof Auth === 'undefined') {
-        console.error("Error: Auth.js no está cargado.");
-        return;
-    }
+/*
+ * Lógica del Formulario de Registro (register.html)
+ */
 
+document.addEventListener('DOMContentLoaded', () => {
+
+    // 1. Obtener referencias a los elementos con los IDs de TU html
     const registerForm = document.getElementById('registerForm');
     const msgContainer = document.getElementById('msgContainer');
 
-    if (!registerForm) return;
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    registerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+            // Recoger valores
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const confirmPass = document.getElementById('confirmPassword').value.trim();
+            const saldo = document.getElementById('saldo').value;
 
-        // 1. Recoger datos
-        const username = document.getElementById('username').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        // Si tienes campo de saldo inicial, úsalo; si no, por defecto 0
-        const saldoInput = document.getElementById('saldo');
-        const saldoInicial = saldoInput ? parseFloat(saldoInput.value) : 0;
+            // Resetear mensajes
+            msgContainer.style.display = 'none';
+            msgContainer.className = 'mt-3 text-center'; // Clase base
+            msgContainer.textContent = '';
 
-        // 2. Validaciones básicas
-        if (password !== confirmPassword) {
-            mostrarMensaje("Las contraseñas no coinciden.", "text-danger");
-            return;
-        }
+            // --- VALIDACIONES FRONTEND ---
 
-        // 3. Registrar usuario
-        const result = Auth.register(username, email, password);
-
-        if (result.success) {
-            // 4. Éxito: Iniciar sesión automáticamente
-            mostrarMensaje("¡Cuenta creada! Iniciando sesión...", "text-success");
-            
-            const loginResult = Auth.login(email, password);
-            
-            if (loginResult.success) {
-                // Ingresar saldo inicial si se especificó
-                if (saldoInicial > 0 && typeof Wallet !== 'undefined') {
-                    Wallet.deposit(saldoInicial);
-                }
-
-                // Redirigir
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
+            // 1. Contraseñas coinciden
+            if (password !== confirmPass) {
+                showMessage("⚠️ Las contraseñas no coinciden.", "text-danger");
+                return;
             }
-        } else {
-            // Error (ej: email duplicado)
-            mostrarMensaje(result.message, "text-danger");
-        }
-    });
 
-    function mostrarMensaje(texto, clase) {
-        if (!msgContainer) return;
-        msgContainer.textContent = texto;
-        msgContainer.className = `mt-3 text-center fw-bold ${clase}`;
+            // 2. Longitud contraseña
+            if (password.length < 4) {
+                showMessage("⚠️ La contraseña debe tener al menos 4 caracteres.", "text-danger");
+                return;
+            }
+
+            // --- ENVIAR AL BACKEND ---
+            // Llamamos a Auth.register pasando el saldo también
+            const result = await Auth.register(username, email, password, saldo);
+
+            if (result.success) {
+                // ÉXITO
+                showMessage("✅ ¡Cuenta creada con éxito! Redirigiendo...", "text-success");
+                
+                // Deshabilitar botón para no enviar doble
+                const btn = registerForm.querySelector('button[type="submit"]');
+                if(btn) btn.disabled = true;
+
+                // Esperar 1.5 seg y mandar al Login
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+
+            } else {
+                // ERROR (Usuario existe, etc)
+                showMessage("❌ " + result.message, "text-danger");
+            }
+        });
+    }
+
+    // Función auxiliar para mostrar mensajes en el div msgContainer
+    function showMessage(text, colorClass) {
+        msgContainer.textContent = text;
+        msgContainer.className = `mt-3 text-center fw-bold ${colorClass}`;
         msgContainer.style.display = 'block';
     }
 });

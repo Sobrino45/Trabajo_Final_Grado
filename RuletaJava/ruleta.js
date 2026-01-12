@@ -8,13 +8,11 @@ const PREMIOS = {
 };
 const AJUSTE_VISUAL = -90; 
 
-/* ============================
-   VARIABLES DE ESTADO
-   ============================ */
 let apuestas = [];
 let historial = [];
 let rotacionActual = 0;
 let girando = false;
+let saldoActual = 0; // Variable local para control rápido
 
 /* ============================
    ELEMENTOS DOM
@@ -33,52 +31,46 @@ const walletDisplay = document.getElementById("walletDisplay");
    INICIALIZACIÓN
    ============================ */
 document.addEventListener("DOMContentLoaded", () => {
-    // Seguridad: Verificar Auth
-    if (typeof Auth !== 'undefined' && !Auth.isAuthenticated()) {
-        window.location.href = '../Portal/login.html';
-        return;
-    }
     inicializarJuego();
+    cargarSaldoServidor();
 });
+
+function cargarSaldoServidor() {
+    fetch('../Backend/get_user_info.php')
+        .then(r => r.json())
+        .then(data => {
+            if(data.logged_in) {
+                saldoActual = parseFloat(data.saldo);
+                actualizarSaldoVisual(saldoActual);
+            } else {
+                window.location.href = '../Portal/login.html';
+            }
+        });
+}
 
 function inicializarJuego() {
     crearRuletaVisual();
     if(tableroDiv) dibujarTablero(); 
-    
-    // RECUPERADO: Generar historial ficticio al inicio
     generarHistorialFicticio();
-    
     renderizarHistorial();
-    actualizarSaldoVisual(); 
 }
 
-/* ============================
-   NUEVO: HISTORIAL FICTICIO
-   ============================ */
 function generarHistorialFicticio() {
     historial = [];
-    // Generamos 10 números aleatorios para "rellenar" la barra visualmente
     for (let i = 0; i < 10; i++) {
         const numRandom = Math.floor(Math.random() * TOTAL_NUMEROS);
         historial.push(numRandom);
     }
 }
 
-/* ============================
-   LÓGICA DEL SALDO VISUAL
-   ============================ */
-function actualizarSaldoVisual() {
-    if (typeof Wallet !== 'undefined' && walletDisplay) {
-        const saldo = Wallet.getBalance();
-        walletDisplay.textContent = parseFloat(saldo).toFixed(2) + " €";
-        
-        if (saldo < 10) {
-            walletDisplay.classList.remove("text-success");
-            walletDisplay.classList.add("text-danger");
-        } else {
-            walletDisplay.classList.remove("text-danger");
-            walletDisplay.classList.add("text-success");
-        }
+function actualizarSaldoVisual(valor) {
+    walletDisplay.textContent = valor.toFixed(2) + " €";
+    if (valor < 10) {
+        walletDisplay.classList.remove("text-success");
+        walletDisplay.classList.add("text-danger");
+    } else {
+        walletDisplay.classList.remove("text-danger");
+        walletDisplay.classList.add("text-success");
     }
 }
 
@@ -95,8 +87,7 @@ function crearRuletaVisual() {
         div.style.transform = `rotate(${i * GRADOS}deg)`;
         const span = document.createElement("span");
         span.textContent = i;
-        if (i === 0) span.style.color = "#2ecc71"; 
-        else span.style.color = esRojo(i) ? "#e74c3c" : "white"; 
+        span.style.color = (i === 0) ? "#2ecc71" : (esRojo(i) ? "#e74c3c" : "white");
         div.appendChild(span);
         ruleta.appendChild(div);
     }
@@ -105,27 +96,19 @@ function crearRuletaVisual() {
 function dibujarTablero() {
     tableroDiv.innerHTML = "";
     crearCeldaTablero("0", "numero", 0, "bg-green celda-0");
-
-    // FILA SUPERIOR
     for (let i = 3; i <= 36; i += 3) crearCeldaNumero(i);
     crearCeldaTablero("2 a 1", "columna", 3, "bg-transparent celda-2to1");
-
-    // FILA MEDIA
     for (let i = 2; i <= 36; i += 3) crearCeldaNumero(i);
     crearCeldaTablero("2 a 1", "columna", 2, "bg-transparent celda-2to1");
-
-    // FILA INFERIOR
     for (let i = 1; i <= 36; i += 3) crearCeldaNumero(i);
     crearCeldaTablero("2 a 1", "columna", 1, "bg-transparent celda-2to1");
-
-    // DOCENAS
+    
     let vacio = document.createElement("div"); tableroDiv.appendChild(vacio);
     crearCeldaTablero("1ª 12", "docena", "1-12", "bg-transparent celda-docena");
     crearCeldaTablero("2ª 12", "docena", "13-24", "bg-transparent celda-docena");
     crearCeldaTablero("3ª 12", "docena", "25-36", "bg-transparent celda-docena");
     vacio = document.createElement("div"); tableroDiv.appendChild(vacio);
 
-    // APUESTAS SIMPLES
     vacio = document.createElement("div"); tableroDiv.appendChild(vacio);
     crearCeldaTablero("1-18", "rango", "1-18", "bg-transparent celda-simple");
     crearCeldaTablero("PAR", "paridad", "par", "bg-transparent celda-simple");
@@ -156,23 +139,16 @@ function crearCeldaTablero(texto, tipo, valor, clasesExtra) {
    ============================ */
 function procesarApuesta(elementoDOM) {
     if (girando) return;
-
     const cantidad = parseFloat(cantidadInput.value);
     
-    if (isNaN(cantidad) || cantidad <= 0) {
-        alert("Cantidad no válida.");
-        return;
-    }
+    // Cálculo total actual apostado
+    let totalYaApostado = apuestas.reduce((acc, curr) => acc + curr.cantidad, 0);
 
-    if (typeof Wallet !== 'undefined') {
-        const saldoActual = Wallet.getBalance();
-        if (cantidad > saldoActual) {
-            alert(`Saldo insuficiente.`);
-            return;
-        }
-        Wallet.updateBalance(-cantidad);
-        actualizarSaldoVisual();
-        if(window.NavbarManager) NavbarManager.init();
+    if (isNaN(cantidad) || cantidad <= 0) {
+        alert("Cantidad no válida."); return;
+    }
+    if ((totalYaApostado + cantidad) > saldoActual) {
+        alert("Saldo insuficiente para esta apuesta."); return;
     }
 
     const tipo = elementoDOM.dataset.tipo;
@@ -180,9 +156,10 @@ function procesarApuesta(elementoDOM) {
     apuestas.push({ tipo, valor, cantidad });
 
     colocarFichaVisual(elementoDOM, cantidad);
-
     resultadoTxt.innerHTML = `<span class="text-info fs-6">Ficha de ${cantidad}€ colocada</span>`;
-    detalleGanadoresTxt.textContent = "Suerte...";
+    
+    // Actualizamos visualmente el saldo "restando" provisionalmente
+    actualizarSaldoVisual(saldoActual - (totalYaApostado + cantidad));
 
     if (btnLimpiar) btnLimpiar.disabled = false;
 }
@@ -199,23 +176,10 @@ function colocarFichaVisual(padre, cantidad) {
 
 function limpiarMesa() {
     if (girando) return;
-    
-    if (typeof Wallet !== 'undefined') {
-        let totalApostado = apuestas.reduce((sum, a) => sum + a.cantidad, 0);
-        if (totalApostado > 0) {
-            Wallet.updateBalance(totalApostado);
-            actualizarSaldoVisual();
-            if(window.NavbarManager) NavbarManager.init();
-        }
-    }
-
     apuestas = [];
     document.querySelectorAll('.ficha-visual').forEach(e => e.remove());
-    
     resultadoTxt.textContent = "Apuestas borradas";
-    resultadoTxt.className = "text-white fw-bold m-0";
-    detalleGanadoresTxt.textContent = "Dinero devuelto";
-    
+    actualizarSaldoVisual(saldoActual); // Restauramos el saldo visual real
     if (btnLimpiar) btnLimpiar.disabled = true;
 }
 
@@ -257,12 +221,14 @@ girarBtn.addEventListener("click", () => {
 });
 
 /* ============================
-   EVALUACIÓN
+   EVALUACIÓN Y CONEXIÓN BACKEND
    ============================ */
 function evaluar(numero) {
     let gananciaTotal = 0;
+    let apuestaTotal = 0;
 
     apuestas.forEach(a => {
+        apuestaTotal += a.cantidad;
         let gano = false;
         const valorStr = a.valor.toString(); 
 
@@ -288,23 +254,33 @@ function evaluar(numero) {
                     else if (valorStr === "25-36" && numero > 24) gano = true;
                 } break;
         }
-        if (gano) gananciaTotal += a.cantidad * PREMIOS[a.tipo];
+        if (gano) gananciaTotal += a.cantidad * (PREMIOS[a.tipo] + 1); // +1 porque devuelve la apuesta + premio
     });
 
-    if (gananciaTotal > 0) {
-        if(typeof Wallet !== 'undefined') {
-            Wallet.updateBalance(gananciaTotal);
-            actualizarSaldoVisual();
+    // --- CONEXIÓN AL SERVIDOR ---
+    fetch('../Backend/game_logic.php', {
+        method: 'POST',
+        body: JSON.stringify({ bet: apuestaTotal, win: gananciaTotal }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            saldoActual = parseFloat(data.new_balance); // Sincronizamos con el servidor
+            actualizarSaldoVisual(saldoActual);
+            
+            if (gananciaTotal > 0) {
+                resultadoTxt.innerHTML = `¡Nº <span class="badge bg-primary fs-4">${numero}</span>! <br> GANASTE <span class="text-success display-6 fw-bold">${gananciaTotal}€</span> 🎉`;
+            } else {
+                resultadoTxt.innerHTML = `Nº <span class="badge bg-primary fs-4">${numero}</span> <br> Pierdes ${apuestaTotal}€`;
+            }
+        } else {
+            alert("Error de conexión: " + data.message);
         }
-        resultadoTxt.innerHTML = `¡Nº <span class="badge bg-primary fs-4">${numero}</span>! <br> GANASTE <span class="text-success display-6 fw-bold">${gananciaTotal}€</span> 🎉`;
-    } else {
-        resultadoTxt.innerHTML = `Nº <span class="badge bg-primary fs-4">${numero}</span> <br> Suerte la próxima vez.`;
-    }
+    });
 
     const ganadoresTexto = obtenerCategoriasGanadoras(numero);
     detalleGanadoresTxt.innerHTML = `Ganadores: <span class="text-info">${ganadoresTexto}</span>`;
-
-    if(window.NavbarManager) NavbarManager.init();
 
     // Actualizar historial
     historial.unshift(numero);
@@ -316,7 +292,6 @@ function evaluar(numero) {
     setTimeout(() => {
         document.querySelectorAll('.ficha-visual').forEach(e => e.remove());
         resultadoTxt.textContent = "Hagan juego...";
-        resultadoTxt.className = "text-white fw-bold m-0";
         detalleGanadoresTxt.textContent = "";
         if (btnLimpiar) btnLimpiar.disabled = true;
     }, 5000);
@@ -328,8 +303,6 @@ function obtenerCategoriasGanadoras(n) {
     cats.push(esRojo(n) ? "Rojo" : "Negro");
     cats.push(n % 2 === 0 ? "Par" : "Impar");
     cats.push(n <= 18 ? "1-18" : "19-36");
-    let col = n % 3; if(col===0) col=3; cats.push(`Col ${col}`);
-    let doc = 1; if(n>12) doc=2; if(n>24) doc=3; cats.push(`${doc}ª Doc`);
     return cats.join(" | ");
 }
 

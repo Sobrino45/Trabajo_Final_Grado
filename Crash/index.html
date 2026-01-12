@@ -82,15 +82,11 @@
 
     <div id="footer"></div>
 
-    <script src="../Portal/assets/js/auth.js"></script>
-    <script src="../Portal/assets/js/wallet.js"></script>
     <script src="crash.js"></script>
 
     <script>
-        // Cargar Navbar y Footer
         fetch("../Portal/partials/navbar.html").then(r => r.text()).then(h => {
             document.getElementById("navbar").innerHTML = h;
-            if(window.NavbarManager) NavbarManager.init();
         });
         fetch("../Portal/partials/footer.html").then(r => r.text()).then(h => document.getElementById("footer").innerHTML = h);
     </script>
