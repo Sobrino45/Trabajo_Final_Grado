@@ -1,11 +1,15 @@
 <?php
-// Archivo: Backend/get_user_info.php
-session_start();
-header('Content-Type: application/json');
-require 'conexion.php'; // Asegúrate de que este path sea correcto a tu archivo de conexión
+session_start(); // DEBE SER LA PRIMERA LÍNEA
 
-// 1. Verificar si el usuario ha iniciado sesión
-// IMPORTANTE: Esto asume que en tu login.php guardaste el ID del usuario en $_SESSION['user_id']
+// Configuración de cabeceras para evitar problemas de caché
+header('Content-Type: application/json');
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+require 'conexion.php';
+
+// Si no hay usuario en sesión, devolvemos false
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['logged_in' => false]);
     exit;
@@ -13,8 +17,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// 2. Buscamos el saldo, nombre Y ROL actualizados en la BD
-// AÑADIMOS "rol" A LA LISTA DE CAMPOS
+// Consultamos datos frescos
 $stmt = $conexion->prepare("SELECT username, saldo, rol FROM usuarios WHERE id = ?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -25,9 +28,11 @@ if ($row = $result->fetch_assoc()) {
         'logged_in' => true,
         'username' => $row['username'],
         'saldo' => $row['saldo'],
-        'rol' => $row['rol'] // <--- IMPORTANTE: Enviamos el rol al frontend
+        'rol' => $row['rol']
     ]);
 } else {
+    // Si la sesión existe pero el usuario no está en BD (raro), limpiamos sesión
+    session_destroy();
     echo json_encode(['logged_in' => false, 'message' => 'Usuario no encontrado']);
 }
 

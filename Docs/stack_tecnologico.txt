@@ -1,0 +1,50 @@
+DOCUMENTACIÓN TÉCNICA - CASINO DAW
+==================================
+
+1. ARQUITECTURA GENERAL
+   El proyecto sigue una arquitectura modular donde el Portal actúa como cliente centralizado.
+   Los juegos funcionan como módulos independientes que consumen servicios de backend compartidos o microservicios dedicados.
+
+2. PORTAL Y FRONTEND COMÚN
+   - Tecnologías: HTML5, CSS3 (SCSS), Bootstrap 5.3, JavaScript (ES6).
+   - Estructura: Single Page Application "like" navigation con carga dinámica de componentes (Navbar).
+
+3. BACKEND CORE (Gestión de Usuarios)
+   - Tecnologías: PHP 8.x, MySQL.
+   - Funcionalidad: Login, Registro, Sesiones, Billetera (Depósitos/Retiros).
+
+4. MÓDULOS DE JUEGO (Detalle Tecnológico)
+
+   A. RULETA EUROPEA
+      - Ruta: /RuletaJava
+      - Frontend: JavaScript nativo con motor de físicas simulado.
+      - Backend: Integración con Backend Core (PHP) para transacciones.
+
+   B. MÁQUINA TRAGAPERRAS
+      - Ruta: /Tragaperras
+      - Frontend: JavaScript + CSS Animations.
+      - Backend: Lógica de probabilidad en cliente (Demo) / PHP (Producción).
+
+   C. CRASH (COHETE)
+      - Ruta: /Crash
+      - Frontend: HTML5 Canvas + JavaScript para gráficos en tiempo real.
+      - Backend: Algoritmo de multiplicador aleatorio.
+
+   D. CARRERA DE CABALLOS
+      - Ruta: /Carrera
+      - Frontend: JavaScript asíncrono.
+      - Lógica: Algoritmo de velocidad aleatoria ponderada por cuotas (JS).
+
+   E. BLACKJACK
+      - Ruta: /Blackjack (Frontend) y /BlackjackAPI (Backend)
+      - Arquitectura: Microservicio.
+      - Backend: Java con Spring Boot (API REST).
+      - Frontend: Cliente JS que consume la API REST del microservicio.
+
+   F. POKER (CLÁSICO)
+      - Ruta: /Poker
+      - Backend: PHP (Gestión de turnos y manos).
+
+   G. TEXAS HOLD'EM
+      - Estado: En desarrollo.
+      - Backend Planificado: Java Spring Boot.

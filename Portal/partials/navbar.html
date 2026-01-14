@@ -1,56 +1,38 @@
-<nav
-  class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary"
->
+<nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.html">
-<img src="/CasinoDaw/Portal/assets/img/icons/logo-casino.png" alt="Casino DAW" width="45" height="45" class="d-inline-block align-text-top">    <span class="fw-bold text-warning" style="font-family: sans-serif; letter-spacing: 1px; text-shadow: 0px 0px 5px rgba(255, 193, 7, 0.3);">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="../Portal/dashboard.html">
+      <img src="/CasinoDaw/Portal/assets/img/icons/logo-casino.png" alt="Casino DAW" width="45" height="45" class="d-inline-block align-text-top">
+      <span class="fw-bold text-warning" style="font-family: sans-serif; letter-spacing: 1px; text-shadow: 0px 0px 5px rgba(255, 193, 7, 0.3);">
         CASINO DAW
-    </span>
-</a>
+      </span>
+    </a>
 
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#casinoNavbar"
-      aria-controls="casinoNavbar"
-      aria-expanded="false"
-      aria-label="Mostrar navegación"
-    >
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#casinoNavbar">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="casinoNavbar">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
         <li class="nav-item guest-only">
-          <a class="nav-link" href="login.html">Iniciar Sesión</a>
+          <a class="nav-link" href="../Portal/login.html">Iniciar Sesión</a>
         </li>
         <li class="nav-item guest-only">
-          <a
-            class="nav-link btn btn-sm btn-primary text-white px-3 ms-2"
-            href="register.html"
-            >Registro</a
-          >
+          <a class="nav-link btn btn-sm btn-primary text-white px-3 ms-2" href="../Portal/register.html">Registro</a>
         </li>
 
         <li class="nav-item user-only d-none">
           <a class="nav-link active" href="../Portal/dashboard.html">🎛 Panel</a>
         </li>
-
         <li class="nav-item user-only d-none">
-          <span class="nav-link text-light">
-            👤 <span id="nav-username" class="fw-bold">Usuario</span>
+          <a class="nav-link text-light d-flex align-items-center gap-2" href="../Portal/historial.html">
+            👤 <span id="nav-username" class="fw-bold text-warning">Cargando...</span>
+          </a>
+        </li>
+        <li class="nav-item user-only d-none">
+          <span class="nav-link fw-bold border border-secondary rounded px-3 py-1 bg-dark text-white">
+            💰 <span id="nav-saldo" class="text-success">0.00</span> €
           </span>
         </li>
-
-        <li class="nav-item user-only d-none">
-          <span
-            class="nav-link text-warning fw-bold border border-warning rounded px-2"
-          >
-            💰 <span id="nav-saldo">0.00</span> €
-          </span>
-        </li>
-
         <li class="nav-item user-only d-none">
           <button id="btnLogout" class="btn btn-sm btn-outline-danger ms-2">
             Cerrar sesión

@@ -67,7 +67,6 @@ function startGame() {
     if (saldoActual < bet) return alert("Saldo insuficiente");
 
     // Restamos visualmente la apuesta al empezar
-    // (OJO: Se descontará realmente en BD al terminar la partida para simplificar lógica)
     saldoActual -= bet;
     updateWalletVisuals();
 
@@ -127,8 +126,12 @@ function cashOut() {
     // El usuario gana, enviamos apuesta y ganancia
     fetch('../Backend/game_logic.php', {
         method: 'POST',
-        body: JSON.stringify({ bet: userBet, win: winAmount }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            game: 'Crash Rocket', // <--- AÑADIDO: Nombre para el historial
+            bet: userBet, 
+            win: winAmount 
+        })
     })
     .then(r => r.json())
     .then(data => {
@@ -167,11 +170,15 @@ function gameOver() {
         btnAction.innerHTML = "PERDISTE... JUGAR DE NUEVO";
         
         // --- CONEXIÓN BACKEND (PÉRDIDA) ---
-        // Enviamos la apuesta y ganancia 0
+        // Enviamos la apuesta y ganancia 0 para registrar la pérdida en el historial
         fetch('../Backend/game_logic.php', {
             method: 'POST',
-            body: JSON.stringify({ bet: userBet, win: 0 }),
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                game: 'Crash Rocket', // <--- AÑADIDO: Nombre para el historial
+                bet: userBet, 
+                win: 0 
+            })
         })
         .then(r => r.json())
         .then(data => {

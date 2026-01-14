@@ -6,5 +6,6 @@
       "savePath": "Portal/assets/css"
     }
   ],
-  "liveSassCompile.settings.generateMap": true
+  "liveSassCompile.settings.generateMap": true,
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

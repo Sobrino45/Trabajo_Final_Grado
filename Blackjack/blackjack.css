@@ -1,0 +1,61 @@
+/* CasinoDaw/Blackjack/blackjack.css */
+
+.mesa-blackjack {
+    background-color: #205c3b; /* Verde tapete */
+    background-image: radial-gradient(#266e47 10%, transparent 10%),
+                      radial-gradient(#266e47 10%, transparent 10%);
+    background-size: 50px 50px;
+    background-position: 0 0, 25px 25px;
+    border: 10px solid #4a3b2a; /* Borde madera */
+    border-radius: 20px;
+    padding: 40px 20px;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.hand-area {
+    min-height: 140px;
+}
+
+/* Cartas visuales */
+.carta {
+    width: 90px;
+    height: 130px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: transform 0.3s;
+    user-select: none;
+}
+
+.carta.roja { color: #e74c3c; }
+.carta.negra { color: #2c3e50; }
+
+.carta:hover {
+    transform: translateY(-10px);
+}
+
+.card-placeholder {
+    width: 90px;
+    height: 130px;
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 8px;
+}
+
+.score-badge {
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 15px;
+    border: 1px solid white;
+    font-weight: bold;
+    display: inline-block;
+}

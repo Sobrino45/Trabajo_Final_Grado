@@ -1,54 +1,66 @@
-// Portal/assets/js/navbar_logic.js
+const NavbarManager = {
+    init: function() {
+        this.checkLoginStatus();
+        this.attachLogoutListener(); 
+    },
 
-// Comprobamos si ya existe para evitar el error "Already declared"
-if (typeof window.NavbarManager === 'undefined') {
-
-    window.NavbarManager = {
-        init: function() {
-            console.log("Iniciando NavbarManager..."); // Log para depurar
-            this.checkSession();
-            this.setupLogout();
-        },
-
-        checkSession: function() {
-            fetch('/CasinoDaw/Backend/get_user_info.php')
-                .then(response => response.json())
-                .then(data => {
-                    const guestItems = document.querySelectorAll('.guest-only');
-                    const userItems = document.querySelectorAll('.user-only');
-
-                    if (data.logged_in) {
-                        // Ocultar login, mostrar perfil
-                        guestItems.forEach(el => el.classList.add('d-none'));
-                        userItems.forEach(el => el.classList.remove('d-none'));
-
-                        // Rellenar datos
-                        const nameSpan = document.getElementById('nav-username');
-                        const saldoSpan = document.getElementById('nav-saldo');
-                        if(nameSpan) nameSpan.textContent = data.username;
-                        if(saldoSpan) saldoSpan.textContent = parseFloat(data.saldo).toFixed(2);
-                    } else {
-                        // Modo invitado
-                        guestItems.forEach(el => el.classList.remove('d-none'));
-                        userItems.forEach(el => el.classList.add('d-none'));
-                    }
-                })
-                .catch(err => console.error("Error navbar:", err));
-        },
-
-        setupLogout: function() {
-            // Usamos un flag para no añadir el evento click 20 veces si se recarga
-            if (this.logoutInitialized) return; 
-            
-            document.body.addEventListener('click', function(e) {
-                if(e.target && e.target.id === 'btnLogout') {
-                    localStorage.removeItem('user_login');
-                    fetch('/CasinoDaw/Backend/logout.php').finally(() => {
-                        window.location.href = 'login.html';
-                    });
+    checkLoginStatus: function() {
+        fetch("../Backend/get_user_info.php")
+            .then(response => response.json())
+            .then(data => {
+                if (data.logged_in) {
+                    this.showUserInterface(data);
+                } else {
+                    this.showGuestInterface();
                 }
+            })
+            .catch(error => {
+                console.error("Error verificando sesión:", error);
+                this.showGuestInterface();
             });
-            this.logoutInitialized = true;
-        }
-    };
+    },
+
+    showUserInterface: function(data) {
+        document.querySelectorAll('.guest-only').forEach(el => el.classList.add('d-none'));
+        document.querySelectorAll('.user-only').forEach(el => el.classList.remove('d-none'));
+
+        const usernameEl = document.getElementById('nav-username');
+        const saldoEl = document.getElementById('nav-saldo');
+        if(usernameEl) usernameEl.textContent = data.username;
+        if(saldoEl) saldoEl.textContent = parseFloat(data.saldo).toFixed(2);
+    },
+
+    showGuestInterface: function() {
+        document.querySelectorAll('.guest-only').forEach(el => el.classList.remove('d-none'));
+        document.querySelectorAll('.user-only').forEach(el => el.classList.add('d-none'));
+    },
+
+    attachLogoutListener: function() {
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('#btnLogout');
+            if (btn) {
+                e.preventDefault();
+                this.logout();
+            }
+        });
+    },
+
+    logout: function() {
+        fetch("../Backend/logout.php")
+            .then(() => {
+                localStorage.removeItem("user_login");
+                // ESTA LÍNEA ES LA QUE TE FALTA PARA QUE NO SE QUEDE LA PANTALLA VACÍA:
+                window.location.href = "../Portal/login.html";
+            })
+            .catch(err => {
+                console.error("Error al cerrar sesión:", err);
+                window.location.href = "../Portal/login.html";
+            });
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => NavbarManager.init());
+} else {
+    NavbarManager.init();
 }

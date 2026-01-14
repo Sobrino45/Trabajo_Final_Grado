@@ -1,334 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <title>Dashboard | Casino DAW</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/main.css" />
-
     <link rel="icon" type="image/png" href="/CasinoDaw/Portal/assets/img/icons/logo-casino.png">
-  </head>
+</head>
 
-  <body class="page-dashboard bg-dark text-light">
+<body class="page-dashboard bg-dark text-light">
     <div id="navbar"></div>
 
     <main class="container py-5">
-      <div class="row align-items-center mb-5">
-        <div class="col-md-8">
-          <h1 class="display-5">
-            Hola, <span id="username" class="text-warning">Jugador</span>
-          </h1>
-          <p class="lead mb-3">Bienvenido de nuevo a tu panel de control.</p>
+        <div class="row align-items-center mb-5">
+            <div class="col-md-8">
+                <h1 class="display-5">
+                    Hola, <span id="username" class="text-warning">Cargando...</span>
+                </h1>
+                <p class="lead mb-3">Bienvenido de nuevo a tu panel de control.</p>
+                <div class="d-flex align-items-center gap-3">
+                    <button id="btnDashboardLogout" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2">
+                        🚪 Cerrar Sesión
+                    </button>
+                    <div id="admin-btn-container"></div>
+                </div>
+            </div>
 
-          <div class="d-flex align-items-center gap-3">
-            <button
-              id="btnDashboardLogout"
-              class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
-            >
-              🚪 Cerrar Sesión
-            </button>
-
-            <div id="admin-btn-container"></div>
-          </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="card bg-secondary text-white shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Tu Saldo</h5>
+                        <h2 class="display-6 fw-bold"><span id="saldo">--.--</span> €</h2>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-          <div class="card bg-secondary text-white shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">Tu Saldo</h5>
-              <h2 class="display-6 fw-bold"><span id="saldo">0.00</span> €</h2>
+        <section class="mb-5 p-4 bg-darker rounded border border-secondary">
+            <h3 class="mb-3">💰 Gestión de Billetera</h3>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="depositAmount" class="form-label">Ingresar cantidad (€)</label>
+                    <input type="number" id="depositAmount" class="form-control" placeholder="Ej: 500" min="1" />
+                </div>
+                <div class="col-md-3">
+                    <button id="btnDeposit" class="btn btn-success w-100">Ingresar Saldo</button>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
+        </section>
 
-      <section class="mb-5 p-4 bg-darker rounded border border-secondary">
-        <h3 class="mb-3">💰 Gestión de Billetera</h3>
-        <div class="row g-3 align-items-end">
-          <div class="col-md-4">
-            <label for="depositAmount" class="form-label"
-              >Ingresar cantidad (€)</label
-            >
-            <input
-              type="number"
-              id="depositAmount"
-              class="form-control"
-              placeholder="Ej: 500"
-              min="1"
-            />
-          </div>
-          <div class="col-md-3">
-            <button id="btnDeposit" class="btn btn-success w-100">
-              Ingresar Saldo
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h3 class="m-0">🎮 Juegos Disponibles</h3>
-          <a
-            href="../Instrucciones/index.html"
-            class="btn btn-outline-info btn-sm"
-            >📘 Ver Reglas</a
-          >
-        </div>
-
-        <div class="row g-4">
-          <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🎡</div>
-                <h4 class="card-title">Ruleta Europea</h4>
-                <p class="card-text small text-white-50">
-                  Frontend: Motor físico JS.
-                </p>
-                <a
-                  href="../RuletaJava/ruleta.html"
-                  class="btn btn-warning w-100 fw-bold text-dark"
-                  >Jugar Ahora</a
-                >
-              </div>
+        <section>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="m-0">🎮 Juegos Disponibles</h3>
+                <a href="../Instrucciones/index.html" class="btn btn-outline-info btn-sm">📘 Ver Reglas</a>
             </div>
-          </div>
 
-          <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🎰</div>
-                <h4 class="card-title">Tragaperras</h4>
-                <p class="card-text small text-white-50">
-                  Frontend: Lógica JS y CSS.
-                </p>
-                <a
-                  href="../Tragaperras/index.html"
-                  class="btn btn-danger w-100 fw-bold"
-                  >Jugar Ahora</a
-                >
-              </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 bg-secondary text-white border-0 shadow hover-scale">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">🎡</div>
+                            <h4 class="card-title">Ruleta Europea</h4>
+                            <a href="../RuletaJava/ruleta.html" class="btn btn-warning w-100 fw-bold text-dark">Jugar Ahora</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 bg-secondary text-white border-0 shadow hover-scale">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">🎰</div>
+                            <h4 class="card-title">Tragaperras</h4>
+                            <a href="../Tragaperras/index.html" class="btn btn-danger w-100 fw-bold">Jugar Ahora</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 bg-secondary text-white border-warning shadow hover-scale">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">🚀</div>
+                            <h4 class="card-title">CRASH <span class="badge bg-warning text-dark ms-1" style="font-size: 0.6em">NUEVO</span></h4>
+                            <a href="../Crash/index.html" class="btn btn-warning w-100 fw-bold text-dark">Jugar Ahora</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 bg-secondary text-white border-0 shadow hover-scale">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">🃏</div>
+                            <h4 class="card-title">Blackjack</h4>
+                            <a href="../Blackjack/index.html" class="btn btn-success w-100 fw-bold">Jugar Ahora</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 bg-secondary text-white border-0 shadow hover-scale">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">🐎</div>
+                            <h4 class="card-title">Carrera Caballos</h4>
+                            <a href="../Carrera/index.html" class="btn btn-primary w-100 fw-bold">Jugar Ahora</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 bg-secondary text-white border-0 shadow hover-scale opacity-75">
+                        <div class="card-body text-center">
+                            <div class="display-1 mb-3">♠️</div>
+                            <h4 class="card-title">Poker Clásico</h4>
+                            <p class="card-text small text-info fw-bold">Próximamente en PHP</p>
+                            <button class="btn btn-secondary w-100" disabled>Próximamente</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-
-          <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-warning shadow hover-scale"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🚀</div>
-                <h4 class="card-title">
-                  CRASH
-                  <span
-                    class="badge bg-warning text-dark ms-1"
-                    style="font-size: 0.6em"
-                    >NUEVO</span
-                  >
-                </h4>
-                <p class="card-text small text-white-50">
-                  Frontend: Canvas y Gráficas.
-                </p>
-                <a
-                  href="../Crash/index.html"
-                  class="btn btn-warning w-100 fw-bold text-dark"
-                  >Jugar Ahora</a
-                >
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale opacity-75"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🃏</div>
-                <h4 class="card-title">Blackjack</h4>
-                <p class="card-text small text-info fw-bold">
-                  Backend: PHP + MySQL
-                </p>
-                <a
-                  href="../Blackjack/index.html"
-                  class="btn btn-secondary w-100"
-                  disabled
-                  >Próximamente (PHP)</a
-                >
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale opacity-75"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">♠️</div>
-                <h4 class="card-title">Poker Clásico</h4>
-                <p class="card-text small text-info fw-bold">
-                  Backend: Java Sockets
-                </p>
-                <button class="btn btn-secondary w-100" disabled>
-                  Próximamente
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale opacity-75"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🐎</div>
-                <h4 class="card-title">Carrera Caballos</h4>
-                <p class="card-text small text-info fw-bold">
-                  Backend: Java Threads
-                </p>
-                <button class="btn btn-secondary w-100" disabled>
-                  Próximamente
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4 mx-auto">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale opacity-75"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">♣️</div>
-                <h4 class="card-title">Texas Hold'em</h4>
-                <p class="card-text small text-info fw-bold">
-                  Backend: Java Spring Boot
-                </p>
-                <button class="btn btn-secondary w-100" disabled>
-                  Próximamente
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
     </main>
 
     <div id="footer"></div>
 
-    <script src="assets/js/auth.js"></script>
     <script src="assets/js/wallet.js"></script>
-    <!-- <script src="assets/js/logout.js"></script>
-    <script src="assets/js/dashboard.js"></script> -->
     <script src="assets/js/navbar_logic.js"></script>
 
     <script>
-      // Cargar Navbar
-      fetch("partials/navbar.html")
-        .then((response) => response.text())
-        .then((html) => {
-          document.getElementById("navbar").innerHTML = html;
-          if (window.NavbarManager) NavbarManager.init();
+        // Cargar Navbar
+        fetch("partials/navbar.html").then(r => r.text()).then(html => {
+            document.getElementById("navbar").innerHTML = html;
+            if (window.NavbarManager) NavbarManager.init();
         });
 
-      // Cargar Footer
-      fetch("partials/footer.html")
-        .then((r) => r.text())
-        .then((t) => (document.getElementById("footer").innerHTML = t));
+        // Cargar Footer
+        fetch("partials/footer.html").then(r => r.text()).then(t => (document.getElementById("footer").innerHTML = t));
 
-      // LÓGICA DEL BOTÓN DE CERRAR SESIÓN DEL DASHBOARD
-      document
-        .getElementById("btnDashboardLogout")
-        .addEventListener("click", () => {
-          if (typeof Auth !== "undefined" && Auth.logout) {
-            Auth.logout();
-          } else {
+        // LOGOUT
+        document.getElementById("btnDashboardLogout").addEventListener("click", () => {
             localStorage.removeItem("user_login");
-            window.location.href = "login.html";
-          }
+            fetch('../Backend/logout.php').then(() => { window.location.href = "login.html"; });
         });
-    </script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        fetch("../Backend/get_user_info.php")
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.logged_in) {
-              // 1. Datos básicos
-              document.getElementById("username").textContent = data.username;
-              let saldoNumerico = parseFloat(data.saldo);
-              document.getElementById("saldo").textContent =
-                saldoNumerico.toFixed(2);
+        // SEGURIDAD Y CARGA DE DATOS
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch("../Backend/get_user_info.php")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.logged_in) {
+                        // Usuario autenticado correctamente
+                        document.getElementById("username").textContent = data.username;
+                        document.getElementById("saldo").textContent = parseFloat(data.saldo).toFixed(2);
 
-              // 2. LÓGICA DE ADMIN (NUEVO)
-              // Si el rol es 'admin', creamos el botón dinámicamente
-              if (data.rol === "admin") {
-                const container = document.getElementById(
-                  "admin-btn-container"
-                );
-                // CAMBIO: Usamos 'btn-outline-warning' para un estilo más elegante
-                container.innerHTML = `
-        <a href="admin.html" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-2 fw-bold">
-            👮 Panel Admin
-        </a>
-    `;
-              }
-            } else {
-              window.location.href = "../login.html";
-            }
-          })
-          .catch((error) => console.error("Error cargando datos:", error));
-      });
+                        if (data.rol === "admin") {
+                            document.getElementById("admin-btn-container").innerHTML = `
+                                <a href="admin.html" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-2 fw-bold">
+                                    👮 Panel Admin
+                                </a>`;
+                        }
+                    } else {
+                        // 🚀 REDIRECCIÓN AUTOMÁTICA ACTIVADA
+                        // Si PHP dice que no hay sesión, sacamos al usuario al login
+                        window.location.replace("login.html"); 
+                    }
+                })
+                .catch(error => {
+                    console.error("Error cargando datos:", error);
+                    window.location.replace("login.html");
+                });
+        });
 
-      // LÓGICA DE DEPÓSITO
-      const btnDeposit = document.getElementById("btnDeposit");
-      const inputAmount = document.getElementById("depositAmount");
+        // LÓGICA DE DEPÓSITO
+        document.getElementById("btnDeposit").addEventListener("click", () => {
+            const amount = parseFloat(document.getElementById("depositAmount").value);
+            if (!amount || amount <= 0) return alert("Cantidad inválida");
 
-      if (btnDeposit) {
-        btnDeposit.addEventListener("click", () => {
-          const amount = parseFloat(inputAmount.value);
-
-          if (!amount || amount <= 0) {
-            alert("Por favor, introduce una cantidad válida mayor que 0.");
-            return;
-          }
-
-          // Llamada al backend
-          fetch("../Backend/deposit.php", {
-            method: "POST",
-            body: JSON.stringify({ amount: amount }),
-            headers: { "Content-Type": "application/json" },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                // 1. Actualizar el saldo en pantalla visualmente
-                const saldoNumerico = parseFloat(data.new_balance);
-                document.getElementById("saldo").textContent =
-                  saldoNumerico.toFixed(2);
-
-                // 2. Limpiar el input
-                inputAmount.value = "";
-
-                // 3. Feedback al usuario (puedes usar un alert o algo más bonito)
-                alert(
-                  "¡Recarga exitosa! Tu nuevo saldo es: " +
-                    saldoNumerico.toFixed(2) +
-                    " €"
-                );
-              } else {
-                alert("Error: " + data.message);
-              }
+            fetch("../Backend/deposit.php", {
+                method: "POST",
+                body: JSON.stringify({ amount: amount }),
+                headers: { "Content-Type": "application/json" },
             })
-            .catch((error) => console.error("Error:", error));
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById("saldo").textContent = parseFloat(data.new_balance).toFixed(2);
+                    document.getElementById("depositAmount").value = "";
+                    alert("¡Recarga exitosa!");
+                }
+            });
         });
-      }
     </script>
-  </body>
+</body>
 </html>
