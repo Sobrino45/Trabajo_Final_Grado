@@ -85,7 +85,7 @@
                 <div class="display-1 mb-3">🎡</div>
                 <h4 class="card-title">Ruleta Europea</h4>
                 <a
-                  href="games/Ruleta/ruleta.html"
+                  href="games/Ruleta/index.html"
                   class="btn btn-warning w-100 fw-bold text-dark"
                   >Jugar Ahora</a
                 >
@@ -162,104 +162,103 @@
     <div id="footer"></div>
 
     <script src="assets/js/auth.js"></script>
-    <script src="assets/js/wallet.js"></script>
     <script src="assets/js/logout.js"></script>
+    <script src="assets/js/navbar_logic.js"></script>
 
     <script>
-      // Cargar Navbar y Footer
+      // 1. CARGA COORDINADA DEL NAVBAR
+      // Primero cargamos el HTML, y solo cuando existe, arrancamos la lógica
       fetch("partials/navbar.html")
         .then((r) => r.text())
         .then((html) => {
           document.getElementById("navbar").innerHTML = html;
-          if (window.NavbarManager) NavbarManager.init();
+          
+          // Ahora que el HTML existe, despertamos al Manager
+          if (window.NavbarManager) {
+            console.log("✅ Navbar cargado. Iniciando Manager...");
+            window.NavbarManager.init();
+          }
         });
+
+      // 2. CARGA DEL FOOTER
       fetch("partials/footer.html")
         .then((r) => r.text())
         .then((t) => (document.getElementById("footer").innerHTML = t));
 
-      // CORRECCIÓN 3: LOGOUT SEGURO
-      // Verificamos que el botón existe antes de añadir el evento
-      const btnLogoutDash = document.getElementById("btnDashboardLogout");
-      if (btnLogoutDash) {
-        btnLogoutDash.addEventListener("click", (e) => {
-          e.preventDefault();
-          Auth.logout();
-        });
-      }
 
-      // CARGA DE DATOS (Perfil de Usuario)
+      // 3. LÓGICA EXCLUSIVA DEL DASHBOARD (Caja Grande y Depósitos)
       document.addEventListener("DOMContentLoaded", () => {
+        
+        // A) Botón Logout del Dashboard (el rojo del centro)
+        const btnLogoutDash = document.getElementById("btnDashboardLogout");
+        if (btnLogoutDash) {
+          btnLogoutDash.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.location.href = 'api.php?action=logout';
+          });
+        }
+
+        // B) Datos de la Caja Grande (Solo tocamos id="saldo", NO el navbar)
         fetch("api.php?action=get_user_info")
-          .then((response) => {
-            // Si el servidor da error (ej: 401 no autorizado), lanzamos error
-            if (!response.ok) throw new Error("No autorizado");
-            return response.json();
-          })
+          .then((response) => response.json())
           .then((data) => {
             if (data.logged_in) {
-              document.getElementById("username").textContent = data.username;
-              document.getElementById("saldo").textContent = parseFloat(
-                data.saldo
-              ).toFixed(2);
-
-              // Guardar saldo actualizado en local
-              let user = Auth.getUser() || {};
-              user.saldo = data.saldo;
-              localStorage.setItem("casino_user", JSON.stringify(user));
-
+              // Nombre grande
+              const userElement = document.getElementById("username");
+              if(userElement) userElement.textContent = data.username;
+              
+              // Caja Gris Grande (Tu Saldo)
+              const saldoElement = document.getElementById("saldo");
+              if(saldoElement) {
+                 // Aseguramos que sea número
+                 saldoElement.textContent = parseFloat(data.saldo).toFixed(2);
+              }
+              
+              // Mostrar botón Admin si corresponde
               if (data.rol === "admin") {
-                document.getElementById("admin-btn-container").innerHTML = `
-                                <a href="partials/admin.html" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-2 fw-bold">
-                                    👮 Panel Admin
-                                </a>`;
+                 const adminContainer = document.getElementById("admin-btn-container");
+                 if(adminContainer) {
+                    adminContainer.innerHTML = `
+                      <a href="partials/admin.html" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-2 fw-bold">
+                        👮 Panel Admin
+                      </a>`;
+                 }
               }
             } else {
-              // Si PHP dice que no hay sesión, al login
               window.location.replace("login.html");
             }
           })
-          .catch((error) => {
-            console.error("Sesión no válida:", error);
-            window.location.replace("login.html");
-          });
-      });
+          .catch((error) => console.error("Error cargando Dashboard:", error));
 
-      // DEPÓSITO
-      const btnDeposit = document.getElementById("btnDeposit");
-      if (btnDeposit) {
-        btnDeposit.addEventListener("click", () => {
-          const amountInput = document.getElementById("depositAmount");
-          const amount = parseFloat(amountInput.value);
+        // C) Lógica de Depósito (Ingresar dinero)
+        const btnDeposit = document.getElementById("btnDeposit");
+        if (btnDeposit) {
+          btnDeposit.addEventListener("click", () => {
+            const amountInput = document.getElementById("depositAmount");
+            const amount = parseFloat(amountInput.value);
 
-          if (!amount || amount <= 0) return alert("Cantidad inválida");
+            if (!amount || amount <= 0) return alert("Introduce una cantidad válida");
 
-          fetch("api.php?action=deposit", {
-            method: "POST",
-            body: JSON.stringify({ amount: amount }),
-            headers: { "Content-Type": "application/json" },
-          })
-            .then((r) => r.json())
-            .then((data) => {
-              if (data.success) {
-                document.getElementById("saldo").textContent = parseFloat(
-                  data.new_balance
-                ).toFixed(2);
-                amountInput.value = "";
-                alert("¡Recarga exitosa!");
-
-                // Actualizar localStorage también
-                let user = Auth.getUser();
-                if (user) {
-                  user.saldo = data.new_balance;
-                  localStorage.setItem("casino_user", JSON.stringify(user));
-                }
-              } else {
-                alert("Error: " + (data.message || "No se pudo depositar"));
-              }
+            fetch("api.php?action=deposit", {
+              method: "POST",
+              body: JSON.stringify({ amount: amount }),
+              headers: { "Content-Type": "application/json" },
             })
-            .catch((err) => console.error("Error en depósito:", err));
-        });
-      }
+              .then((r) => r.json())
+              .then((data) => {
+                if (data.success) {
+                  alert("¡Recarga exitosa!");
+                  amountInput.value = "";
+                  // Actualizamos todo recargando la página o llamando al init
+                  window.location.reload(); 
+                } else {
+                  alert("Error: " + (data.message || "No se pudo depositar"));
+                }
+              })
+              .catch((err) => console.error("Error en depósito:", err));
+          });
+        }
+      });
     </script>
   </body>
 </html>

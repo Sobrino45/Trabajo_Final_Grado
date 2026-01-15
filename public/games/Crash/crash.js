@@ -63,9 +63,25 @@ btnAction.addEventListener("click", () => {
 });
 
 function startGame() {
-  const bet = parseFloat(betInput.value);
-  if (isNaN(bet) || bet <= 0) return alert("Apuesta inválida");
-  if (saldoActual < bet) return alert("Saldo insuficiente");
+    // --- DEBUG ---
+    console.log("Intento de apuesta. Saldo actual:", saldoActual, "Apuesta:", betInput.value);
+    
+    const bet = parseFloat(betInput.value);
+    
+    // Forzamos actualización visual si el saldo es NaN
+    if (isNaN(saldoActual)) {
+        cargarDatosUsuario(); // Reintentar carga
+        alert("Error leyendo saldo. Inténtalo de nuevo en 1 segundo.");
+        return;
+    }
+
+    if (isNaN(bet) || bet <= 0) return alert("Apuesta inválida");
+    
+    // Comparación segura
+    if (saldoActual < bet) {
+        alert(`Saldo insuficiente. Tienes ${saldoActual.toFixed(2)}€ y quieres apostar ${bet}€`);
+        return;
+    }
 
   // Restamos visualmente la apuesta al empezar
   saldoActual -= bet;

@@ -1,64 +1,85 @@
-/**
- * NAVBAR LOGIC
- * Gestiona la barra de navegación: muestra saldo, nombre de usuario y botón logout.
- */
+/* public/assets/js/navbar_logic.js */
 
-const NavbarManager = {
+console.log("--- CARGANDO NAVBAR LOGIC (MODO SEGURO) ---");
+
+// 1. DEFINICIÓN SEGURA: Usamos window.NavbarManager en vez de const
+// Esto evita el error "Identifier has already been declared"
+window.NavbarManager = {
   init: function () {
+    console.log("NavbarManager: Iniciando...");
     this.updateUserInterface();
   },
 
   updateUserInterface: function () {
-    // Referencias a elementos del DOM
     const guestElements = document.querySelectorAll(".guest-only");
     const userElements = document.querySelectorAll(".user-only");
     const usernameSpan = document.getElementById("nav-username");
     const saldoSpan = document.getElementById("nav-saldo");
     const btnLogout = document.getElementById("btnLogout");
 
-    // Consultar al servidor si hay sesión
-    // RUTA ABSOLUTA: /CasinoDaw/public/api.php para evitar errores 404 desde subcarpetas
+    // Petición al API con diagnóstico de texto
     fetch("/CasinoDaw/public/api.php?action=get_user_info")
-      .then((response) => {
-        if (!response.ok) throw new Error("Error de red");
-        return response.json();
-      })
-      .then((data) => {
-        if (data.logged_in) {
-          // --- MODO USUARIO ---
-          guestElements.forEach((el) => el.classList.add("d-none"));
-          userElements.forEach((el) => el.classList.remove("d-none"));
+      .then((response) => response.text()) // Leemos como TEXTO para ver errores PHP
+      .then((texto) => {
+        console.log("--- CHIVATO DEL SERVIDOR ---");
+        console.log("Recibido:", texto); // AQUÍ VEREMOS SI HAY ESPACIOS O ERRORES
 
-          if (usernameSpan) usernameSpan.textContent = data.username;
-          if (saldoSpan)
-            saldoSpan.textContent = parseFloat(data.saldo).toFixed(2);
+        try {
+          // Intentamos convertir a JSON
+          const data = JSON.parse(texto);
+          console.log("Datos procesados correctamente:", data);
 
-          // Configurar Logout
-          if (btnLogout) {
-            // Clonar para limpiar eventos anteriores
-            const newBtn = btnLogout.cloneNode(true);
-            btnLogout.parentNode.replaceChild(newBtn, btnLogout);
+          if (data.logged_in) {
+            // --- MODO USUARIO ---
+            guestElements.forEach((el) => el.classList.add("d-none"));
+            userElements.forEach((el) => el.classList.remove("d-none"));
 
-            newBtn.addEventListener("click", (e) => {
-              e.preventDefault();
-              if (typeof Auth !== "undefined") Auth.logout();
-              else window.location.href = "/CasinoDaw/public/login.html";
-            });
+            if (usernameSpan) usernameSpan.textContent = data.username;
+
+            // Protección contra NaN
+            let saldoFinal = parseFloat(data.saldo);
+            if (isNaN(saldoFinal)) {
+              console.warn(
+                "El saldo recibido no es un número válido:",
+                data.saldo
+              );
+              saldoFinal = 0.0;
+            }
+
+            if (saldoSpan) saldoSpan.textContent = saldoFinal.toFixed(2);
+
+            // Lógica Logout
+            if (btnLogout) {
+              const newBtn = btnLogout.cloneNode(true);
+              btnLogout.parentNode.replaceChild(newBtn, btnLogout);
+              newBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                window.location.href =
+                  "/CasinoDaw/public/api.php?action=logout";
+              });
+            }
+          } else {
+            // --- MODO INVITADO ---
+            guestElements.forEach((el) => el.classList.remove("d-none"));
+            userElements.forEach((el) => el.classList.add("d-none"));
           }
-        } else {
-          // --- MODO INVITADO ---
-          guestElements.forEach((el) => el.classList.remove("d-none"));
-          userElements.forEach((el) => el.classList.add("d-none"));
+        } catch (e) {
+          console.error(
+            "❌ EL JSON ESTÁ ROTO. El servidor envió basura HTML o espacios."
+          );
+          console.error("Error JS:", e);
         }
       })
-      .catch((err) => {
-        console.warn("No hay sesión activa o error de conexión:", err);
-        // Por defecto mostramos modo invitado si falla
-        guestElements.forEach((el) => el.classList.remove("d-none"));
-        userElements.forEach((el) => el.classList.add("d-none"));
-      });
+      .catch((err) => console.error("Error de conexión:", err));
   },
 };
 
-// Exponer globalmente
-window.NavbarManager = NavbarManager;
+// 2. AUTO-ARRANQUE
+// Si el documento ya cargó, iniciamos. Si no, esperamos.
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () =>
+    window.NavbarManager.init()
+  );
+} else {
+  window.NavbarManager.init();
+}

@@ -1,38 +1,22 @@
 <?php
 // Backend/Config/Database.php
-
 class Database {
-    private static $instance = null;
-    private $conn;
+    private static $host = 'localhost';
+    private static $db_name = 'casino_db'; // Asegúrate que este sea el nombre real de tu BD en phpMyAdmin
+    private static $username = 'root';
+    private static $password = '';
+    private static $conn;
 
-    // El constructor es privado para que nadie pueda hacer "new Database()" desde fuera
-    private function __construct() {
-        // Cargar la configuración
-        $config = require __DIR__ . '/../config.php';
-
-        try {
-            // Usamos PDO en lugar de mysqli para mayor seguridad y compatibilidad
-            $dsn = "mysql:host={$config['db_host']};dbname={$config['db_name']};charset={$config['db_charset']}";
-            
-            $this->conn = new PDO($dsn, $config['db_user'], $config['db_pass']);
-            
-            // Configurar PDO para que lance errores (Excepciones) si algo falla
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
-            // Por defecto, devolver arrays asociativos
-            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-        } catch (PDOException $e) {
-            // Si falla, detenemos todo y mostramos error genérico (no mostramos la contraseña)
-            die("Error de conexión a la Base de Datos: " . $e->getMessage());
-        }
-    }
-
-    // Método estático para obtener la única instancia de la conexión
     public static function getConnection() {
-        if (self::$instance === null) {
-            self::$instance = new Database();
+        self::$conn = null;
+        try {
+            self::$conn = new PDO("mysql:host=" . self::$host . ";dbname=" . self::$db_name, self::$username, self::$password);
+            self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            self::$conn->exec("set names utf8");
+        } catch(PDOException $exception) {
+            // IMPORTANTE: Si falla, lanzamos error pero NO hacemos echo para no romper el JSON
+            throw new Exception("Error de conexión: " . $exception->getMessage());
         }
-        return self::$instance->conn;
+        return self::$conn;
     }
 }
