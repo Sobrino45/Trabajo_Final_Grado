@@ -1,23 +1,22 @@
 <?php
 // Backend/test_db.php
-require 'conexion.php'; // Importamos el archivo de conexión
 
-echo "<h1>📡 Prueba de Conexión</h1>";
+// 1. Incluimos la clase Database
+require_once 'Config/Database.php';
 
-// Intento de consulta a la base de datos
-$sql = "SELECT username, saldo FROM usuarios";
-$resultado = $conexion->query($sql);
-
-if ($resultado->num_rows > 0) {
-    echo "<h3 style='color: green;'>✅ ¡ÉXITO! PHP está conectado a MySQL.</h3>";
-    echo "<p>Usuarios encontrados:</p><ul>";
+try {
+    // 2. Pedimos la conexión
+    $pdo = Database::getConnection();
     
-    // Mostrar los usuarios que haya (debería salir JugadorPrueba)
-    while($fila = $resultado->fetch_assoc()) {
-        echo "<li>👤 <b>" . $fila["username"] . "</b> | 💰 Saldo: " . $fila["saldo"] . "€</li>";
-    }
-    echo "</ul>";
-} else {
-    echo "<h3 style='color: orange;'>⚠️ Conectado, pero no hay usuarios.</h3>";
+    // 3. Hacemos una consulta simple
+    $stmt = $pdo->query("SELECT '¡Conexión Exitosa!' AS mensaje");
+    $resultado = $stmt->fetch();
+    
+    // 4. Mostramos el resultado en JSON (como lo hará tu app real)
+    header('Content-Type: application/json');
+    echo json_encode($resultado);
+
+} catch (Exception $e) {
+    header('Content-Type: application/json');
+    echo json_encode(['error' => $e->getMessage()]);
 }
-?>

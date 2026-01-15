@@ -1,0 +1,8 @@
+/* COLORES */
+/* UI */
+.card {
+  background-color: rgba(0, 0, 0, 0.85);
+  -webkit-backdrop-filter: blur(4px);
+          backdrop-filter: blur(4px);
+  border-radius: 0.5rem;
+}/*# sourceMappingURL=cards.css.map */

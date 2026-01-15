@@ -1,15 +1,12 @@
 <?php
-session_start(); // DEBE SER LA PRIMERA LÍNEA
+// Backend/get_user_info.php
 
-// Configuración de cabeceras para evitar problemas de caché
-header('Content-Type: application/json');
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+// 1. Iniciar sesión si no está iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-require 'conexion.php';
-
-// Si no hay usuario en sesión, devolvemos false
+// 2. Comprobar si hay usuario logueado
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['logged_in' => false]);
     exit;
@@ -17,25 +14,33 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// Consultamos datos frescos
-$stmt = $conexion->prepare("SELECT username, saldo, rol FROM usuarios WHERE id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    // 3. Usar la conexión que api.php ya ha creado
+    // NOTA: No hacemos 'require' de la base de datos aquí, porque api.php ya lo hizo.
+    $db = Database::getConnection();
 
-if ($row = $result->fetch_assoc()) {
-    echo json_encode([
-        'logged_in' => true,
-        'username' => $row['username'],
-        'saldo' => $row['saldo'],
-        'rol' => $row['rol']
-    ]);
-} else {
-    // Si la sesión existe pero el usuario no está en BD (raro), limpiamos sesión
-    session_destroy();
-    echo json_encode(['logged_in' => false, 'message' => 'Usuario no encontrado']);
+    // 4. Consultar saldo actualizado
+    $stmt = $db->prepare("SELECT username, saldo, rol FROM usuarios WHERE id = :id LIMIT 1");
+    $stmt->bindParam(":id", $user_id);
+    $stmt->execute();
+
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($user) {
+        echo json_encode([
+            'logged_in' => true,
+            'username' => $user['username'],
+            'saldo' => (float) $user['saldo'],
+            'rol' => $user['rol'] ?? 'user'
+        ]);
+    } else {
+        // Sesión fantasma (usuario borrado), cerrar sesión
+        session_destroy();
+        echo json_encode(['logged_in' => false, 'message' => 'Usuario no encontrado']);
+    }
+
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['logged_in' => false, 'error' => 'Error de servidor: ' . $e->getMessage()]);
 }
-
-$stmt->close();
-$conexion->close();
 ?>
