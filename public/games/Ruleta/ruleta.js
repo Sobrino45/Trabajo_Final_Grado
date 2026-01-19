@@ -92,6 +92,10 @@ function crearCeldaTablero(texto, tipo, valor, clasesExtra) {
       apuestas.reduce((a, b) => a + b.cantidad, 0) + cant > saldoActual
     )
       return alert("Error en apuesta");
+
+    // SONIDO AL PONER FICHA
+    if (window.AudioManager) AudioManager.play("chips");
+
     apuestas.push({ tipo, valor, cantidad: cant });
     const ficha = document.createElement("div");
     ficha.className = "ficha-visual";
@@ -104,6 +108,10 @@ function crearCeldaTablero(texto, tipo, valor, clasesExtra) {
 girarBtn.addEventListener("click", () => {
   if (girando || !apuestas.length) return;
   girando = true;
+
+  // SONIDO DE GIRO
+  if (window.AudioManager) AudioManager.play("spin");
+
   const numGanador = Math.floor(Math.random() * TOTAL_NUMEROS);
   const targetRotation = 360 - numGanador * GRADOS + AJUSTE_VISUAL + 5 * 360;
   rotacionActual += targetRotation;
@@ -142,6 +150,11 @@ function evaluar(numero) {
     .then((r) => r.json())
     .then((d) => {
       if (d.success) {
+        // SONIDO DE RESULTADO
+        if (window.AudioManager) {
+          AudioManager.play(gananciaTotal > 0 ? "win" : "loss");
+        }
+
         saldoActual = d.new_balance;
         actualizarSaldoVisual(saldoActual);
         resultadoTxt.innerHTML = `Nº ${numero} - ${

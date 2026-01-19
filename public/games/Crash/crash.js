@@ -49,6 +49,12 @@ function startGame() {
   if (isNaN(bet) || bet <= 0) return alert("Apuesta inválida");
   if (saldoActual < bet) return alert("Saldo insuficiente");
 
+  // SONIDOS DE INICIO
+  if (window.AudioManager) {
+    AudioManager.play("click");
+    AudioManager.play("spin"); // Sonido de motor/subida
+  }
+
   userBet = bet;
   userInGame = true;
   userCashedOut = false;
@@ -86,6 +92,12 @@ function cashOut() {
   userInGame = false;
   const winAmount = userBet * currentMultiplier;
 
+  // DETENER MOTOR Y SONIDO DE VICTORIA
+  if (window.AudioManager) {
+    AudioManager.stop("spin");
+    AudioManager.play("win");
+  }
+
   fetch("../../api.php?action=game_result", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -111,6 +123,13 @@ function cashOut() {
 function gameOver() {
   gameRunning = false;
   cancelAnimationFrame(animationId);
+
+  // DETENER MOTOR Y SONIDO DE EXPLOSIÓN
+  if (window.AudioManager) {
+    AudioManager.stop("spin");
+    AudioManager.play("explosion");
+  }
+
   multiplierDisplay.textContent = crashPoint.toFixed(2) + "x";
   statusText.textContent = "💥 CRASHED!";
   statusText.className = "text-danger fw-bold";

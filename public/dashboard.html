@@ -143,6 +143,7 @@
           <a
             href="../Instrucciones/index.html"
             class="btn btn-sm btn-outline-info fw-bold"
+            onclick="if(window.AudioManager) AudioManager.play('click')"
             >📘 VER REGLAS</a
           >
         </div>
@@ -154,6 +155,7 @@
               <a
                 href="games/Ruleta/index.html"
                 class="btn btn-warning mt-auto fw-bold text-dark"
+                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
@@ -165,6 +167,7 @@
               <a
                 href="games/Tragaperras/index.html"
                 class="btn btn-danger mt-auto fw-bold"
+                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
@@ -178,10 +181,28 @@
               <a
                 href="games/Crash/index.html"
                 class="btn btn-warning mt-auto fw-bold text-dark"
+                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
           </div>
+
+          <div class="col-md-4">
+            <div
+              class="card bg-primary bg-gradient border-0 h-100 p-4 shadow-hover"
+            >
+              <div class="display-3 mb-2">🃏</div>
+              <h5 class="fw-bold">Poker Club</h5>
+              <p class="small text-white-50">Clásico & Texas Hold'em</p>
+              <a
+                href="games/Poker/index.html"
+                class="btn btn-light mt-auto fw-bold text-primary"
+                onclick="if(window.AudioManager) AudioManager.play('click')"
+                >ENTRAR</a
+              >
+            </div>
+          </div>
+
           <div class="col-md-4">
             <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
               <div class="display-3 mb-2">🃏</div>
@@ -189,6 +210,7 @@
               <a
                 href="games/Blackjack/index.html"
                 class="btn btn-success mt-auto fw-bold"
+                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
@@ -200,6 +222,7 @@
               <a
                 href="games/Carrera/index.html"
                 class="btn btn-primary mt-auto fw-bold"
+                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
@@ -208,6 +231,7 @@
       </section>
     </main>
 
+    <script src="assets/js/AudioManager.js"></script>
     <script src="assets/js/navbar_logic.js"></script>
     <script>
       let transacciones = [];
@@ -226,7 +250,7 @@
                 data.rol === "owner" ? "👑 Panel OWNER" : "👮 Panel ADMIN";
               document.getElementById(
                 "admin-btn-container"
-              ).innerHTML = `<a href="partials/admin.html" class="btn btn-outline-warning btn-sm fw-bold">${txt}</a>`;
+              ).innerHTML = `<a href="partials/admin.html" class="btn btn-outline-warning btn-sm fw-bold" onclick="if(window.AudioManager) AudioManager.play('click')">${txt}</a>`;
             }
             cargarHistorial();
             cargarMisMensajes();
@@ -250,8 +274,10 @@
         })
           .then((r) => r.json())
           .then((d) => {
-            if (d.success) cargarTodo();
-            else alert("Error");
+            if (d.success) {
+              if (window.AudioManager) AudioManager.play("chips");
+              cargarTodo();
+            } else alert("Error");
           });
       }
 
@@ -273,7 +299,6 @@
             '<tr><td colspan="4" class="text-center py-4 opacity-50">Sin movimientos.</td></tr>');
         body.innerHTML = lista
           .map((t) => {
-            // REVISIÓN DEL SIGNO SEGÚN EL TIPO
             const esGanancia = t.tipo === "ingreso" || t.tipo === "ganancia";
             const color = esGanancia ? "text-success" : "text-danger";
             const signo = esGanancia ? "+" : "-";
@@ -297,6 +322,7 @@
       }
 
       function filtrar(tipo, btn) {
+        if (window.AudioManager) AudioManager.play("click");
         document
           .querySelectorAll(".btn-group .btn")
           .forEach((b) => b.classList.remove("active"));
@@ -336,6 +362,7 @@
       }
 
       function enviarSoporte() {
+        if (window.AudioManager) AudioManager.play("click");
         const msg = document.getElementById("supportMsg").value;
         if (!msg) return;
         fetch("api.php?action=send_support_message", {
@@ -355,6 +382,7 @@
         if (confirm("¿Retirar dinero?")) procesar("withdraw");
       });
       document.getElementById("btnDashLogout").addEventListener("click", () => {
+        if (window.AudioManager) AudioManager.play("click");
         localStorage.clear();
         fetch("api.php?action=logout").then(() =>
           window.location.replace("index.html")

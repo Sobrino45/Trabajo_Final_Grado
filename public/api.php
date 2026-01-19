@@ -27,7 +27,20 @@ $action = $_GET['action'] ?? '';
 
 try {
     switch ($action) {
-        case 'login': ob_clean(); require __DIR__ . '/../Backend/login.php'; break;
+        case 'login':
+            ob_clean();
+            // Ejecutamos la lógica de login
+            require __DIR__ . '/../Backend/login.php';
+            
+            // PUNTO 4: Seguridad - Registro de auditoría si el login fue exitoso
+            if (isset($_SESSION['user_id'])) {
+                $ip = $_SERVER['REMOTE_ADDR'];
+                $ua = $_SERVER['HTTP_USER_AGENT'];
+                $stmtLog = $db->prepare("INSERT INTO login_logs (user_id, ip_address, user_agent) VALUES (?, ?, ?)");
+                $stmtLog->execute([$_SESSION['user_id'], $ip, $ua]);
+            }
+            break;
+
         case 'logout': ob_clean(); require __DIR__ . '/../Backend/logout.php'; break;
 
         case 'get_user_info':
@@ -46,13 +59,14 @@ try {
             $d = json_decode(file_get_contents('php://input'), true);
             $bet = floatval($d['bet'] ?? $d['apuesta'] ?? 0);
             $win = floatval($d['win'] ?? $d['ganancia'] ?? 0);
+            // PUNTO 3: Detalles de la mano (JSON) para historial detallado
+            $details = isset($d['details']) ? json_encode($d['details']) : null;
 
             $db->beginTransaction();
             $s = $db->prepare("SELECT saldo FROM usuarios WHERE id = :id FOR UPDATE");
             $s->execute([':id' => $_SESSION['user_id']]);
             $current = $s->fetch(PDO::FETCH_ASSOC)['saldo'];
 
-            // Cálculo real del saldo
             $newSaldo = $current - $bet + $win;
 
             if ($newSaldo < 0) {
@@ -63,23 +77,28 @@ try {
 
             $db->prepare("UPDATE usuarios SET saldo = :n WHERE id = :id")->execute([':n' => $newSaldo, ':id' => $_SESSION['user_id']]);
             
-            // LÓGICA DE HISTORIAL REFINADA:
-            // Si win > bet -> Es una ganancia neta (+)
-            // Si win < bet -> Es una pérdida neta (-)
-            // Si win == bet -> Es un empate (no se registra o se registra como 0)
-            
+            // Registro en historial (transacciones)
+            $transId = null;
             if ($win > $bet) {
                 $neto = $win - $bet;
-                $db->prepare("INSERT INTO transacciones (usuario_id, tipo, cantidad, saldo_posterior) VALUES (:id, 'ganancia', :amt, :pos)")
-                   ->execute([':id' => $_SESSION['user_id'], ':amt' => $neto, ':pos' => $newSaldo]);
+                $stmtTx = $db->prepare("INSERT INTO transacciones (usuario_id, tipo, cantidad, saldo_posterior) VALUES (:id, 'ganancia', :amt, :pos)");
+                $stmtTx->execute([':id' => $_SESSION['user_id'], ':amt' => $neto, ':pos' => $newSaldo]);
+                $transId = $db->lastInsertId();
             } else if ($win < $bet) {
                 $neto = $bet - $win;
-                $db->prepare("INSERT INTO transacciones (usuario_id, tipo, cantidad, saldo_posterior) VALUES (:id, 'apuesta', :amt, :pos)")
-                   ->execute([':id' => $_SESSION['user_id'], ':amt' => $neto, ':pos' => $newSaldo]);
+                $stmtTx = $db->prepare("INSERT INTO transacciones (usuario_id, tipo, cantidad, saldo_posterior) VALUES (:id, 'apuesta', :amt, :pos)");
+                $stmtTx->execute([':id' => $_SESSION['user_id'], ':amt' => $neto, ':pos' => $newSaldo]);
+                $transId = $db->lastInsertId();
             } else {
-                // Empate/Push
-                $db->prepare("INSERT INTO transacciones (usuario_id, tipo, cantidad, saldo_posterior) VALUES (:id, 'ganancia', 0, :pos)")
-                   ->execute([':id' => $_SESSION['user_id'], ':pos' => $newSaldo]);
+                $stmtTx = $db->prepare("INSERT INTO transacciones (usuario_id, tipo, cantidad, saldo_posterior) VALUES (:id, 'ganancia', 0, :pos)");
+                $stmtTx->execute([':id' => $_SESSION['user_id'], ':pos' => $newSaldo]);
+                $transId = $db->lastInsertId();
+            }
+
+            // PUNTO 3: Guardar detalles técnicos de la mano si existen
+            if ($transId && $details) {
+                $db->prepare("INSERT INTO partidas_detalles (transaccion_id, detalles_json) VALUES (?, ?)")
+                   ->execute([$transId, $details]);
             }
 
             $db->commit();
@@ -115,7 +134,12 @@ try {
 
         case 'get_transactions':
             ob_clean();
-            $stmt = $db->prepare("SELECT tipo, cantidad, saldo_posterior, fecha FROM transacciones WHERE usuario_id = :id ORDER BY fecha DESC LIMIT 10");
+            // Modificado para poder unir con detalles si existen
+            $stmt = $db->prepare("SELECT t.*, pd.detalles_json 
+                                  FROM transacciones t 
+                                  LEFT JOIN partidas_detalles pd ON t.id = pd.transaccion_id 
+                                  WHERE t.usuario_id = :id 
+                                  ORDER BY t.fecha DESC LIMIT 15");
             $stmt->execute([':id' => $_SESSION['user_id']]);
             echo json_encode(["success" => true, "transacciones" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
             break;
@@ -123,11 +147,29 @@ try {
         case 'admin_get_data':
             ob_clean();
             if (!isset($_SESSION['rol']) || ($_SESSION['rol'] !== 'admin' && $_SESSION['rol'] !== 'owner')) exit;
+            
+            // Estadísticas generales
             $stats = $db->query("SELECT COUNT(*) as total, COALESCE(SUM(saldo), 0) as pasivo FROM usuarios")->fetch(PDO::FETCH_ASSOC);
             $pend = $db->query("SELECT COUNT(*) as p FROM mensajes_soporte WHERE leido = 0")->fetch(PDO::FETCH_ASSOC);
+            
+            // Lista de usuarios
             $stmtUsers = $db->prepare("SELECT id, username, email, saldo, rol FROM usuarios WHERE id != :mi_id ORDER BY id ASC");
             $stmtUsers->execute([':mi_id' => $_SESSION['user_id']]);
-            echo json_encode(['success' => true, 'access' => true, 'mi_rol' => $_SESSION['rol'], 'stats' => ['total_usuarios' => (int)$stats['total'], 'dinero_en_juego' => (float)$stats['pasivo'], 'pendientes' => (int)$pend['p']], 'usuarios' => $stmtUsers->fetchAll(PDO::FETCH_ASSOC), 'logs' => []]);
+            
+            // PUNTO 4: Obtener logs de acceso para el admin
+            $logs = $db->query("SELECT l.*, u.username FROM login_logs l JOIN usuarios u ON l.user_id = u.id ORDER BY l.fecha DESC LIMIT 20")->fetchAll(PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true, 
+                'mi_rol' => $_SESSION['rol'], 
+                'stats' => [
+                    'total_usuarios' => (int)$stats['total'], 
+                    'dinero_en_juego' => (float)$stats['pasivo'], 
+                    'pendientes' => (int)$pend['p']
+                ], 
+                'usuarios' => $stmtUsers->fetchAll(PDO::FETCH_ASSOC), 
+                'logs' => $logs
+            ]);
             break;
             
         case 'admin_reply_message':
@@ -157,5 +199,8 @@ try {
             echo json_encode(["success" => true, "mensajes" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
             break;
     }
-} catch (Exception $e) { if(@$db->inTransaction()) $db->rollBack(); echo json_encode(["success" => false, "message" => "Error"]); }
+} catch (Exception $e) { 
+    if(@$db->inTransaction()) $db->rollBack(); 
+    echo json_encode(["success" => false, "message" => $e->getMessage()]); 
+}
 ob_end_flush();

@@ -44,6 +44,8 @@ document.getElementById("btnDeal").addEventListener("click", () => {
   if (apuesta < 10) return alert("Apuesta mínima 10€");
   if (apuesta > saldoActual) return alert("Saldo insuficiente.");
 
+  if (window.AudioManager) AudioManager.play("click");
+
   fetch(`${API_JAVA}/start?apuesta=${apuesta}`, { method: "POST" })
     .then((r) => r.json())
     .then((data) => {
@@ -67,16 +69,19 @@ document
   .addEventListener("click", () => enviarAccion("double"));
 
 function enviarAccion(accion) {
+  if (window.AudioManager) AudioManager.play("click");
   fetch(`${API_JAVA}/${accion}?id=${gameId}`, { method: "POST" })
     .then((r) => r.json())
     .then((data) => actualizarMesa(data));
 }
 
 function actualizarMesa(data) {
+  // SONIDO DE CARTAS AL ACTUALIZAR LA MESA
+  if (window.AudioManager) AudioManager.play("card");
+
   const dealerCardsDiv = document.getElementById("dealer-cards");
   const playerCardsDiv = document.getElementById("player-cards");
 
-  // Banca: Si el juego terminó, mostramos todas. Si no, mostramos solo la visible.
   if (data.estado !== "JUGANDO") {
     renderizarMano(dealerCardsDiv, data.cartasCroupier);
   } else {
@@ -125,36 +130,38 @@ function finalizarPartida(data) {
   let txt = "";
   let color = "";
 
-  // Mapeo exhaustivo de los estados de Java
   switch (data.estado) {
     case "GANADOR":
     case "PLAYER_WINS":
       win = data.apuesta * 2;
       txt = "🏆 ¡HAS GANADO!";
       color = "alert-success";
+      if (window.AudioManager) AudioManager.play("win");
       break;
     case "BLACKJACK":
-      win = data.apuesta * 2.5; // Pago 3:2
+      win = data.apuesta * 2.5;
       txt = "✨ ¡BLACKJACK!";
       color = "alert-info";
+      if (window.AudioManager) AudioManager.play("win");
       break;
     case "EMPATE":
     case "PUSH":
       win = data.apuesta;
       txt = "🤝 EMPATE";
       color = "alert-warning";
+      if (window.AudioManager) AudioManager.play("chips");
       break;
     default:
       win = 0;
       txt = "❌ HAS PERDIDO";
       color = "alert-danger";
+      if (window.AudioManager) AudioManager.play("loss");
       break;
   }
 
   msgBox.textContent = txt;
   msgBox.className = `alert ${color} d-block animate__animated animate__pulse`;
 
-  // Sincronizar con MySQL
   fetch("../../api.php?action=game_result", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -21,7 +21,10 @@
 
     <main class="container py-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="../../dashboard.html" class="btn btn-outline-secondary btn-sm"
+        <a
+          href="../../dashboard.html"
+          class="btn btn-outline-secondary btn-sm"
+          onclick="if(window.AudioManager) AudioManager.play('click')"
           >⬅ Volver</a
         >
 
@@ -94,25 +97,25 @@
                 <div class="d-flex gap-2 mt-2">
                   <button
                     class="btn btn-sm btn-outline-secondary flex-fill"
-                    onclick="setBet(10)"
+                    onclick="if(window.AudioManager) AudioManager.play('click'); setBet(10);"
                   >
                     10
                   </button>
                   <button
                     class="btn btn-sm btn-outline-secondary flex-fill"
-                    onclick="setBet(50)"
+                    onclick="if(window.AudioManager) AudioManager.play('click'); setBet(50);"
                   >
                     50
                   </button>
                   <button
                     class="btn btn-sm btn-outline-secondary flex-fill"
-                    onclick="setBet(100)"
+                    onclick="if(window.AudioManager) AudioManager.play('click'); setBet(100);"
                   >
                     100
                   </button>
                   <button
                     class="btn btn-sm btn-outline-warning flex-fill"
-                    onclick="doubleBet()"
+                    onclick="if(window.AudioManager) AudioManager.play('click'); doubleBet();"
                   >
                     x2
                   </button>
@@ -122,6 +125,7 @@
                 <button
                   id="btnAction"
                   class="btn btn-success w-100 py-4 fw-bold text-uppercase fs-4 shadow-lg border-0 position-relative overflow-hidden"
+                  onclick="if(window.AudioManager) AudioManager.play('click')"
                 >
                   <span class="position-relative z-1">APOSTAR</span>
                 </button>
@@ -145,33 +149,23 @@
     <div id="footer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <script src="../../assets/js/AudioManager.js"></script>
     <script src="../../assets/js/auth.js"></script>
     <script src="../../assets/js/logout.js"></script>
-    
     <script src="../../assets/js/navbar_logic.js"></script>
-
     <script src="crash.js"></script>
 
     <script>
-        // CARGA INICIAL DEL HTML (Navbar y Footer)
-        fetch("../../partials/navbar.html")
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("navbar").innerHTML = data;
-                // Iniciamos el Navbar Manager SOLO cuando el HTML existe
-                if (window.NavbarManager) window.NavbarManager.init();
-            });
+      fetch("../../partials/navbar.html")
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("navbar").innerHTML = data;
+          if (window.NavbarManager) window.NavbarManager.init();
+        });
 
-        fetch("../../partials/footer.html")
-            .then(response => response.text())
-            .then(data => document.getElementById("footer").innerHTML = data);
-            
-        // NOTA: No hace falta código extra aquí para el saldo. 
-        // 'navbar_logic.js' arregla la barra de arriba.
-        // 'crash.js' arregla la caja del juego.
+      fetch("../../partials/footer.html")
+        .then((response) => response.text())
+        .then((data) => (document.getElementById("footer").innerHTML = data));
     </script>
-</body>
-</html>
   </body>
 </html>

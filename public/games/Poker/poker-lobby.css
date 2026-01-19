@@ -1,0 +1,71 @@
+/* public/games/Poker/poker-lobby.css */
+
+.poker-lobby-bg {
+    background: radial-gradient(circle at center, #0a192f 0%, #020617 100%);
+    min-height: 100vh;
+}
+
+.card-selection {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Animación de subida de la carta */
+.card-selection:hover {
+    transform: translateY(-15px);
+    border-color: #0dcaf0 !important;
+    box-shadow: 0 15px 45px rgba(13, 202, 240, 0.2);
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.card-selection .display-1 {
+    transition: transform 0.3s ease;
+}
+
+.card-selection:hover .display-1 {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* ANIMACIÓN IGUALADA PARA AMBOS BOTONES */
+.btn-lobby {
+    border-radius: 30px;
+    padding: 12px 30px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    border: 2px solid #0dcaf0 !important;
+}
+
+/* Cuando pasamos el ratón por la carta, el botón también reacciona */
+.card-selection:hover .btn-lobby {
+    transform: scale(1.05);
+    background-color: #0dcaf0 !important;
+    color: #000 !important;
+    box-shadow: 0 0 20px rgba(13, 202, 240, 0.4);
+}
+
+/* Efecto de brillo que atraviesa la carta */
+.card-selection::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.card-selection:hover::before {
+    left: 100%;
+}

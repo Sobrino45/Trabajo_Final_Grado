@@ -24,6 +24,7 @@
           <a
             href="../../dashboard.html"
             class="btn btn-outline-secondary btn-sm"
+            onclick="if(window.AudioManager) AudioManager.play('click')"
             >⬅ Volver</a
           >
           <span
@@ -90,7 +91,11 @@
               value="50"
               min="10"
             />
-            <button id="btnDeal" class="btn btn-warning btn-lg w-100 fw-bold">
+            <button
+              id="btnDeal"
+              class="btn btn-warning btn-lg w-100 fw-bold"
+              onclick="if(window.AudioManager) AudioManager.play('click')"
+            >
               REPARTIR CARTAS
             </button>
           </div>
@@ -98,13 +103,25 @@
 
         <div id="action-panel" class="col-md-8 d-none text-center">
           <div class="d-flex justify-content-center gap-3">
-            <button id="btnHit" class="btn btn-primary btn-lg px-4 fw-bold">
+            <button
+              id="btnHit"
+              class="btn btn-primary btn-lg px-4 fw-bold"
+              onclick="if(window.AudioManager) AudioManager.play('click')"
+            >
               PEDIR
             </button>
-            <button id="btnStand" class="btn btn-danger btn-lg px-4 fw-bold">
+            <button
+              id="btnStand"
+              class="btn btn-danger btn-lg px-4 fw-bold"
+              onclick="if(window.AudioManager) AudioManager.play('click')"
+            >
               PLANTARSE
             </button>
-            <button id="btnDouble" class="btn btn-info btn-lg px-4 fw-bold">
+            <button
+              id="btnDouble"
+              class="btn btn-info btn-lg px-4 fw-bold"
+              onclick="if(window.AudioManager) AudioManager.play('click')"
+            >
               DOBLAR
             </button>
           </div>
@@ -112,6 +129,7 @@
       </div>
     </main>
 
+    <script src="../../assets/js/AudioManager.js"></script>
     <script src="../../assets/js/navbar_logic.js"></script>
     <script src="blackjack.js"></script>
     <script>

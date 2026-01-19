@@ -12,17 +12,16 @@ window.NavbarManager = {
     const saldoSpan = document.getElementById("nav-saldo");
     const btnLogout = document.getElementById("btnLogout");
 
-    // Buscamos la API de forma relativa para que funcione en cualquier nivel de carpetas
-    // Si estamos en un juego (nivel 2), subimos dos niveles. Si estamos en dashboard (nivel 1), subimos uno.
-    const apiPath = window.location.pathname.includes("/games/")
-      ? "../../api.php"
-      : "api.php";
+    // RUTA ABSOLUTA: Esto evita errores 404 en carpetas profundas
+    const API_PATH = "/CasinoDaw/public/api.php";
 
-    fetch(apiPath + "?action=get_user_info&t=" + Date.now())
-      .then((response) => response.json())
+    fetch(API_PATH + "?action=get_user_info&t=" + Date.now())
+      .then((response) => {
+        if (!response.ok) throw new Error("No se encontró api.php");
+        return response.json();
+      })
       .then((data) => {
         if (data.logged_in) {
-          // OCULTAR botones de Registro/Login y MOSTRAR info de usuario
           guestElements.forEach((el) => el.classList.add("d-none"));
           userElements.forEach((el) => el.classList.remove("d-none"));
 
@@ -30,28 +29,26 @@ window.NavbarManager = {
           if (saldoSpan)
             saldoSpan.textContent = parseFloat(data.saldo).toFixed(2);
 
-          // Configurar botón cerrar sesión
           if (btnLogout) {
             btnLogout.onclick = (e) => {
               e.preventDefault();
-              fetch(apiPath + "?action=logout").then(() =>
-                window.location.replace("/CasinoDaw/public/index.html")
-              );
+              fetch(API_PATH + "?action=logout").then(() => {
+                window.location.replace("/CasinoDaw/public/index.html");
+              });
             };
           }
         } else {
-          // MODO INVITADO
           guestElements.forEach((el) => el.classList.remove("d-none"));
           userElements.forEach((el) => el.classList.add("d-none"));
         }
       })
-      .catch((err) =>
-        console.error("Error cargando interfaz de usuario:", err)
-      );
+      .catch((err) => console.error("Error en NavbarManager:", err));
   },
 };
 
-// Auto-arranque solo si los elementos ya existen (para páginas estáticas)
-if (document.getElementById("nav-username")) {
+if (
+  document.getElementById("nav-username") ||
+  document.getElementById("navbar")
+) {
   window.NavbarManager.init();
 }

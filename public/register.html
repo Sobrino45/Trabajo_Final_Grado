@@ -90,7 +90,11 @@
                   </div>
                 </div>
 
-                <button type="submit" class="btn btn-warning w-100 fw-bold">
+                <button
+                  type="submit"
+                  class="btn btn-warning w-100 fw-bold"
+                  onclick="if(window.AudioManager) AudioManager.play('click')"
+                >
                   Registrarse y Jugar
                 </button>
 
@@ -113,10 +117,10 @@
       </div>
     </main>
 
+    <script src="assets/js/AudioManager.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/wallet.js"></script>
     <script src="assets/js/logout.js"></script>
-
     <script src="assets/js/register.js"></script>
 
     <script>

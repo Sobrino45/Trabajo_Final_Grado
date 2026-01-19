@@ -25,6 +25,7 @@
             <a
               href="../../dashboard.html"
               class="btn btn-outline-secondary btn-sm"
+              onclick="if(window.AudioManager) AudioManager.play('click')"
               >⬅ Volver al Dashboard</a
             >
           </div>
@@ -71,7 +72,7 @@
               <button
                 id="btnLimpiar"
                 class="btn btn-sm btn-danger opacity-75"
-                onclick="limpiarMesa()"
+                onclick="if(window.AudioManager) AudioManager.play('click'); limpiarMesa();"
                 disabled
               >
                 🗑 <span class="d-none d-sm-inline">Borrar</span>
@@ -97,6 +98,7 @@
                   id="girar"
                   class="btn btn-warning btn-lg fw-bold px-4 shadow-sm flex-grow-1"
                   style="max-width: 200px"
+                  onclick="if(window.AudioManager) AudioManager.play('click')"
                 >
                   ¡GIRAR! 🎡
                 </button>
@@ -123,16 +125,15 @@
       </div>
     </main>
 
+    <script src="../../assets/js/AudioManager.js"></script>
     <script src="../../assets/js/navbar_logic.js"></script>
     <script src="ruleta.js"></script>
 
     <script>
-      // Carga del menú y activación inmediata de la lógica de usuario
       fetch("../../partials/navbar.html")
         .then((r) => r.text())
         .then((html) => {
           document.getElementById("navbar").innerHTML = html;
-          // IMPORTANTE: Ejecutar la lógica de detección de usuario tras cargar el HTML
           if (window.NavbarManager) window.NavbarManager.init();
         });
     </script>
