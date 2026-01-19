@@ -4,260 +4,361 @@
     <meta charset="UTF-8" />
     <title>Dashboard | Casino DAW</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
     <link rel="stylesheet" href="assets/css/main.css" />
-
-    <link rel="icon" type="image/png" href="assets/img/icons/logo-casino.png" />
   </head>
-
-  <body class="page-dashboard bg-dark text-light">
+  <body class="bg-dark text-light">
     <div id="navbar"></div>
 
     <main class="container py-5">
       <div class="row align-items-center mb-5">
         <div class="col-md-8">
-          <h1 class="display-5">
-            Hola, <span id="username" class="text-warning">Cargando...</span>
+          <h1 class="display-5 fw-bold">
+            Hola, <span id="username" class="text-warning">...</span>
           </h1>
-          <p class="lead mb-3">Bienvenido de nuevo a tu panel de control.</p>
-          <div class="d-flex align-items-center gap-3">
-            <button
-              id="btnDashboardLogout"
-              class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-2"
-            >
-              🚪 Cerrar Sesión
+          <div class="d-flex gap-2 mt-2">
+            <button id="btnDashLogout" class="btn btn-sm btn-outline-danger">
+              Cerrar Sesión
             </button>
             <div id="admin-btn-container"></div>
           </div>
         </div>
-
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-          <div class="card bg-secondary text-white shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title">Tu Saldo</h5>
-              <h2 class="display-6 fw-bold"><span id="saldo">--.--</span> €</h2>
+        <div class="col-md-4 mt-4 mt-md-0">
+          <div class="card bg-secondary text-white border-0 shadow-sm">
+            <div class="card-body py-4 text-md-end">
+              <small class="text-uppercase opacity-75">Saldo Disponible</small>
+              <h2 class="fw-bold mb-0"><span id="saldo">0.00</span> €</h2>
             </div>
           </div>
         </div>
       </div>
 
-      <section class="mb-5 p-4 bg-darker rounded border border-secondary">
-        <h3 class="mb-3">💰 Gestión de Billetera</h3>
-        <div class="row g-3 align-items-end">
+      <section
+        class="mb-5 p-4 bg-dark rounded border border-secondary shadow-sm"
+      >
+        <h4 class="mb-4 text-info">💰 Gestión de Saldo</h4>
+        <div class="row g-3">
           <div class="col-md-4">
-            <label for="depositAmount" class="form-label"
-              >Ingresar cantidad (€)</label
-            >
             <input
               type="number"
-              id="depositAmount"
+              id="walletAmount"
               class="form-control"
-              placeholder="Ej: 500"
-              min="1"
+              placeholder="0.00"
             />
           </div>
-          <div class="col-md-3">
-            <button id="btnDeposit" class="btn btn-success w-100">
-              Ingresar Saldo
+          <div class="col-md-4 col-6">
+            <button id="btnDeposit" class="btn btn-success w-100 fw-bold">
+              📥 INGRESAR
+            </button>
+          </div>
+          <div class="col-md-4 col-6">
+            <button id="btnWithdraw" class="btn btn-danger w-100 fw-bold">
+              📤 RETIRAR
             </button>
           </div>
         </div>
       </section>
 
-      <section>
+      <section class="mb-5">
+        <div class="card bg-black border-secondary">
+          <div
+            class="card-header border-secondary d-flex justify-content-between align-items-center bg-dark"
+          >
+            <h5 class="m-0 small fw-bold text-uppercase">
+              Últimos Movimientos
+            </h5>
+            <div class="btn-group btn-group-sm">
+              <button
+                class="btn btn-outline-secondary active"
+                onclick="filtrar('todos', this)"
+              >
+                Todos
+              </button>
+              <button
+                class="btn btn-outline-success"
+                onclick="filtrar('ingreso', this)"
+              >
+                Ingresos
+              </button>
+              <button
+                class="btn btn-outline-danger"
+                onclick="filtrar('retiro', this)"
+              >
+                Retiros
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0 small">
+              <thead>
+                <tr class="text-white-50">
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th class="text-end">Monto</th>
+                  <th class="text-end text-info">Saldo Final</th>
+                </tr>
+              </thead>
+              <tbody id="txTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-5">
+        <div class="card bg-black border-info shadow-sm">
+          <div class="card-header bg-dark border-info text-info fw-bold small">
+            💬 CENTRO DE SOPORTE
+          </div>
+          <div class="card-body">
+            <div
+              id="chatHistory"
+              class="mb-3 p-3 rounded"
+              style="max-height: 200px; overflow-y: auto; background: #0a0a0a"
+            ></div>
+            <div class="input-group">
+              <input
+                type="text"
+                id="supportMsg"
+                class="form-control bg-secondary text-white border-0"
+                placeholder="¿Dudas?"
+              />
+              <button onclick="enviarSoporte()" class="btn btn-info fw-bold">
+                ENVIAR
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pb-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h3 class="m-0">🎮 Juegos Disponibles</h3>
-          <a href="Instrucciones/index.html" class="btn btn-outline-info btn-sm"
-            >📘 Ver Reglas</a
+          <h3 class="m-0">🎮 Sala de Juegos</h3>
+          <a
+            href="../Instrucciones/index.html"
+            class="btn btn-sm btn-outline-info fw-bold"
+            >📘 VER REGLAS</a
           >
         </div>
-
-        <div class="row g-4">
+        <div class="row g-4 text-center">
           <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🎡</div>
-                <h4 class="card-title">Ruleta Europea</h4>
-                <a
-                  href="games/Ruleta/index.html"
-                  class="btn btn-warning w-100 fw-bold text-dark"
-                  >Jugar Ahora</a
-                >
-              </div>
+            <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
+              <div class="display-3 mb-2">🎡</div>
+              <h5>Ruleta</h5>
+              <a
+                href="games/Ruleta/index.html"
+                class="btn btn-warning mt-auto fw-bold text-dark"
+                >JUGAR</a
+              >
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
+              <div class="display-3 mb-2">🎰</div>
+              <h5>Tragaperras</h5>
+              <a
+                href="games/Tragaperras/index.html"
+                class="btn btn-danger mt-auto fw-bold"
+                >JUGAR</a
+              >
             </div>
           </div>
           <div class="col-md-4">
             <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale"
+              class="card bg-secondary border-warning h-100 p-4 shadow-hover"
             >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🎰</div>
-                <h4 class="card-title">Tragaperras</h4>
-                <a
-                  href="games/Tragaperras/index.html"
-                  class="btn btn-danger w-100 fw-bold"
-                  >Jugar Ahora</a
-                >
-              </div>
+              <div class="display-3 mb-2">🚀</div>
+              <h5>CRASH</h5>
+              <a
+                href="games/Crash/index.html"
+                class="btn btn-warning mt-auto fw-bold text-dark"
+                >JUGAR</a
+              >
             </div>
           </div>
           <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-warning shadow hover-scale"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🚀</div>
-                <h4 class="card-title">
-                  CRASH
-                  <span class="badge bg-warning text-dark ms-1">NUEVO</span>
-                </h4>
-                <a
-                  href="games/Crash/index.html"
-                  class="btn btn-warning w-100 fw-bold text-dark"
-                  >Jugar Ahora</a
-                >
-              </div>
+            <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
+              <div class="display-3 mb-2">🃏</div>
+              <h5>Blackjack</h5>
+              <a
+                href="games/Blackjack/index.html"
+                class="btn btn-success mt-auto fw-bold"
+                >JUGAR</a
+              >
             </div>
           </div>
           <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🃏</div>
-                <h4 class="card-title">Blackjack</h4>
-                <a
-                  href="games/Blackjack/index.html"
-                  class="btn btn-success w-100 fw-bold"
-                  >Jugar Ahora</a
-                >
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div
-              class="card h-100 bg-secondary text-white border-0 shadow hover-scale"
-            >
-              <div class="card-body text-center">
-                <div class="display-1 mb-3">🐎</div>
-                <h4 class="card-title">Carrera Caballos</h4>
-                <a
-                  href="games/Carrera/index.html"
-                  class="btn btn-primary w-100 fw-bold"
-                  >Jugar Ahora</a
-                >
-              </div>
+            <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
+              <div class="display-3 mb-2">🐎</div>
+              <h5>Carrera</h5>
+              <a
+                href="games/Carrera/index.html"
+                class="btn btn-primary mt-auto fw-bold"
+                >JUGAR</a
+              >
             </div>
           </div>
         </div>
       </section>
     </main>
 
-    <div id="footer"></div>
-
-    <script src="assets/js/auth.js"></script>
-    <script src="assets/js/logout.js"></script>
     <script src="assets/js/navbar_logic.js"></script>
-
     <script>
-      // 1. CARGA COORDINADA DEL NAVBAR
-      // Primero cargamos el HTML, y solo cuando existe, arrancamos la lógica
-      fetch("partials/navbar.html")
-        .then((r) => r.text())
-        .then((html) => {
-          document.getElementById("navbar").innerHTML = html;
-          
-          // Ahora que el HTML existe, despertamos al Manager
-          if (window.NavbarManager) {
-            console.log("✅ Navbar cargado. Iniciando Manager...");
-            window.NavbarManager.init();
-          }
-        });
+      let transacciones = [];
 
-      // 2. CARGA DEL FOOTER
-      fetch("partials/footer.html")
-        .then((r) => r.text())
-        .then((t) => (document.getElementById("footer").innerHTML = t));
-
-
-      // 3. LÓGICA EXCLUSIVA DEL DASHBOARD (Caja Grande y Depósitos)
-      document.addEventListener("DOMContentLoaded", () => {
-        
-        // A) Botón Logout del Dashboard (el rojo del centro)
-        const btnLogoutDash = document.getElementById("btnDashboardLogout");
-        if (btnLogoutDash) {
-          btnLogoutDash.addEventListener("click", (e) => {
-            e.preventDefault();
-            window.location.href = 'api.php?action=logout';
-          });
-        }
-
-        // B) Datos de la Caja Grande (Solo tocamos id="saldo", NO el navbar)
-        fetch("api.php?action=get_user_info")
-          .then((response) => response.json())
+      function cargarTodo() {
+        fetch("api.php?action=get_user_info&t=" + Date.now())
+          .then((r) => r.json())
           .then((data) => {
-            if (data.logged_in) {
-              // Nombre grande
-              const userElement = document.getElementById("username");
-              if(userElement) userElement.textContent = data.username;
-              
-              // Caja Gris Grande (Tu Saldo)
-              const saldoElement = document.getElementById("saldo");
-              if(saldoElement) {
-                 // Aseguramos que sea número
-                 saldoElement.textContent = parseFloat(data.saldo).toFixed(2);
-              }
-              
-              // Mostrar botón Admin si corresponde
-              if (data.rol === "admin") {
-                 const adminContainer = document.getElementById("admin-btn-container");
-                 if(adminContainer) {
-                    adminContainer.innerHTML = `
-                      <a href="partials/admin.html" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-2 fw-bold">
-                        👮 Panel Admin
-                      </a>`;
-                 }
-              }
-            } else {
-              window.location.replace("login.html");
+            if (!data.logged_in) return window.location.replace("login.html");
+            document.getElementById("username").textContent = data.username;
+            document.getElementById("saldo").textContent = parseFloat(
+              data.saldo
+            ).toFixed(2);
+            if (data.rol === "admin" || data.rol === "owner") {
+              const txt =
+                data.rol === "owner" ? "👑 Panel OWNER" : "👮 Panel ADMIN";
+              document.getElementById(
+                "admin-btn-container"
+              ).innerHTML = `<a href="partials/admin.html" class="btn btn-outline-warning btn-sm fw-bold">${txt}</a>`;
             }
-          })
-          .catch((error) => console.error("Error cargando Dashboard:", error));
-
-        // C) Lógica de Depósito (Ingresar dinero)
-        const btnDeposit = document.getElementById("btnDeposit");
-        if (btnDeposit) {
-          btnDeposit.addEventListener("click", () => {
-            const amountInput = document.getElementById("depositAmount");
-            const amount = parseFloat(amountInput.value);
-
-            if (!amount || amount <= 0) return alert("Introduce una cantidad válida");
-
-            fetch("api.php?action=deposit", {
-              method: "POST",
-              body: JSON.stringify({ amount: amount }),
-              headers: { "Content-Type": "application/json" },
-            })
-              .then((r) => r.json())
-              .then((data) => {
-                if (data.success) {
-                  alert("¡Recarga exitosa!");
-                  amountInput.value = "";
-                  // Actualizamos todo recargando la página o llamando al init
-                  window.location.reload(); 
-                } else {
-                  alert("Error: " + (data.message || "No se pudo depositar"));
-                }
-              })
-              .catch((err) => console.error("Error en depósito:", err));
+            cargarHistorial();
+            cargarMisMensajes();
           });
-        }
+      }
+
+      document.addEventListener("DOMContentLoaded", cargarTodo);
+      window.onpageshow = function (e) {
+        if (e.persisted) cargarTodo();
+      };
+
+      function procesar(action) {
+        const amount = parseFloat(
+          document.getElementById("walletAmount").value
+        );
+        if (!amount || amount <= 0) return alert("Cantidad no válida");
+        fetch(`api.php?action=${action}`, {
+          method: "POST",
+          body: JSON.stringify({ amount }),
+          headers: { "Content-Type": "application/json" },
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success) cargarTodo();
+            else alert("Error");
+          });
+      }
+
+      function cargarHistorial() {
+        fetch("api.php?action=get_transactions&t=" + Date.now())
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success) {
+              transacciones = d.transacciones;
+              renderTabla(transacciones);
+            }
+          });
+      }
+
+      function renderTabla(lista) {
+        const body = document.getElementById("txTableBody");
+        if (!lista.length)
+          return (body.innerHTML =
+            '<tr><td colspan="4" class="text-center py-4 opacity-50">Sin movimientos.</td></tr>');
+        body.innerHTML = lista
+          .map((t) => {
+            // REVISIÓN DEL SIGNO SEGÚN EL TIPO
+            const esGanancia = t.tipo === "ingreso" || t.tipo === "ganancia";
+            const color = esGanancia ? "text-success" : "text-danger";
+            const signo = esGanancia ? "+" : "-";
+
+            return `<tr>
+                    <td class="text-white-50 small">${new Date(
+                      t.fecha
+                    ).toLocaleString()}</td>
+                    <td class="text-uppercase" style="font-size:0.6rem">${
+                      t.tipo
+                    }</td>
+                    <td class="text-end fw-bold ${color}">${signo}${parseFloat(
+              t.cantidad
+            ).toFixed(2)} €</td>
+                    <td class="text-end fw-bold text-info">${parseFloat(
+                      t.saldo_posterior
+                    ).toFixed(2)} €</td>
+                </tr>`;
+          })
+          .join("");
+      }
+
+      function filtrar(tipo, btn) {
+        document
+          .querySelectorAll(".btn-group .btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderTabla(
+          tipo === "todos"
+            ? transacciones
+            : transacciones.filter((t) =>
+                tipo === "ingreso"
+                  ? t.tipo === "ingreso" || t.tipo === "ganancia"
+                  : t.tipo === "retiro" || t.tipo === "apuesta"
+              )
+        );
+      }
+
+      function cargarMisMensajes() {
+        fetch("api.php?action=get_my_messages&t=" + Date.now())
+          .then((r) => r.json())
+          .then((d) => {
+            const container = document.getElementById("chatHistory");
+            if (!d.mensajes || !d.mensajes.length)
+              return (container.innerHTML =
+                '<p class="text-center text-white-50 small py-3">Sin mensajes.</p>');
+            container.innerHTML = d.mensajes
+              .map(
+                (m) =>
+                  `<div class="mb-2"><div class="text-end"><small class="bg-secondary px-2 py-1 rounded">Tú: ${
+                    m.mensaje
+                  }</small></div>${
+                    m.respuesta
+                      ? `<div class="text-start mt-1"><small class="bg-info text-dark px-2 py-1 rounded fw-bold">ADMIN: ${m.respuesta}</small></div>`
+                      : ""
+                  }</div>`
+              )
+              .join("");
+          });
+      }
+
+      function enviarSoporte() {
+        const msg = document.getElementById("supportMsg").value;
+        if (!msg) return;
+        fetch("api.php?action=send_support_message", {
+          method: "POST",
+          body: JSON.stringify({ mensaje: msg }),
+          headers: { "Content-Type": "application/json" },
+        }).then(() => {
+          document.getElementById("supportMsg").value = "";
+          cargarMisMensajes();
+        });
+      }
+
+      document
+        .getElementById("btnDeposit")
+        .addEventListener("click", () => procesar("deposit"));
+      document.getElementById("btnWithdraw").addEventListener("click", () => {
+        if (confirm("¿Retirar dinero?")) procesar("withdraw");
+      });
+      document.getElementById("btnDashLogout").addEventListener("click", () => {
+        localStorage.clear();
+        fetch("api.php?action=logout").then(() =>
+          window.location.replace("index.html")
+        );
       });
     </script>
   </body>

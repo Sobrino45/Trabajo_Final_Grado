@@ -1,12 +1,7 @@
 /* public/assets/js/navbar_logic.js */
 
-console.log("--- CARGANDO NAVBAR LOGIC (MODO SEGURO) ---");
-
-// 1. DEFINICIÓN SEGURA: Usamos window.NavbarManager en vez de const
-// Esto evita el error "Identifier has already been declared"
 window.NavbarManager = {
   init: function () {
-    console.log("NavbarManager: Iniciando...");
     this.updateUserInterface();
   },
 
@@ -17,69 +12,46 @@ window.NavbarManager = {
     const saldoSpan = document.getElementById("nav-saldo");
     const btnLogout = document.getElementById("btnLogout");
 
-    // Petición al API con diagnóstico de texto
-    fetch("/CasinoDaw/public/api.php?action=get_user_info")
-      .then((response) => response.text()) // Leemos como TEXTO para ver errores PHP
-      .then((texto) => {
-        console.log("--- CHIVATO DEL SERVIDOR ---");
-        console.log("Recibido:", texto); // AQUÍ VEREMOS SI HAY ESPACIOS O ERRORES
+    // Buscamos la API de forma relativa para que funcione en cualquier nivel de carpetas
+    // Si estamos en un juego (nivel 2), subimos dos niveles. Si estamos en dashboard (nivel 1), subimos uno.
+    const apiPath = window.location.pathname.includes("/games/")
+      ? "../../api.php"
+      : "api.php";
 
-        try {
-          // Intentamos convertir a JSON
-          const data = JSON.parse(texto);
-          console.log("Datos procesados correctamente:", data);
+    fetch(apiPath + "?action=get_user_info&t=" + Date.now())
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.logged_in) {
+          // OCULTAR botones de Registro/Login y MOSTRAR info de usuario
+          guestElements.forEach((el) => el.classList.add("d-none"));
+          userElements.forEach((el) => el.classList.remove("d-none"));
 
-          if (data.logged_in) {
-            // --- MODO USUARIO ---
-            guestElements.forEach((el) => el.classList.add("d-none"));
-            userElements.forEach((el) => el.classList.remove("d-none"));
+          if (usernameSpan) usernameSpan.textContent = data.username;
+          if (saldoSpan)
+            saldoSpan.textContent = parseFloat(data.saldo).toFixed(2);
 
-            if (usernameSpan) usernameSpan.textContent = data.username;
-
-            // Protección contra NaN
-            let saldoFinal = parseFloat(data.saldo);
-            if (isNaN(saldoFinal)) {
-              console.warn(
-                "El saldo recibido no es un número válido:",
-                data.saldo
+          // Configurar botón cerrar sesión
+          if (btnLogout) {
+            btnLogout.onclick = (e) => {
+              e.preventDefault();
+              fetch(apiPath + "?action=logout").then(() =>
+                window.location.replace("/CasinoDaw/public/index.html")
               );
-              saldoFinal = 0.0;
-            }
-
-            if (saldoSpan) saldoSpan.textContent = saldoFinal.toFixed(2);
-
-            // Lógica Logout
-            if (btnLogout) {
-              const newBtn = btnLogout.cloneNode(true);
-              btnLogout.parentNode.replaceChild(newBtn, btnLogout);
-              newBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                window.location.href =
-                  "/CasinoDaw/public/api.php?action=logout";
-              });
-            }
-          } else {
-            // --- MODO INVITADO ---
-            guestElements.forEach((el) => el.classList.remove("d-none"));
-            userElements.forEach((el) => el.classList.add("d-none"));
+            };
           }
-        } catch (e) {
-          console.error(
-            "❌ EL JSON ESTÁ ROTO. El servidor envió basura HTML o espacios."
-          );
-          console.error("Error JS:", e);
+        } else {
+          // MODO INVITADO
+          guestElements.forEach((el) => el.classList.remove("d-none"));
+          userElements.forEach((el) => el.classList.add("d-none"));
         }
       })
-      .catch((err) => console.error("Error de conexión:", err));
+      .catch((err) =>
+        console.error("Error cargando interfaz de usuario:", err)
+      );
   },
 };
 
-// 2. AUTO-ARRANQUE
-// Si el documento ya cargó, iniciamos. Si no, esperamos.
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () =>
-    window.NavbarManager.init()
-  );
-} else {
+// Auto-arranque solo si los elementos ya existen (para páginas estáticas)
+if (document.getElementById("nav-username")) {
   window.NavbarManager.init();
 }

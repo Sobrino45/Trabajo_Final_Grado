@@ -1,229 +1,179 @@
-/* CasinoDaw/Blackjack/game.js */
+/* public/games/Blackjack/blackjack.js */
 
-// 1. CONFIGURACIÓN: Java para el juego, PHP para el dinero
-const API_URL = "http://localhost:8080/api/blackjack"; // Lógica de cartas (Java Spring Boot)
+const API_JAVA = "http://localhost:8080/api/blackjack";
 let gameId = null;
-let saldo = 0;
+let saldoActual = 0;
 
-// 2. ELEMENTOS DOM
-const btnDeal = document.getElementById("btnDeal");
-const btnHit = document.getElementById("btnHit");
-const btnStand = document.getElementById("btnStand");
-const btnDouble = document.getElementById("btnDouble");
+const walletDisplay = document.getElementById("walletDisplay");
 const bettingPanel = document.getElementById("betting-panel");
 const actionPanel = document.getElementById("action-panel");
-const dealerCardsDiv = document.getElementById("dealer-cards");
-const playerCardsDiv = document.getElementById("player-cards");
-const dealerScore = document.getElementById("dealer-score");
-const playerScore = document.getElementById("player-score");
 const msgBox = document.getElementById("game-message");
-const statusServer = document.getElementById("server-status");
+const statusBadge = document.getElementById("server-status");
 
-/* ================= INICIO ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  cargarSaldo();
-  checkServer();
+  cargarSaldoDesdeBD();
+  verificarMotorJava();
 });
 
-// Comprobar si el servidor Java (Motor del juego) está encendido
-async function checkServer() {
+async function verificarMotorJava() {
   try {
-    // Hacemos una petición ligera para ver si responde
-    await fetch(API_URL + "/health", { method: "HEAD" }).catch(() => {});
-    // Si no salta al catch, asumimos que está vivo (o lo veremos al intentar jugar)
-    statusServer.textContent = "🟢 Motor Java listo";
-    statusServer.className = "text-success small";
+    await fetch(API_JAVA + "/health", { method: "GET" });
+    statusBadge.textContent = "🟢 Motor Java Activo";
+    statusBadge.className = "ms-3 badge bg-success text-white";
   } catch (e) {
-    statusServer.textContent =
-      "🔴 Error: Enciende el servidor Java (puerto 8080)";
-    statusServer.className = "text-danger fw-bold small";
+    statusBadge.textContent = "🔴 Motor Java Desconectado";
+    statusBadge.className = "ms-3 badge bg-danger text-white";
   }
 }
 
-// Cargar saldo desde PHP (Base de Datos MySQL)
-function cargarSaldo() {
-  // CORREGIDO: Ruta absoluta al router PHP
-  fetch("../../api.php?action=get_user_info")
+function cargarSaldoDesdeBD() {
+  fetch("../../api.php?action=get_user_info&t=" + Date.now())
     .then((r) => r.json())
-    .then((d) => {
-      if (d.logged_in) {
-        saldo = parseFloat(d.saldo);
-        document.getElementById("walletDisplay").textContent =
-          saldo.toFixed(2) + " €";
+    .then((data) => {
+      if (data.logged_in) {
+        saldoActual = parseFloat(data.saldo);
+        actualizarSaldoVisual();
       } else {
-        // Si no hay sesión, fuera
         window.location.href = "../../login.html";
       }
     });
 }
 
-/* ================= ACCIONES DEL JUEGO ================= */
-
-// REPARTIR (Nueva Partida)
-btnDeal.addEventListener("click", () => {
+document.getElementById("btnDeal").addEventListener("click", () => {
   const apuesta = parseInt(document.getElementById("betAmount").value);
+  if (apuesta < 10) return alert("Apuesta mínima 10€");
+  if (apuesta > saldoActual) return alert("Saldo insuficiente.");
 
-  // Validación básica
-  if (isNaN(apuesta) || apuesta < 10) return alert("Apuesta mínima 10€");
-  if (apuesta > saldo) return alert("Saldo insuficiente");
-
-  // Llamada a Java para iniciar
-  fetch(`${API_URL}/start?apuesta=${apuesta}`, { method: "POST" })
-    .then((r) => {
-      if (!r.ok) throw new Error("No se pudo conectar con Java (Puerto 8080)");
-      return r.json();
-    })
+  fetch(`${API_JAVA}/start?apuesta=${apuesta}`, { method: "POST" })
+    .then((r) => r.json())
     .then((data) => {
-      statusServer.textContent = "🟢 Jugando en Java";
-      statusServer.className = "text-success small";
-      iniciarInterfaz(data);
+      gameId = data.id;
+      bettingPanel.classList.add("d-none");
+      actionPanel.classList.remove("d-none");
+      msgBox.classList.add("d-none");
+      actualizarMesa(data);
     })
-    .catch((err) => {
-      alert("Error crítico: " + err.message);
-      console.error(err);
-    });
+    .catch(() => alert("Error al iniciar. ¿Está encendido el servidor Java?"));
 });
 
-// Botones de acción
-btnHit.addEventListener("click", () => realizarAccion("hit"));
-btnStand.addEventListener("click", () => realizarAccion("stand"));
-btnDouble.addEventListener("click", () => realizarAccion("double"));
+document
+  .getElementById("btnHit")
+  .addEventListener("click", () => enviarAccion("hit"));
+document
+  .getElementById("btnStand")
+  .addEventListener("click", () => enviarAccion("stand"));
+document
+  .getElementById("btnDouble")
+  .addEventListener("click", () => enviarAccion("double"));
 
-function realizarAccion(accion) {
-  // Llamada a Java para pedir carta, plantarse, etc.
-  fetch(`${API_URL}/${accion}?id=${gameId}`, { method: "POST" })
+function enviarAccion(accion) {
+  fetch(`${API_JAVA}/${accion}?id=${gameId}`, { method: "POST" })
     .then((r) => r.json())
-    .then((data) => actualizarMesa(data))
-    .catch((err) => console.error("Error en acción:", err));
-}
-
-/* ================= ACTUALIZACIÓN VISUAL ================= */
-
-function iniciarInterfaz(data) {
-  gameId = data.id;
-  bettingPanel.classList.add("d-none");
-  actionPanel.classList.remove("d-none");
-  msgBox.style.opacity = "0";
-  actualizarMesa(data);
+    .then((data) => actualizarMesa(data));
 }
 
 function actualizarMesa(data) {
-  // 1. Renderizar Cartas Croupier
-  // Si la partida sigue, Java suele ocultar la 2ª carta o no mandarla.
-  // Aquí asumimos que si hay 'cartaCroupierVisible', mostramos esa y un dorso.
-  if (data.cartasCroupier && data.cartasCroupier.length > 0) {
-    renderMano(dealerCardsDiv, data.cartasCroupier);
-  } else if (data.cartaCroupierVisible) {
-    renderMano(dealerCardsDiv, [data.cartaCroupierVisible], true); // true = mostrar dorso extra
+  const dealerCardsDiv = document.getElementById("dealer-cards");
+  const playerCardsDiv = document.getElementById("player-cards");
+
+  // Banca: Si el juego terminó, mostramos todas. Si no, mostramos solo la visible.
+  if (data.estado !== "JUGANDO") {
+    renderizarMano(dealerCardsDiv, data.cartasCroupier);
+  } else {
+    renderizarMano(dealerCardsDiv, [data.cartaCroupierVisible], true);
   }
 
-  // 2. Renderizar Cartas Jugador
-  renderMano(playerCardsDiv, data.cartasJugador);
+  renderizarMano(playerCardsDiv, data.cartasJugador);
 
-  // 3. Puntuaciones
-  playerScore.textContent = data.puntosJugador;
-  dealerScore.textContent = data.puntosCroupier > 0 ? data.puntosCroupier : "?";
+  document.getElementById("player-score").textContent = data.puntosJugador;
+  document.getElementById("dealer-score").textContent =
+    data.estado !== "JUGANDO" ? data.puntosCroupier : "?";
 
-  // 4. Verificar si terminó
   if (data.estado !== "JUGANDO") {
     finalizarPartida(data);
   }
 }
 
-function renderMano(container, cartas, mostrarDorsoExtra = false) {
+function renderizarMano(container, cartas, conDorso = false) {
   container.innerHTML = "";
+  if (!cartas) return;
 
   cartas.forEach((c) => {
-    const cartaDiv = document.createElement("div");
-    // Detectar color
-    const esRoja =
-      c.palo === "♥" ||
-      c.palo === "♦" ||
-      c.palo === "HEARTS" ||
-      c.palo === "DIAMONDS";
-    // Mapear símbolos de texto si Java devuelve nombres en inglés
-    let paloSimbolo = c.palo;
-    if (c.palo === "HEARTS") paloSimbolo = "♥";
-    if (c.palo === "DIAMONDS") paloSimbolo = "♦";
-    if (c.palo === "CLUBS") paloSimbolo = "♣";
-    if (c.palo === "SPADES") paloSimbolo = "♠";
+    const div = document.createElement("div");
+    const esRoja = ["♥", "♦", "HEARTS", "DIAMONDS"].includes(c.palo);
+    let s = c.palo;
+    if (s === "HEARTS") s = "♥";
+    if (s === "DIAMONDS") s = "♦";
+    if (s === "CLUBS") s = "♣";
+    if (s === "SPADES") s = "♠";
 
-    cartaDiv.className = `carta ${esRoja ? "roja" : "negra"}`;
-
-    cartaDiv.innerHTML = `
-            <div class="top">${c.rango} ${paloSimbolo}</div>
-            <div class="center display-4">${paloSimbolo}</div>
-            <div class="bottom text-end">${c.rango} ${paloSimbolo}</div>
-        `;
-    container.appendChild(cartaDiv);
+    div.className = `carta ${esRoja ? "roja" : "negra"}`;
+    div.innerHTML = `<div class="top">${c.rango}${s}</div><div class="center">${s}</div><div class="bottom">${c.rango}${s}</div>`;
+    container.appendChild(div);
   });
 
-  if (mostrarDorsoExtra) {
+  if (conDorso) {
     const dorso = document.createElement("div");
-    dorso.className = "carta bg-danger";
-    dorso.style.background =
-      "repeating-linear-gradient(45deg, #c0392b 0, #c0392b 10px, #e74c3c 10px, #e74c3c 20px)";
+    dorso.className = "carta dorso";
     container.appendChild(dorso);
   }
 }
 
-/* ================= FIN DE PARTIDA Y GUARDADO ================= */
-
 function finalizarPartida(data) {
   actionPanel.classList.add("d-none");
+  let win = 0;
+  let txt = "";
+  let color = "";
 
-  let mensaje = "";
-  let claseAlert = "";
-  let gananciaTotal = 0; // Lo que el usuario recibe al final
-
-  // Analizar estado devuelto por Java
-  if (data.estado === "GANADOR" || data.estado === "PLAYER_WINS") {
-    mensaje = `🏆 ¡GANASTE! (+${data.apuesta}€)`;
-    claseAlert = "alert-success";
-    gananciaTotal = data.apuesta * 2; // Recuperas apuesta + ganancia (1:1)
-  } else if (data.estado === "PERDEDOR" || data.estado === "DEALER_WINS") {
-    mensaje = `❌ PERDISTE (-${data.apuesta}€)`;
-    claseAlert = "alert-danger";
-    gananciaTotal = 0;
-  } else if (data.estado === "EMPATE" || data.estado === "PUSH") {
-    mensaje = `🤝 EMPATE (Recuperas apuesta)`;
-    claseAlert = "alert-warning";
-    gananciaTotal = data.apuesta; // Recuperas lo puesto
-  } else if (data.estado === "BLACKJACK") {
-    mensaje = `✨ ¡BLACKJACK! (+${data.apuesta * 1.5}€)`;
-    claseAlert = "alert-info";
-    gananciaTotal = data.apuesta + data.apuesta * 1.5; // Pago 3:2
+  // Mapeo exhaustivo de los estados de Java
+  switch (data.estado) {
+    case "GANADOR":
+    case "PLAYER_WINS":
+      win = data.apuesta * 2;
+      txt = "🏆 ¡HAS GANADO!";
+      color = "alert-success";
+      break;
+    case "BLACKJACK":
+      win = data.apuesta * 2.5; // Pago 3:2
+      txt = "✨ ¡BLACKJACK!";
+      color = "alert-info";
+      break;
+    case "EMPATE":
+    case "PUSH":
+      win = data.apuesta;
+      txt = "🤝 EMPATE";
+      color = "alert-warning";
+      break;
+    default:
+      win = 0;
+      txt = "❌ HAS PERDIDO";
+      color = "alert-danger";
+      break;
   }
 
-  // Mostrar mensaje
-  msgBox.textContent = mensaje;
-  msgBox.className = `alert ${claseAlert} text-center fw-bold`;
-  msgBox.style.opacity = "1";
+  msgBox.textContent = txt;
+  msgBox.className = `alert ${color} d-block animate__animated animate__pulse`;
 
-  // 🚀 SINCRONIZACIÓN CON PHP (Guardar dinero en BD)
-  fetch("../../api.php?action=game_logic", {
+  // Sincronizar con MySQL
+  fetch("../../api.php?action=game_result", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      game: "Blackjack",
-      bet: data.apuesta,
-      win: gananciaTotal,
-    }),
+    body: JSON.stringify({ bet: data.apuesta, win: win, game: "Blackjack" }),
   })
     .then((r) => r.json())
-    .then((dbData) => {
-      if (dbData.success) {
-        saldo = parseFloat(dbData.new_balance);
-        document.getElementById("walletDisplay").textContent =
-          saldo.toFixed(2) + " €";
-      } else {
-        console.error("Error guardando en BD:", dbData.message);
+    .then((res) => {
+      if (res.success) {
+        saldoActual = res.new_balance;
+        actualizarSaldoVisual();
       }
-    })
-    .catch((err) => console.error("Error de red PHP:", err));
+    });
 
-  // Reiniciar interfaz tras unos segundos
   setTimeout(() => {
+    msgBox.classList.add("d-none");
     bettingPanel.classList.remove("d-none");
-  }, 3000);
+  }, 4000);
+}
+
+function actualizarSaldoVisual() {
+  walletDisplay.textContent = parseFloat(saldoActual).toFixed(2) + " €";
 }

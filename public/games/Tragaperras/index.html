@@ -21,10 +21,8 @@
           <a
             href="../../dashboard.html"
             class="btn btn-outline-secondary btn-sm"
+            >⬅ Volver al Dashboard</a
           >
-            ⬅ Volver al Dashboard
-          </a>
-
           <div
             class="bg-black border border-secondary rounded px-3 py-1 d-flex align-items-center gap-2 shadow-inset"
           >
@@ -106,17 +104,16 @@
       </section>
     </main>
 
-    <div id="footer"></div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/navbar_logic.js"></script>
     <script src="tragaperras.js"></script>
 
     <script>
-      // RUTA CORREGIDA: ../../partials
       fetch("../../partials/navbar.html")
         .then((r) => r.text())
         .then((html) => {
           document.getElementById("navbar").innerHTML = html;
+          if (window.NavbarManager) window.NavbarManager.init();
         });
     </script>
   </body>

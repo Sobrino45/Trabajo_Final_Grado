@@ -1,237 +1,530 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Instrucciones | Casino DAW</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../Portal/assets/css/main.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../public/assets/css/main.css" />
 
     <style>
-        .nav-pills .nav-link.active { 
-            background-color: #f1c40f; 
-            color: #000; 
-            font-weight: bold; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .nav-pills .nav-link { 
-            color: #ccc; 
-            margin-bottom: 5px;
-            transition: all 0.2s;
-        }
-        .nav-pills .nav-link:hover:not(.active) {
-            background-color: rgba(255,255,255,0.1);
-            color: #fff;
-        }
+      /* Estilos personalizados para las pestañas verticales */
+      .nav-pills .nav-link.active {
+        background-color: #f1c40f;
+        color: #000;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+      .nav-pills .nav-link {
+        color: #ccc;
+        margin-bottom: 5px;
+        transition: all 0.2s;
+        border-radius: 8px;
+        padding: 12px 20px;
+      }
+      .nav-pills .nav-link:hover:not(.active) {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding-left: 25px; /* Efecto de desplazamiento */
+      }
+      .hand-rank-list li {
+        border-bottom: 1px solid #444;
+        padding: 8px 0;
+      }
+      .hand-rank-list li:last-child {
+        border-bottom: none;
+      }
     </style>
-</head>
-<body class="bg-dark text-light">
-
+  </head>
+  <body class="bg-dark text-light">
     <div id="navbar"></div>
 
     <main class="container py-5">
-        
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 border-bottom border-secondary pb-4 gap-3">
-            <div>
-                <h1 class="display-5 fw-bold text-info">📘 Instrucciones y Reglas</h1>
-                <p class="text-secondary m-0">Manual oficial del jugador.</p>
-            </div>
-            <a id="smart-back-btn" href="../Portal/index.html" class="btn btn-outline-light px-4">
-                ⬅ Volver al Inicio
-            </a>
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 border-bottom border-secondary pb-4 gap-3"
+      >
+        <div>
+          <h1 class="display-5 fw-bold text-info">📘 Instrucciones y Reglas</h1>
+          <p class="text-secondary m-0">
+            Manual oficial de todos los juegos disponibles.
+          </p>
+        </div>
+        <a
+          id="smart-back-btn"
+          href="../public/index.html"
+          class="btn btn-outline-light px-4"
+        >
+          ⬅ Volver al Inicio
+        </a>
+      </div>
+
+      <div class="row g-5">
+        <div class="col-lg-3">
+          <div
+            class="nav flex-column nav-pills sticky-top"
+            style="top: 20px"
+            id="v-pills-tab"
+            role="tablist"
+            aria-orientation="vertical"
+          >
+            <button
+              class="nav-link active text-start"
+              id="v-pills-general-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-general"
+              type="button"
+            >
+              📌 General
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-ruleta-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-ruleta"
+              type="button"
+            >
+              🎡 Ruleta
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-slots-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-slots"
+              type="button"
+            >
+              🎰 Tragaperras
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-crash-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-crash"
+              type="button"
+            >
+              🚀 Crash
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-blackjack-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-blackjack"
+              type="button"
+            >
+              🃏 Blackjack
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-carrera-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-carrera"
+              type="button"
+            >
+              🐎 Carreras
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-poker-classic-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-poker-classic"
+              type="button"
+            >
+              ♣️ Póker Clásico
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-poker-texas-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-poker-texas"
+              type="button"
+            >
+              ♠️ Texas Hold'em
+            </button>
+            <button
+              class="nav-link text-start"
+              id="v-pills-faq-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-faq"
+              type="button"
+            >
+              ❓ FAQ
+            </button>
+          </div>
         </div>
 
-        <div class="row g-5">
-            <div class="col-md-3">
-                <div class="nav flex-column nav-pills me-3 sticky-top" style="top: 20px;" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                    <button class="nav-link active text-start" id="v-pills-general-tab" data-bs-toggle="pill" data-bs-target="#v-pills-general" type="button">📌 General</button>
-                    <button class="nav-link text-start" id="v-pills-ruleta-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ruleta" type="button">🎡 Ruleta</button>
-                    <button class="nav-link text-start" id="v-pills-slots-tab" data-bs-toggle="pill" data-bs-target="#v-pills-slots" type="button">🎰 Tragaperras</button>
-                    <button class="nav-link text-start" id="v-pills-crash-tab" data-bs-toggle="pill" data-bs-target="#v-pills-crash" type="button">🚀 Crash</button>
-                    <button class="nav-link text-start" id="v-pills-faq-tab" data-bs-toggle="pill" data-bs-target="#v-pills-faq" type="button">❓ FAQ</button>
-                </div>
+        <div class="col-lg-9">
+          <div class="tab-content" id="v-pills-tabContent">
+            <div class="tab-pane fade show active" id="v-pills-general">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4 text-warning">Funcionamiento del Casino</h3>
+                <p>
+                  Bienvenido a Casino DAW. Nuestro sistema utiliza una
+                  <strong>infraestructura unificada</strong>:
+                </p>
+                <ul class="list-group list-group-flush rounded">
+                  <li
+                    class="list-group-item bg-dark text-light border-secondary"
+                  >
+                    👤 <strong>Cuenta Única:</strong> Necesitas registrarte para
+                    jugar.
+                  </li>
+                  <li
+                    class="list-group-item bg-dark text-light border-secondary"
+                  >
+                    💰 <strong>Billetera Centralizada:</strong> Tu dinero se
+                    sincroniza en la Base de Datos. Si ganas en la Ruleta,
+                    puedes usarlo en el Póker al instante.
+                  </li>
+                  <li
+                    class="list-group-item bg-dark text-light border-secondary"
+                  >
+                    💾 <strong>Seguridad:</strong> Todas las transacciones se
+                    validan en el servidor para evitar fraudes.
+                  </li>
+                </ul>
+              </div>
             </div>
 
-            <div class="col-md-9">
-                <div class="tab-content" id="v-pills-tabContent">
-                    
-                    <div class="tab-pane fade show active" id="v-pills-general">
-                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
-                            <h3 class="mb-4 text-warning">Funcionamiento del Casino</h3>
-                            <p>Bienvenido a Casino DAW. Nuestro sistema utiliza una <strong>Billetera Única</strong>:</p>
-                            <ul class="list-group list-group-flush rounded">
-                                <li class="list-group-item bg-dark text-light border-secondary">👤 <strong>Registro:</strong> Necesitas una cuenta para jugar.</li>
-                                <li class="list-group-item bg-dark text-light border-secondary">💰 <strong>Saldo Unificado:</strong> Tu dinero viaja contigo entre juegos.</li>
-                                <li class="list-group-item bg-dark text-light border-secondary">💾 <strong>Guardado:</strong> Tu progreso se guarda en el navegador localmente.</li>
-                            </ul>
-                        </div>
-                    </div>
+            <div class="tab-pane fade" id="v-pills-ruleta">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4">🎡 Reglas de la Ruleta</h3>
+                <p>
+                  Ruleta Europea con un solo 0. El objetivo es predecir dónde
+                  caerá la bola.
+                </p>
 
-                    <div class="tab-pane fade" id="v-pills-ruleta">
-                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
-                            <h3 class="mb-4">🎡 Reglas de la Ruleta</h3>
-                            <p>Predice dónde caerá la bola en el cilindro de 37 números (0-36).</p>
-                            
-                            <h5 class="text-warning mt-4">Tabla de Pagos</h5>
-                            <div class="table-responsive">
-                                <table class="table table-dark table-striped mt-2 table-sm">
-                                    <thead><tr><th>Apuesta</th><th>Ejemplo</th><th>Pago</th></tr></thead>
-                                    <tbody>
-                                        <tr><td><strong>Pleno</strong></td><td>A un número exacto (ej. 7)</td><td class="text-success fw-bold">35 a 1</td></tr>
-                                        <tr><td><strong>Columna/Docena</strong></td><td>1ª Docena, Columna 2</td><td class="text-info">2 a 1</td></tr>
-                                        <tr><td><strong>Sencillas</strong></td><td>Rojo/Negro, Par/Impar</td><td>1 a 1</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="alert alert-dark border-warning mt-3 d-flex gap-3 align-items-center">
-                                <span class="fs-2">⚠️</span>
-                                <div>
-                                    <strong>Ojo con el CERO (0):</strong><br>
-                                    Si sale el 0, pierden las apuestas a Docenas, Columnas y Sencillas.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="v-pills-slots">
-                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
-                            <h3 class="mb-4">🎰 Funcionamiento Tragaperras</h3>
-                            <p>El juego consiste en alinear 3 símbolos idénticos en la línea central.</p>
-                            
-                            <div class="row g-3 mt-2">
-                                <div class="col-sm-6">
-                                    <div class="p-3 bg-dark rounded border border-secondary h-100">
-                                        <h5 class="text-info">Coste</h5>
-                                        <p class="display-6 fw-bold text-danger">-5.00 €</p>
-                                        <small class="text-secondary">Por cada giro</small>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="p-3 bg-dark rounded border border-secondary h-100">
-                                        <h5 class="text-warning">Tabla de Premios</h5>
-                                        <ul class="list-unstyled m-0 small">
-                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                                                <span>💎 Diamantes</span> <span class="fw-bold text-warning">100 €</span>
-                                            </li>
-                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                                                <span>⭐ Estrellas</span> <span class="fw-bold text-warning">50 €</span>
-                                            </li>
-                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                                                <span>🔔 Campanas</span> <span class="fw-bold">20 €</span>
-                                            </li>
-                                            <li class="d-flex justify-content-between py-1 border-bottom border-secondary">
-                                                <span>🍋 Limones</span> <span class="fw-bold">10 €</span>
-                                            </li>
-                                            <li class="d-flex justify-content-between py-1">
-                                                <span>🍒 Cerezas</span> <span class="fw-bold">5 €</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="v-pills-crash">
-                        <div class="card bg-secondary text-white border-0 shadow-sm p-4">
-                            <h3 class="mb-4">🚀 Reglas del CRASH</h3>
-                            <p>Un cohete despega y un multiplicador empieza a subir (1.00x, 2.00x...). ¡Puede explotar en cualquier momento!</p>
-                            
-                            <div class="alert alert-dark border-warning d-flex gap-3 align-items-center">
-                                <span class="fs-1">💥</span>
-                                <div>
-                                    <strong>Objetivo:</strong><br>
-                                    Pulsa el botón <strong>RETIRAR</strong> antes de que el cohete explote.
-                                    Si retiras a tiempo, ganas: <code>Tu Apuesta x Multiplicador</code>.
-                                </div>
-                            </div>
-
-                            <h5 class="text-warning mt-4">Ejemplo de Partida</h5>
-                            <ul class="list-group list-group-flush rounded">
-                                <li class="list-group-item bg-dark text-light border-secondary">1. Apuestas <strong>10 €</strong>.</li>
-                                <li class="list-group-item bg-dark text-light border-secondary">2. El cohete sube... esperas... llega a <strong>2.50x</strong>.</li>
-                                <li class="list-group-item bg-dark text-light border-secondary">3. Pulsas "RETIRAR".</li>
-                                <li class="list-group-item bg-dark text-light border-secondary text-success fw-bold">4. ¡Ganas 25 €! (10 x 2.50)</li>
-                                <li class="list-group-item bg-dark text-light border-secondary text-danger">⚠️ Si hubieras esperado y explota a 2.51x... ¡Lo pierdes todo!</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="v-pills-faq">
-                        <div class="accordion accordion-flush" id="accordionFlushExample">
-                            <div class="accordion-item bg-secondary text-white border-dark mb-2 rounded">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-dark text-white shadow-none rounded" type="button" data-bs-toggle="collapse" data-bs-target="#flush-one">
-                                        💸 ¿Qué pasa si me quedo sin saldo?
-                                    </button>
-                                </h2>
-                                <div id="flush-one" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body text-white-50">
-                                        Puedes recargar saldo ficticio gratuitamente desde el <strong>Dashboard</strong> en la sección "Gestión de Billetera".
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item bg-secondary text-white border-dark rounded">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed bg-dark text-white shadow-none rounded" type="button" data-bs-toggle="collapse" data-bs-target="#flush-two">
-                                        💾 ¿Se guarda mi progreso?
-                                    </button>
-                                </h2>
-                                <div id="flush-two" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body text-white-50">
-                                        Sí, utilizamos <code>localStorage</code> del navegador. Si borras el caché o usas modo incógnito, perderás el saldo.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                <h5 class="text-warning mt-4">Tabla de Pagos</h5>
+                <div class="table-responsive">
+                  <table class="table table-dark table-striped mt-2 table-sm">
+                    <thead>
+                      <tr>
+                        <th>Apuesta</th>
+                        <th>Ejemplo</th>
+                        <th>Pago</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Pleno</strong></td>
+                        <td>Número exacto (ej. 7)</td>
+                        <td class="text-success fw-bold">35 a 1</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Docena/Columna</strong></td>
+                        <td>1ª Docena</td>
+                        <td class="text-info">2 a 1</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Sencillas</strong></td>
+                        <td>Rojo/Negro, Par/Impar</td>
+                        <td>1 a 1</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
+              </div>
             </div>
+
+            <div class="tab-pane fade" id="v-pills-slots">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4">🎰 Tragaperras (Slots)</h3>
+                <p>
+                  Juego de azar puro. Alinea 3 símbolos idénticos en la línea
+                  central para ganar.
+                </p>
+
+                <div class="row mt-4">
+                  <div class="col-md-6">
+                    <h5 class="text-warning">Símbolos Especiales</h5>
+                    <ul class="list-unstyled">
+                      <li class="mb-2">
+                        💎 <strong>Diamante:</strong> Premio Máximo (Jackpot).
+                      </li>
+                      <li class="mb-2">
+                        ⭐ <strong>Estrella:</strong> Premio Alto.
+                      </li>
+                      <li class="mb-2">
+                        🍋 <strong>Limón / 🍒 Cereza:</strong> Premios menores
+                        frecuentes.
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="alert alert-dark border-info">
+                      <strong>Coste por giro:</strong> Fijo (ej. 5€).<br />
+                      El premio se suma automáticamente a tu saldo.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-crash">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4">🚀 CRASH Rocket</h3>
+                <p>
+                  Un cohete despega y el multiplicador sube (1.00x, 2.50x,
+                  10.00x...).
+                </p>
+
+                <div
+                  class="alert alert-dark border-danger d-flex gap-3 align-items-center"
+                >
+                  <span class="fs-1">💥</span>
+                  <div>
+                    <strong>Regla de Oro:</strong><br />
+                    Debes pulsar <strong>RETIRAR</strong> antes de que el cohete
+                    explote. Si explota antes, pierdes tu apuesta.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-blackjack">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4">🃏 Blackjack (21)</h3>
+                <p>
+                  Compite contra la Banca (Dealer). El objetivo es sumar
+                  <strong>21 puntos</strong> o más que la banca sin pasarse.
+                </p>
+
+                <h5 class="text-warning mt-4">Valor de las Cartas</h5>
+                <ul class="list-group list-group-flush bg-dark rounded mb-3">
+                  <li
+                    class="list-group-item bg-dark text-light border-secondary"
+                  >
+                    🔢 <strong>2-10:</strong> Su valor numérico.
+                  </li>
+                  <li
+                    class="list-group-item bg-dark text-light border-secondary"
+                  >
+                    👑 <strong>J, Q, K:</strong> Valen 10.
+                  </li>
+                  <li
+                    class="list-group-item bg-dark text-light border-secondary"
+                  >
+                    🅰️ <strong>As:</strong> Vale 1 o 11 (lo que más te
+                    convenga).
+                  </li>
+                </ul>
+
+                <h5 class="text-info">Reglas de la Banca</h5>
+                <p>
+                  La banca está obligada a pedir carta si tiene 16 o menos, y a
+                  plantarse si tiene 17 o más.
+                </p>
+                <p>
+                  <strong>Pago:</strong> El Blackjack natural paga 3 a 2.
+                  Victoria normal paga 1 a 1.
+                </p>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-carrera">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4">🐎 Carreras de Caballos</h3>
+                <p>
+                  Apuesta por tu caballo favorito antes de que empiece la
+                  carrera.
+                </p>
+
+                <div class="alert alert-dark border-warning">
+                  <strong>Mecánica:</strong><br />
+                  Cada caballo tiene unas probabilidades (Odds). Los caballos
+                  más rápidos pagan menos, y los "tapados" pagan mucho más si
+                  ganan.
+                </div>
+
+                <ul>
+                  <li>Eliges el caballo y el importe.</li>
+                  <li>Ves la carrera en tiempo real (simulada).</li>
+                  <li>
+                    Si tu caballo cruza la meta primero, ganas:
+                    <code>Apuesta x Cuota</code>.
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-poker-classic">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4">♣️ Póker Clásico (Video Poker)</h3>
+                <p>
+                  Modalidad de un jugador (5-Card Draw). El objetivo es
+                  conseguir la mejor mano posible.
+                </p>
+
+                <h5 class="text-warning mt-3">Cómo se juega:</h5>
+                <ol>
+                  <li>Haces tu apuesta inicial.</li>
+                  <li>Recibes <strong>5 cartas</strong>.</li>
+                  <li>
+                    Eliges cuáles quieres <strong>MANTENER</strong> (Hold).
+                  </li>
+                  <li>
+                    Pulsas "Repartir" y las cartas no seleccionadas se cambian
+                    por nuevas.
+                  </li>
+                  <li>Si tu mano final está en la tabla de premios, ganas.</li>
+                </ol>
+
+                <p class="small text-white-50 mt-3">
+                  Se necesita mínimo una pareja de Jotas o superior para ganar
+                  premio.
+                </p>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-poker-texas">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4">♠️ Texas Hold'em (Heads Up)</h3>
+                <p>
+                  Enfréntate 1 contra 1 a la CPU. Se usan 2 cartas propias y 5
+                  comunitarias.
+                </p>
+
+                <h5 class="text-warning mt-4">
+                  Jerarquía de Manos (De mayor a menor)
+                </h5>
+                <ul class="list-unstyled hand-rank-list small">
+                  <li class="d-flex justify-content-between">
+                    <span
+                      >👑 Escalera Real (10, J, Q, K, A del mismo palo)</span
+                    >
+                    <span class="text-warning">Invencible</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🌈 Escalera de Color</span> <span>Muy fuerte</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>4️⃣ Póker (4 iguales)</span> <span>Muy fuerte</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🏠 Full House (Trío + Pareja)</span>
+                    <span>Fuerte</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🎨 Color (5 del mismo palo)</span> <span>Fuerte</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🔢 Escalera (5 consecutivas)</span> <span>Media</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>3️⃣ Trío</span> <span>Media</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>2️⃣ Doble Pareja</span> <span>Básica</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>1️⃣ Pareja</span> <span>Básica</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🃏 Carta Alta</span> <span>Débil</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-faq">
+              <div class="accordion accordion-flush" id="accordionFlushExample">
+                <div
+                  class="accordion-item bg-secondary text-white border-dark mb-2 rounded"
+                >
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed bg-dark text-white shadow-none rounded"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#flush-one"
+                    >
+                      💸 ¿Qué pasa si me quedo sin saldo?
+                    </button>
+                  </h2>
+                  <div
+                    id="flush-one"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionFlushExample"
+                  >
+                    <div class="accordion-body text-white-50">
+                      Puedes recargar saldo ficticio gratuitamente desde el
+                      <strong>Dashboard</strong> en la sección "Gestión de
+                      Billetera".
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="accordion-item bg-secondary text-white border-dark rounded"
+                >
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button collapsed bg-dark text-white shadow-none rounded"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#flush-two"
+                    >
+                      💾 ¿Se guarda mi progreso?
+                    </button>
+                  </h2>
+                  <div
+                    id="flush-two"
+                    class="accordion-collapse collapse"
+                    data-bs-parent="#accordionFlushExample"
+                  >
+                    <div class="accordion-body text-white-50">
+                      Sí, utilizamos una <strong>Base de Datos</strong> segura.
+                      Puedes cerrar sesión, apagar el ordenador y volver mañana:
+                      tu dinero seguirá ahí.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </main>
 
     <div id="footer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Portal/assets/js/auth.js"></script>
-    <script src="../Portal/assets/js/wallet.js"></script>
+    <script src="../public/assets/js/auth.js"></script>
+    <script src="../public/assets/js/logout.js"></script>
+
+    <script src="../public/assets/js/navbar_logic.js"></script>
 
     <script>
-        // 1. Cargar Navbar con Corrección de Rutas
-        fetch("../Portal/partials/navbar.html")
-            .then(r => r.text())
-            .then(html => {
-                // Truco de reemplazo de rutas para que funcionen desde subcarpeta
-                let fixedHtml = html.replace(/href="(?!(http|#|\.\.))([^"]+)"/g, 'href="../Portal/$2"');
-                
-                document.getElementById("navbar").innerHTML = fixedHtml;
-                if(window.NavbarManager) NavbarManager.init();
-            });
-
-        // 2. Cargar Footer
-        fetch("../Portal/partials/footer.html")
-            .then(r => r.text())
-            .then(html => {
-                document.getElementById("footer").innerHTML = html;
-            });
-
-        // 3. Lógica Botón "Volver" Inteligente
-        document.addEventListener("DOMContentLoaded", () => {
-            const btn = document.getElementById("smart-back-btn");
-            
-            if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
-                btn.href = "../Portal/dashboard.html";
-                btn.innerHTML = "🎛 Volver al Dashboard";
-                btn.classList.replace("btn-outline-light", "btn-warning");
-                btn.classList.add("text-dark", "fw-bold");
-            } else {
-                btn.href = "../Portal/index.html";
-                btn.innerHTML = "🏠 Volver al Inicio";
-            }
+      // 1. Cargar Navbar
+      fetch("../public/partials/navbar.html")
+        .then((r) => r.text())
+        .then((html) => {
+          document.getElementById("navbar").innerHTML = html;
+          if (window.NavbarManager) NavbarManager.init();
         });
-    </script>
 
-</body>
+      // 2. Cargar Footer
+      fetch("../public/partials/footer.html")
+        .then((r) => r.text())
+        .then((html) => {
+          document.getElementById("footer").innerHTML = html;
+        });
+
+      // 3. Lógica Botón "Volver" Inteligente
+      document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("smart-back-btn");
+
+        if (typeof Auth !== "undefined" && Auth.isAuthenticated()) {
+          btn.href = "../public/dashboard.html";
+          btn.innerHTML = "🎛 Volver al Dashboard";
+          btn.classList.replace("btn-outline-light", "btn-warning");
+          btn.classList.add("text-dark", "fw-bold");
+        } else {
+          btn.href = "../public/index.html";
+          btn.innerHTML = "🏠 Volver al Inicio";
+        }
+      });
+    </script>
+  </body>
 </html>

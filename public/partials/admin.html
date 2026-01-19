@@ -1,125 +1,275 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Panel Admin | Casino DAW</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <span class="navbar-brand">👮 Panel de Administración</span>
-            <a href="../dashboard.html" class="btn btn-outline-light btn-sm">Volver al Casino</a>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel Supremo | Casino DAW</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="../assets/css/main.css" />
+  </head>
+  <body class="bg-dark text-light">
+    <nav
+      class="navbar navbar-dark bg-black border-bottom border-secondary mb-4"
+    >
+      <div class="container">
+        <span class="navbar-brand fw-bold text-warning" id="role-badge"
+          ><i class="bi bi-shield-lock-fill"></i> CARGANDO...</span
+        >
+        <div class="d-flex align-items-center gap-3">
+          <span
+            id="msg-badge"
+            class="badge bg-danger rounded-pill d-none"
+            style="font-size: 0.8rem"
+          ></span>
+          <a href="../dashboard.html" class="btn btn-outline-light btn-sm"
+            >⬅ DASHBOARD</a
+          >
         </div>
+      </div>
     </nav>
 
     <div class="container">
-        
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card text-white bg-primary shadow">
-                    <div class="card-body">
-                        <h5 class="card-title">Usuarios Registrados</h5>
-                        <h2 class="display-4 fw-bold" id="totalUsers">0</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card text-white bg-danger shadow">
-                    <div class="card-body">
-                        <h5 class="card-title">Dinero en manos de jugadores</h5>
-                        <h2 class="display-4 fw-bold"><span id="totalMoney">0.00</span> €</h2>
-                        <small>Esto es lo que el casino debe pagar si todos retiran.</small>
-                    </div>
-                </div>
-            </div>
+      <div class="row mb-4 g-4 text-center">
+        <div class="col-md-6">
+          <div class="card bg-secondary border-0 p-3">
+            <small class="text-white-50">Usuarios</small>
+            <h2 id="totalUsers">0</h2>
+          </div>
         </div>
-
-        <div class="card shadow">
-            <div class="card-header bg-white">
-                <h4 class="mb-0">Gestión de Usuarios</h4>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Usuario</th>
-                                <th>Email</th>
-                                <th>Saldo Actual</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userTableBody">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="col-md-6">
+          <div class="card bg-secondary border-0 p-3">
+            <small class="text-warning">Dinero en Banca</small>
+            <h2 class="text-warning" id="totalMoney">0.00 €</h2>
+          </div>
         </div>
+      </div>
 
+      <div class="card bg-black border-info mb-5 shadow">
+        <div class="card-header bg-dark border-info text-info fw-bold small">
+          <i class="bi bi-chat-dots"></i> TICKETS DE SOPORTE
+        </div>
+        <div class="table-responsive" style="max-height: 250px">
+          <table class="table table-dark table-sm align-middle mb-0 small">
+            <tbody id="supportTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card bg-black border-secondary mb-5 shadow">
+        <div
+          class="card-header border-secondary d-flex justify-content-between align-items-center"
+        >
+          <h5 class="m-0 small fw-bold">GESTIÓN DE USUARIOS</h5>
+          <button
+            onclick="cargarDatosAdmin()"
+            class="btn btn-sm btn-outline-info"
+          >
+            REFRESCAR
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover mb-0 small align-middle">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Rango</th>
+                <th class="text-end">Saldo</th>
+                <th class="text-center">Editar</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="owner-logs-section" class="d-none">
+        <div class="card bg-black border-warning shadow">
+          <div
+            class="card-header bg-dark border-warning text-warning fw-bold small"
+          >
+            📔 CAJA NEGRA (AUDITORÍA)
+          </div>
+          <div class="table-responsive" style="max-height: 250px">
+            <table class="table table-dark table-sm small">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Admin</th>
+                  <th>Acción</th>
+                  <th>Cambio</th>
+                </tr>
+              </thead>
+              <tbody id="logsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary text-light">
+          <div class="modal-body p-4 text-center">
+            <input type="hidden" id="edit-id" />
+            <div class="mb-3">
+              <label class="small text-white-50">Usuario</label
+              ><input
+                type="text"
+                id="edit-username"
+                class="form-control bg-secondary text-white border-0"
+              />
+            </div>
+            <div class="mb-3">
+              <label class="small text-warning">Saldo (€)</label
+              ><input
+                type="number"
+                step="0.01"
+                id="edit-saldo"
+                class="form-control bg-secondary text-white border-0 fw-bold"
+              />
+            </div>
+            <button
+              onclick="guardarCambiosUsuario()"
+              class="btn btn-success w-100 fw-bold"
+            >
+              GUARDAR
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Cargar datos al iniciar
-        document.addEventListener("DOMContentLoaded", () => {
-            cargarDatosAdmin();
+      let usuariosCache = [];
+      const editModal = new bootstrap.Modal(
+        document.getElementById("editModal")
+      );
+
+      function cargarDatosAdmin() {
+        fetch("../api.php?action=admin_get_data&t=" + Date.now())
+          .then((r) => r.json())
+          .then((data) => {
+            if (!data.access)
+              return (window.location.href = "../dashboard.html");
+            document.getElementById(
+              "role-badge"
+            ).innerHTML = `<i class="bi bi-shield-check"></i> PANEL ${data.mi_rol.toUpperCase()}`;
+            document.getElementById("totalUsers").textContent =
+              data.stats.total_usuarios || 0;
+            document.getElementById("totalMoney").textContent =
+              (data.stats.dinero_en_juego || 0).toFixed(2) + " €";
+            const badge = document.getElementById("msg-badge");
+            if (data.stats.pendientes > 0) {
+              badge.textContent = `${data.stats.pendientes} pendientes`;
+              badge.classList.remove("d-none");
+            } else {
+              badge.classList.add("d-none");
+            }
+            usuariosCache = data.usuarios;
+            const tbody = document.getElementById("userTableBody");
+            tbody.innerHTML = data.usuarios
+              .map(
+                (u) =>
+                  `<tr><td>#${u.id}</td><td class="fw-bold">${
+                    u.username
+                  }</td><td>${
+                    data.mi_rol === "owner"
+                      ? `<select class="form-select form-select-sm bg-dark text-warning border-secondary" onchange="cambiarRango(${
+                          u.id
+                        }, this.value)"><option value="user" ${
+                          u.rol === "user" ? "selected" : ""
+                        }>User</option><option value="admin" ${
+                          u.rol === "admin" ? "selected" : ""
+                        }>Admin</option><option value="owner" ${
+                          u.rol === "owner" ? "selected" : ""
+                        }>Owner</option></select>`
+                      : `<span class="badge bg-secondary">${u.rol}</span>`
+                  }</td><td class="text-end fw-bold">${parseFloat(
+                    u.saldo
+                  ).toFixed(
+                    2
+                  )} €</td><td class="text-center"><button onclick="abrirModalEditar(${
+                    u.id
+                  })" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></button></td></tr>`
+              )
+              .join("");
+            cargarMensajesSoporte();
+          });
+      }
+
+      function cargarMensajesSoporte() {
+        fetch("../api.php?action=admin_get_messages&t=" + Date.now())
+          .then((r) => r.json())
+          .then((d) => {
+            const body = document.getElementById("supportTableBody");
+            if (!d.mensajes.length)
+              return (body.innerHTML =
+                '<tr><td class="text-center py-3">No hay mensajes.</td></tr>');
+            body.innerHTML = d.mensajes
+              .map(
+                (m) =>
+                  `<tr class="${
+                    m.leido == 0 ? "bg-dark fw-bold" : "opacity-50"
+                  }"><td class="ps-3"><span class="text-info">${
+                    m.username
+                  }</span><br><small class="text-white-50">${
+                    m.mensaje
+                  }</small></td><td class="px-2">${
+                    m.respuesta
+                      ? `<small class="text-success">R: ${m.respuesta}</small>`
+                      : `<div class="input-group input-group-sm"><input type="text" id="reply-${m.id}" class="form-control bg-dark text-white border-secondary" placeholder="Respuesta..."><button onclick="responder(${m.id})" class="btn btn-info py-0">OK</button></div>`
+                  }</td></tr>`
+              )
+              .join("");
+          });
+      }
+
+      function responder(id) {
+        const res = document.getElementById(`reply-${id}`).value;
+        if (!res) return;
+        fetch("../api.php?action=admin_reply_message", {
+          method: "POST",
+          body: JSON.stringify({ id, respuesta: res }),
+          headers: { "Content-Type": "application/json" },
+        }).then(() => cargarDatosAdmin());
+      }
+      function cambiarRango(id, nuevo_rol) {
+        fetch("../api.php?action=admin_change_role", {
+          method: "POST",
+          body: JSON.stringify({ id, nuevo_rol }),
+          headers: { "Content-Type": "application/json" },
+        }).then(() => cargarDatosAdmin());
+      }
+      function abrirModalEditar(id) {
+        const u = usuariosCache.find((x) => x.id === id);
+        document.getElementById("edit-id").value = u.id;
+        document.getElementById("edit-username").value = u.username;
+        document.getElementById("edit-saldo").value = u.saldo;
+        editModal.show();
+      }
+      function guardarCambiosUsuario() {
+        fetch("../api.php?action=admin_update_user", {
+          method: "POST",
+          body: JSON.stringify({
+            id: document.getElementById("edit-id").value,
+            username: document.getElementById("edit-username").value,
+            saldo: document.getElementById("edit-saldo").value,
+          }),
+          headers: { "Content-Type": "application/json" },
+        }).then(() => {
+          editModal.hide();
+          cargarDatosAdmin();
         });
-
-        function cargarDatosAdmin() {
-            fetch('../Backend/admin_data.php')
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.access) {
-                        alert("No tienes permiso de administrador.");
-                        window.location.href = '../dashboard.html';
-                        return;
-                    }
-
-                    // Actualizar Estadísticas
-                    document.getElementById('totalUsers').textContent = data.stats.total_usuarios;
-                    document.getElementById('totalMoney').textContent = data.stats.dinero_en_juego.toFixed(2);
-
-                    // Rellenar Tabla
-                    const tbody = document.getElementById('userTableBody');
-                    tbody.innerHTML = ''; // Limpiar
-                    
-                    data.usuarios.forEach(user => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>#${user.id}</td>
-                            <td class="fw-bold">${user.username}</td>
-                            <td>${user.email}</td>
-                            <td class="text-success fw-bold">${parseFloat(user.saldo).toFixed(2)} €</td>
-                            <td>
-                                <button onclick="borrarUsuario(${user.id})" class="btn btn-danger btn-sm">
-                                    🗑️ Borrar
-                                </button>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                });
-        }
-
-        function borrarUsuario(id) {
-            if(!confirm("¿Seguro que quieres eliminar a este usuario? Esta acción no se puede deshacer.")) return;
-
-            fetch('../Backend/delete_user.php', {
-                method: 'POST',
-                body: JSON.stringify({ id: id }),
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) {
-                    cargarDatosAdmin(); // Recargar tabla
-                } else {
-                    alert("Error al borrar");
-                }
-            });
-        }
+      }
+      document.addEventListener("DOMContentLoaded", cargarDatosAdmin);
     </script>
-</body>
+  </body>
 </html>

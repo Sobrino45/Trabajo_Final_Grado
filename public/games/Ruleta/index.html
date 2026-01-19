@@ -25,17 +25,14 @@
             <a
               href="../../dashboard.html"
               class="btn btn-outline-secondary btn-sm"
+              >⬅ Volver al Dashboard</a
             >
-              ⬅ Volver al Dashboard
-            </a>
           </div>
           <h1 class="mb-4 display-6">🎰 Ruleta Europea</h1>
           <div class="ruleta-container d-inline-block position-relative mb-4">
             <div class="flecha">▼</div>
             <div id="ruleta" class="ruleta">
-              <div class="ruleta-centro">
-                <div class="ruleta-cruz"></div>
-              </div>
+              <div class="ruleta-centro"><div class="ruleta-cruz"></div></div>
             </div>
           </div>
           <div class="card bg-secondary text-white shadow-sm mt-3">
@@ -126,14 +123,17 @@
       </div>
     </main>
 
+    <script src="../../assets/js/navbar_logic.js"></script>
     <script src="ruleta.js"></script>
 
     <script>
-      // RUTA CORREGIDA: ../../partials
+      // Carga del menú y activación inmediata de la lógica de usuario
       fetch("../../partials/navbar.html")
         .then((r) => r.text())
         .then((html) => {
           document.getElementById("navbar").innerHTML = html;
+          // IMPORTANTE: Ejecutar la lógica de detección de usuario tras cargar el HTML
+          if (window.NavbarManager) window.NavbarManager.init();
         });
     </script>
   </body>

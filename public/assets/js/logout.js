@@ -1,57 +1,48 @@
+/* public/assets/js/logout.js */
+
 /**
- * NAVBAR MANAGER
- * Controla la visibilidad de elementos del menú (Usuario vs Visitante).
- * Se debe llamar a NavbarManager.init() cada vez que se cargue el navbar.html
+ * Función Global de Cierre de Sesión
+ * 1. Borra la memoria del navegador.
+ * 2. Cierra la sesión en el servidor (PHP).
+ * 3. Redirige al usuario al inicio.
  */
+function ejecutarCierreSesion() {
+  console.log("🔒 Iniciando protocolo de cierre de sesión...");
 
-const NavbarManager = {
-    init: function() {
-        // Verificar si Auth existe (seguridad)
-        if (typeof Auth === 'undefined') return;
+  // 1. Borrar rastro en el navegador
+  localStorage.removeItem("casino_user");
 
-        const isAuth = Auth.isAuthenticated();
-        const user = Auth.getCurrentUser();
+  // 2. Petición al servidor (usando ruta absoluta para evitar errores)
+  fetch("/CasinoDaw/public/api.php?action=logout")
+    .then(() => {
+      // 3. Redirección forzosa (replace evita que vuelvan atrás)
+      window.location.replace("/CasinoDaw/public/index.html");
+    })
+    .catch((err) => {
+      console.error("Error al cerrar sesión:", err);
+      // Si falla, nos vamos igual
+      window.location.replace("/CasinoDaw/public/index.html");
+    });
+}
 
-        // 1. Referencias al DOM
-        const guestElements = document.querySelectorAll('.guest-only');
-        const userElements = document.querySelectorAll('.user-only');
-        const usernameSpan = document.getElementById('nav-username');
-        const saldoSpan = document.getElementById('nav-saldo');
-        const btnLogout = document.getElementById('btnLogout');
+// AUTO-BINDING: Busca los botones de logout y les pega la función automáticamente
+document.addEventListener("DOMContentLoaded", () => {
+  // IDs de los botones que queremos controlar
+  const botonesLogout = ["btnLogout", "btnDashboardLogout"];
 
-        // 2. Mostrar/Ocultar según estado
-        if (isAuth && user) {
-            // -- USUARIO LOGUEADO --
-            guestElements.forEach(el => el.classList.add('d-none'));
-            userElements.forEach(el => el.classList.remove('d-none'));
+  botonesLogout.forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      // TRUCO: Clonamos el botón para ELIMINAR cualquier evento antiguo/roto
+      const nuevoBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(nuevoBtn, btn);
 
-            // Actualizar Nombre
-            if(usernameSpan) usernameSpan.textContent = user.username;
-            
-            // Actualizar Saldo (usando Wallet si existe)
-            if(saldoSpan) {
-                const saldo = typeof Wallet !== 'undefined' ? Wallet.getBalance() : user.wallet;
-                saldoSpan.textContent = parseFloat(saldo).toFixed(2);
-            }
-
-            // Activar Logout
-            if (btnLogout) {
-                // Clonamos el nodo para eliminar listeners antiguos si se recarga el navbar
-                const newBtn = btnLogout.cloneNode(true);
-                btnLogout.parentNode.replaceChild(newBtn, btnLogout);
-                
-                newBtn.addEventListener('click', (e) => {
-                   e.preventDefault();
-                   Auth.logout();
-                });
-            }
-
-        } else {
-            // -- VISITANTE --
-            guestElements.forEach(el => el.classList.remove('d-none'));
-            userElements.forEach(el => el.classList.add('d-none'));
-        }
+      // Le ponemos nuestra función limpia
+      nuevoBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        ejecutarCierreSesion();
+      });
+      console.log(`✅ Botón de logout activado: ${id}`);
     }
-};
-
-window.NavbarManager = NavbarManager;
+  });
+});

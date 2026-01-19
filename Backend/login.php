@@ -1,16 +1,12 @@
 <?php
 // Backend/login.php
-
-// Asegurar que solo devolvemos JSON (por si api.php no lo cubrió)
 header('Content-Type: application/json');
 
-// Leer el JSON entrante
 $inputJSON = file_get_contents("php://input");
 $data = json_decode($inputJSON);
 
-// Obtener datos (soportando tanto JSON como POST clásico)
 if ($data) {
-    $identifier = $data->email ?? ''; // Usamos 'email' como campo genérico para usuario/correo
+    $identifier = $data->email ?? '';
     $password = $data->password ?? '';
 } else {
     $identifier = $_POST['email'] ?? '';
@@ -21,36 +17,34 @@ if (!empty($identifier) && !empty($password)) {
     try {
         $db = Database::getConnection();
 
-        // Consulta: Busca por email O por nombre de usuario
-        // NOTA: He cambiado la tabla 'users' a 'usuarios' para consistencia
-        $query = "SELECT id, username, email, password, saldo FROM usuarios WHERE email = :id OR username = :id LIMIT 1";
+        // 🛡️ CAMBIO: Hemos añadido 'rol' a la selección
+        $query = "SELECT id, username, email, password, saldo, rol FROM usuarios WHERE email = :id OR username = :id LIMIT 1";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $identifier);
         $stmt->execute();
 
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            // Verificación de contraseña
-            // Si usas password_hash en registro:
             $passwordValid = password_verify($password, $row['password']);
-            
-            // Si usas texto plano (temporalmente):
-            // $passwordValid = ($password === $row['password']);
 
             if ($passwordValid) {
-                // Iniciar sesión PHP para guardar estado en servidor
                 if (session_status() === PHP_SESSION_NONE) session_start();
+                
+                // 🔑 CRUCIAL: Guardamos el rol en la sesión del servidor
                 $_SESSION['user_id'] = $row['id'];
                 $_SESSION['username'] = $row['username'];
+                $_SESSION['rol'] = $row['rol']; 
 
                 http_response_code(200);
                 echo json_encode([
                     "success" => true,
                     "message" => "Login exitoso",
-                    "user_id" => $row['id'],
-                    "nombre" => $row['username'], // Enviamos 'username' como nombre
-                    "saldo" => $row['saldo']
+                    "user" => [
+                        "id" => $row['id'],
+                        "username" => $row['username'],
+                        "rol" => $row['rol'],
+                        "saldo" => floatval($row['saldo'])
+                    ]
                 ]);
             } else {
                 http_response_code(401);
@@ -68,4 +62,3 @@ if (!empty($identifier) && !empty($password)) {
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "Faltan datos."]);
 }
-?>

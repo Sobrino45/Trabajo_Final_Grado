@@ -1,6 +1,5 @@
 <?php
 // Backend/get_user_info.php
-// NOTA: NO poner session_start() ni require aquí. api.php ya lo ha hecho.
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['logged_in' => false]);
@@ -10,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 try {
-    // Usamos la conexión que api.php ya abrió
     $db = Database::getConnection();
 
     $stmt = $db->prepare("SELECT username, saldo, rol FROM usuarios WHERE id = :id LIMIT 1");
@@ -19,7 +17,9 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        // IMPORTANTE: floatval asegura que enviamos un número, no texto
+        // Sincronizamos el rol por si ha cambiado en la base de datos
+        $_SESSION['rol'] = $user['rol']; 
+
         echo json_encode([
             'logged_in' => true,
             'username' => $user['username'],
@@ -28,11 +28,9 @@ try {
         ]);
     } else {
         session_destroy();
-        echo json_encode(['logged_in' => false, 'message' => 'Usuario no encontrado']);
+        echo json_encode(['logged_in' => false, 'message' => 'Sesión inválida']);
     }
 
 } catch (Exception $e) {
-    // Enviar error JSON limpio
     echo json_encode(['logged_in' => false, 'error' => $e->getMessage()]);
 }
-?>

@@ -1,13 +1,13 @@
 package com.casinodaw.blackjack.service;
 
-import com.casinodaw.blackjack.model.Carta;
-import com.casinodaw.blackjack.model.Mano;
-import com.casinodaw.blackjack.model.Mazo;
-import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
+import com.casinodaw.blackjack.model.Mano;
+import com.casinodaw.blackjack.model.Mazo;
 
 @Service
 public class GameService {
@@ -25,19 +25,35 @@ public class GameService {
         jugador.agregarCarta(mazo.robar());
         croupier.agregarCarta(mazo.robar());
         jugador.agregarCarta(mazo.robar());
-        croupier.agregarCarta(mazo.robar()); // Esta segunda se ocultará al front
+        croupier.agregarCarta(mazo.robar());
 
         jugador.setApuesta(apuesta);
 
         Partida partida = new Partida(id, mazo, jugador, croupier);
         partidas.put(id, partida);
 
+        // --- LÓGICA DE BLACKJACK NATURAL (21 al inicio) ---
+        int ptJ = jugador.calcularPuntos();
+        int ptC = croupier.calcularPuntos();
+
+        if (ptJ == 21 && ptC == 21) {
+            partida.terminada = true;
+            return construirRespuesta(partida, "EMPATE");
+        } else if (ptJ == 21) {
+            partida.terminada = true;
+            return construirRespuesta(partida, "BLACKJACK"); // Estado esperado por el JS
+        } else if (ptC == 21) {
+            partida.terminada = true;
+            return construirRespuesta(partida, "PERDEDOR");
+        }
+
         return construirRespuesta(partida, "JUGANDO");
     }
 
     public Map<String, Object> pedirCarta(String id) {
         Partida p = partidas.get(id);
-        if (p == null || p.terminada) return error("Partida inválida");
+        if (p == null || p.terminada)
+            return error("Partida inválida o ya finalizada");
 
         p.jugador.agregarCarta(p.mazo.robar());
 
@@ -45,14 +61,23 @@ public class GameService {
             p.terminada = true;
             return construirRespuesta(p, "PERDEDOR");
         }
+
+        // Si el jugador llega a 21 pidiendo carta, no gana automáticamente Blackjack
+        // (es 1:1)
+        // pero le obligamos a plantarse por lógica de juego.
+        if (p.jugador.calcularPuntos() == 21) {
+            return plantarse(id);
+        }
+
         return construirRespuesta(p, "JUGANDO");
     }
 
     public Map<String, Object> plantarse(String id) {
         Partida p = partidas.get(id);
-        if (p == null) return error("Partida inválida");
+        if (p == null || p.terminada)
+            return error("Partida inválida");
 
-        // Lógica del Croupier: Pide hasta llegar a 17
+        // Lógica del Croupier: Solo juega si el jugador no ha perdido ya
         while (p.croupier.calcularPuntos() < 17) {
             p.croupier.agregarCarta(p.mazo.robar());
         }
@@ -63,22 +88,21 @@ public class GameService {
 
     public Map<String, Object> doblar(String id) {
         Partida p = partidas.get(id);
-        if (p == null) return error("Partida inválida");
+        if (p == null || p.terminada)
+            return error("Partida inválida");
 
-        // Dobla la apuesta y da SOLO una carta
+        // Regla oficial: Dobla apuesta y recibe UNA sola carta
         p.jugador.setApuesta(p.jugador.getApuesta() * 2);
         p.jugador.agregarCarta(p.mazo.robar());
 
+        p.terminada = true;
         if (p.jugador.sePaso()) {
-            p.terminada = true;
             return construirRespuesta(p, "PERDEDOR");
         } else {
-            // Si no se pasa, se planta automáticamente
+            // El croupier debe jugar su turno tras el doble del jugador
             return plantarse(id);
         }
     }
-
-    // --- Auxiliares ---
 
     private Map<String, Object> determinarGanador(Partida p) {
         int ptJugador = p.jugador.calcularPuntos();
@@ -86,7 +110,7 @@ public class GameService {
         String estado;
 
         if (p.croupier.sePaso()) {
-            estado = "GANADOR"; // Croupier se pasó
+            estado = "GANADOR"; // El Croupier se pasó de 21
         } else if (ptJugador > ptCroupier) {
             estado = "GANADOR";
         } else if (ptJugador < ptCroupier) {
@@ -105,27 +129,33 @@ public class GameService {
         resp.put("apuesta", p.jugador.getApuesta());
         resp.put("estado", estado);
 
-        if (estado.equals("JUGANDO")) {
-            // Ocultamos la segunda carta del croupier y sus puntos totales
+        if (estado.equals("JUGANDO") && !p.terminada) {
+            // Ocultamos la información sensible durante la partida
             resp.put("cartaCroupierVisible", p.croupier.getCartas().get(0));
-            resp.put("puntosCroupier", "?");
+            resp.put("puntosCroupier", 0);
         } else {
-            // Mostramos todo al terminar
+            // Se revela todo al finalizar o si hubo Blackjack inicial
             resp.put("cartasCroupier", p.croupier.getCartas());
             resp.put("puntosCroupier", p.croupier.calcularPuntos());
         }
         return resp;
     }
 
-    private Map<String, Object> error(String msg) { return Map.of("error", msg); }
+    private Map<String, Object> error(String msg) {
+        return Map.of("error", msg);
+    }
 
     private static class Partida {
         String id;
         Mazo mazo;
         Mano jugador, croupier;
         boolean terminada = false;
+
         public Partida(String id, Mazo mazo, Mano jugador, Mano croupier) {
-            this.id = id; this.mazo = mazo; this.jugador = jugador; this.croupier = croupier;
+            this.id = id;
+            this.mazo = mazo;
+            this.jugador = jugador;
+            this.croupier = croupier;
         }
     }
 }

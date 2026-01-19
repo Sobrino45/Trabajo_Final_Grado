@@ -1,6 +1,3 @@
-/* ============================
-   CONFIGURACIÓN GENERAL
-   ============================ */
 const TOTAL_NUMEROS = 37;
 const GRADOS = 360 / TOTAL_NUMEROS;
 const PREMIOS = {
@@ -12,36 +9,29 @@ const PREMIOS = {
   docena: 2,
 };
 const AJUSTE_VISUAL = -90;
+const ROJOS = [
+  1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
+];
 
 let apuestas = [];
-let historial = [];
 let rotacionActual = 0;
 let girando = false;
-let saldoActual = 0; // Variable local para control rápido
+let saldoActual = 0;
 
-/* ============================
-   ELEMENTOS DOM
-   ============================ */
 const ruleta = document.getElementById("ruleta");
 const girarBtn = document.getElementById("girar");
 const resultadoTxt = document.getElementById("resultado");
-const detalleGanadoresTxt = document.getElementById("detalleGanadores");
 const cantidadInput = document.getElementById("cantidad");
-const resultadosDiv = document.getElementById("resultados");
 const tableroDiv = document.getElementById("tablero");
-const btnLimpiar = document.getElementById("btnLimpiar");
 const walletDisplay = document.getElementById("walletDisplay");
 
-/* ============================
-   INICIALIZACIÓN
-   ============================ */
 document.addEventListener("DOMContentLoaded", () => {
-  inicializarJuego();
+  crearRuletaVisual();
+  dibujarTablero();
   cargarSaldoServidor();
 });
 
 function cargarSaldoServidor() {
-  // CORREGIDO: Ruta api.php
   fetch("../../api.php?action=get_user_info")
     .then((r) => r.json())
     .then((data) => {
@@ -54,38 +44,9 @@ function cargarSaldoServidor() {
     });
 }
 
-function inicializarJuego() {
-  crearRuletaVisual();
-  if (tableroDiv) dibujarTablero();
-  generarHistorialFicticio();
-  renderizarHistorial();
-}
-
-function generarHistorialFicticio() {
-  historial = [];
-  for (let i = 0; i < 10; i++) {
-    const numRandom = Math.floor(Math.random() * TOTAL_NUMEROS);
-    historial.push(numRandom);
-  }
-}
-
 function actualizarSaldoVisual(valor) {
   walletDisplay.textContent = valor.toFixed(2) + " €";
-  if (valor < 10) {
-    walletDisplay.classList.remove("text-success");
-    walletDisplay.classList.add("text-danger");
-  } else {
-    walletDisplay.classList.remove("text-danger");
-    walletDisplay.classList.add("text-success");
-  }
 }
-
-/* ============================
-   LÓGICA VISUAL (RULETA Y TABLERO)
-   ============================ */
-const ROJOS = [
-  1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
-];
 const esRojo = (n) => ROJOS.includes(n);
 
 function crearRuletaVisual() {
@@ -110,25 +71,6 @@ function dibujarTablero() {
   crearCeldaTablero("2 a 1", "columna", 2, "bg-transparent celda-2to1");
   for (let i = 1; i <= 36; i += 3) crearCeldaNumero(i);
   crearCeldaTablero("2 a 1", "columna", 1, "bg-transparent celda-2to1");
-
-  let vacio = document.createElement("div");
-  tableroDiv.appendChild(vacio);
-  crearCeldaTablero("1ª 12", "docena", "1-12", "bg-transparent celda-docena");
-  crearCeldaTablero("2ª 12", "docena", "13-24", "bg-transparent celda-docena");
-  crearCeldaTablero("3ª 12", "docena", "25-36", "bg-transparent celda-docena");
-  vacio = document.createElement("div");
-  tableroDiv.appendChild(vacio);
-
-  vacio = document.createElement("div");
-  tableroDiv.appendChild(vacio);
-  crearCeldaTablero("1-18", "rango", "1-18", "bg-transparent celda-simple");
-  crearCeldaTablero("PAR", "paridad", "par", "bg-transparent celda-simple");
-  crearCeldaTablero("ROJO", "color", "rojo", "bg-red celda-simple");
-  crearCeldaTablero("NEGRO", "color", "negro", "bg-black celda-simple");
-  crearCeldaTablero("IMPAR", "paridad", "impar", "bg-transparent celda-simple");
-  crearCeldaTablero("19-36", "rango", "19-36", "bg-transparent celda-simple");
-  vacio = document.createElement("div");
-  tableroDiv.appendChild(vacio);
 }
 
 function crearCeldaNumero(num) {
@@ -142,158 +84,53 @@ function crearCeldaTablero(texto, tipo, valor, clasesExtra) {
   div.textContent = texto;
   div.dataset.tipo = tipo;
   div.dataset.valor = valor;
-  div.onclick = () => procesarApuesta(div);
+  div.onclick = () => {
+    const cant = parseFloat(cantidadInput.value);
+    if (
+      isNaN(cant) ||
+      cant <= 0 ||
+      apuestas.reduce((a, b) => a + b.cantidad, 0) + cant > saldoActual
+    )
+      return alert("Error en apuesta");
+    apuestas.push({ tipo, valor, cantidad: cant });
+    const ficha = document.createElement("div");
+    ficha.className = "ficha-visual";
+    ficha.textContent = cant;
+    div.appendChild(ficha);
+  };
   tableroDiv.appendChild(div);
 }
 
-/* ============================
-   GESTIÓN DE APUESTAS
-   ============================ */
-function procesarApuesta(elementoDOM) {
-  if (girando) return;
-  const cantidad = parseFloat(cantidadInput.value);
-
-  // Cálculo total actual apostado
-  let totalYaApostado = apuestas.reduce((acc, curr) => acc + curr.cantidad, 0);
-
-  if (isNaN(cantidad) || cantidad <= 0) {
-    alert("Cantidad no válida.");
-    return;
-  }
-  if (totalYaApostado + cantidad > saldoActual) {
-    alert("Saldo insuficiente para esta apuesta.");
-    return;
-  }
-
-  const tipo = elementoDOM.dataset.tipo;
-  const valor = elementoDOM.dataset.valor;
-  apuestas.push({ tipo, valor, cantidad });
-
-  colocarFichaVisual(elementoDOM, cantidad);
-  resultadoTxt.innerHTML = `<span class="text-info fs-6">Ficha de ${cantidad}€ colocada</span>`;
-
-  // Actualizamos visualmente el saldo "restando" provisionalmente
-  actualizarSaldoVisual(saldoActual - (totalYaApostado + cantidad));
-
-  if (btnLimpiar) btnLimpiar.disabled = false;
-}
-
-function colocarFichaVisual(padre, cantidad) {
-  const ficha = document.createElement("div");
-  ficha.className = "ficha-visual";
-  ficha.textContent = cantidad;
-  const rx = Math.floor(Math.random() * 6) - 3;
-  const ry = Math.floor(Math.random() * 6) - 3;
-  ficha.style.transform = `translate(${rx}px, ${ry}px)`;
-  padre.appendChild(ficha);
-}
-
-function limpiarMesa() {
-  if (girando) return;
-  apuestas = [];
-  document.querySelectorAll(".ficha-visual").forEach((e) => e.remove());
-  resultadoTxt.textContent = "Apuestas borradas";
-  actualizarSaldoVisual(saldoActual); // Restauramos el saldo visual real
-  if (btnLimpiar) btnLimpiar.disabled = true;
-}
-
-/* ============================
-   GIRAR
-   ============================ */
 girarBtn.addEventListener("click", () => {
-  if (girando) return;
-  if (apuestas.length === 0) {
-    resultadoTxt.textContent = "¡Coloca fichas en la mesa!";
-    return;
-  }
-
+  if (girando || !apuestas.length) return;
   girando = true;
-  girarBtn.disabled = true;
-  if (btnLimpiar) btnLimpiar.disabled = true;
-
-  resultadoTxt.textContent = "¡Girando!...";
-  detalleGanadoresTxt.textContent = "";
-
-  const numeroGanador = Math.floor(Math.random() * TOTAL_NUMEROS);
-  const anguloDestino = numeroGanador * GRADOS;
-  const targetRotation = 360 - anguloDestino + AJUSTE_VISUAL;
-
-  const rotacionActualMod = rotacionActual % 360;
-  let distanciaGiro = targetRotation - rotacionActualMod;
-  if (distanciaGiro < 0) distanciaGiro += 360;
-
-  const vueltasExtra = 5 * 360;
-  rotacionActual += vueltasExtra + distanciaGiro;
-
+  const numGanador = Math.floor(Math.random() * TOTAL_NUMEROS);
+  const targetRotation = 360 - numGanador * GRADOS + AJUSTE_VISUAL + 5 * 360;
+  rotacionActual += targetRotation;
   ruleta.style.transform = `rotate(${rotacionActual}deg)`;
-
   setTimeout(() => {
-    evaluar(numeroGanador);
+    evaluar(numGanador);
     girando = false;
-    girarBtn.disabled = false;
   }, 4000);
 });
 
-/* ============================
-   EVALUACIÓN Y CONEXIÓN BACKEND
-   ============================ */
 function evaluar(numero) {
   let gananciaTotal = 0;
   let apuestaTotal = 0;
-
   apuestas.forEach((a) => {
     apuestaTotal += a.cantidad;
     let gano = false;
-    const valorStr = a.valor.toString();
-
-    switch (a.tipo) {
-      case "numero":
-        if (parseInt(valorStr) === numero) gano = true;
-        break;
-      case "color":
-        if (
-          (valorStr === "rojo" && esRojo(numero)) ||
-          (valorStr === "negro" && !esRojo(numero) && numero !== 0)
-        )
-          gano = true;
-        break;
-      case "paridad":
-        if (
-          numero !== 0 &&
-          ((valorStr === "par" && numero % 2 === 0) ||
-            (valorStr === "impar" && numero % 2 !== 0))
-        )
-          gano = true;
-        break;
-      case "rango":
-        if (
-          numero !== 0 &&
-          ((valorStr === "1-18" && numero <= 18) ||
-            (valorStr === "19-36" && numero >= 19))
-        )
-          gano = true;
-        break;
-      case "columna":
-        if (numero !== 0) {
-          if (valorStr === "3" && numero % 3 === 0) gano = true;
-          if (valorStr === "2" && numero % 3 === 2) gano = true;
-          if (valorStr === "1" && numero % 3 === 1) gano = true;
-        }
-        break;
-      case "docena":
-        if (numero !== 0) {
-          if (valorStr === "1-12" && numero <= 12) gano = true;
-          else if (valorStr === "13-24" && numero > 12 && numero <= 24)
-            gano = true;
-          else if (valorStr === "25-36" && numero > 24) gano = true;
-        }
-        break;
-    }
+    if (a.tipo === "numero" && parseInt(a.valor) === numero) gano = true;
+    if (
+      a.tipo === "color" &&
+      ((a.valor === "rojo" && esRojo(numero)) ||
+        (a.valor === "negro" && !esRojo(numero) && numero !== 0))
+    )
+      gano = true;
     if (gano) gananciaTotal += a.cantidad * (PREMIOS[a.tipo] + 1);
   });
 
-  // CORREGIDO: Conexión vía api.php
-  fetch("../../api.php?action=game_logic", {
+  fetch("../../api.php?action=game_result", {
     method: "POST",
     body: JSON.stringify({
       game: "Ruleta",
@@ -303,61 +140,15 @@ function evaluar(numero) {
     headers: { "Content-Type": "application/json" },
   })
     .then((r) => r.json())
-    .then((data) => {
-      if (data.success) {
-        saldoActual = parseFloat(data.new_balance); // Sincronizamos con el servidor
+    .then((d) => {
+      if (d.success) {
+        saldoActual = d.new_balance;
         actualizarSaldoVisual(saldoActual);
-
-        if (gananciaTotal > 0) {
-          resultadoTxt.innerHTML = `¡Nº <span class="badge bg-primary fs-4">${numero}</span>! <br> GANASTE <span class="text-success display-6 fw-bold">${gananciaTotal}€</span> 🎉`;
-        } else {
-          resultadoTxt.innerHTML = `Nº <span class="badge bg-primary fs-4">${numero}</span> <br> Pierdes ${apuestaTotal}€`;
-        }
-      } else {
-        alert("Error de conexión: " + data.message);
+        resultadoTxt.innerHTML = `Nº ${numero} - ${
+          gananciaTotal > 0 ? "¡GANASTE!" : "PIERDES"
+        }`;
       }
     });
-
-  const ganadoresTexto = obtenerCategoriasGanadoras(numero);
-  detalleGanadoresTxt.innerHTML = `Ganadores: <span class="text-info">${ganadoresTexto}</span>`;
-
-  // Actualizar historial
-  historial.unshift(numero);
-  if (historial.length > 10) historial.pop();
-  renderizarHistorial();
-
   apuestas = [];
-
-  setTimeout(() => {
-    document.querySelectorAll(".ficha-visual").forEach((e) => e.remove());
-    resultadoTxt.textContent = "Hagan juego...";
-    detalleGanadoresTxt.textContent = "";
-    if (btnLimpiar) btnLimpiar.disabled = true;
-  }, 5000);
-}
-
-function obtenerCategoriasGanadoras(n) {
-  if (n === 0) return "Cero";
-  let cats = [];
-  cats.push(esRojo(n) ? "Rojo" : "Negro");
-  cats.push(n % 2 === 0 ? "Par" : "Impar");
-  cats.push(n <= 18 ? "1-18" : "19-36");
-  return cats.join(" | ");
-}
-
-function renderizarHistorial() {
-  resultadosDiv.innerHTML = "";
-  historial.forEach((n) => {
-    const div = document.createElement("div");
-    div.className =
-      "rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-sm";
-    div.style.width = "35px";
-    div.style.height = "35px";
-    div.style.fontSize = "14px";
-    div.textContent = n;
-    if (n === 0) div.style.background = "#2ecc71";
-    else if (esRojo(n)) div.style.background = "#e74c3c";
-    else div.style.background = "#34495e";
-    resultadosDiv.appendChild(div);
-  });
+  document.querySelectorAll(".ficha-visual").forEach((f) => f.remove());
 }
