@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -25,26 +25,31 @@
             <a
               href="../../dashboard.html"
               class="btn btn-outline-secondary btn-sm"
-              onclick="if(window.AudioManager) AudioManager.play('click')"
+              onclick="if (window.AudioManager) AudioManager.play('click');"
               >⬅ Volver al Dashboard</a
             >
           </div>
           <h1 class="mb-4 display-6">🎰 Ruleta Europea</h1>
+
           <div class="ruleta-container d-inline-block position-relative mb-4">
             <div class="flecha">▼</div>
             <div id="ruleta" class="ruleta">
-              <div class="ruleta-centro"><div class="ruleta-cruz"></div></div>
+              <div class="ruleta-centro"></div>
             </div>
           </div>
+
           <div class="card bg-secondary text-white shadow-sm mt-3">
             <div class="card-body">
               <h5 class="card-title small text-uppercase text-white-50">
-                Historial
+                Historial de Partida
               </h5>
               <div
                 id="resultados"
                 class="d-flex justify-content-center gap-2 flex-wrap"
-              ></div>
+                style="min-height: 40px"
+              >
+                <small class="text-white-50">Esperando primer giro...</small>
+              </div>
             </div>
           </div>
         </div>
@@ -54,30 +59,34 @@
             <div
               class="card-header bg-black border-secondary d-flex justify-content-between align-items-center"
             >
-              <h4 class="m-0 d-none d-md-block">Mesa</h4>
+              <h4 class="m-0 d-none d-md-block">Mesa de Apuestas</h4>
               <div
                 class="bg-dark border border-secondary rounded px-3 py-1 d-flex align-items-center gap-2 shadow-inset"
               >
                 <span
                   class="text-uppercase small text-secondary fw-bold"
                   style="font-size: 0.7rem"
-                  >Tu Saldo:</span
+                  >Saldo:</span
                 >
                 <span
                   id="walletDisplay"
                   class="text-success fw-bold font-monospace fs-5"
-                  >Cargando...</span
+                  >0.00 €</span
                 >
               </div>
               <button
                 id="btnLimpiar"
                 class="btn btn-sm btn-danger opacity-75"
-                onclick="if(window.AudioManager) AudioManager.play('click'); limpiarMesa();"
+                onclick="
+                  if (window.AudioManager) AudioManager.play('click');
+                  limpiarMesa();
+                "
                 disabled
               >
-                🗑 <span class="d-none d-sm-inline">Borrar</span>
+                🗑 <span class="d-none d-sm-inline">Limpiar Mesa</span>
               </button>
             </div>
+
             <div class="card-body p-4 text-center">
               <div
                 class="mb-4 d-flex gap-2 align-items-end justify-content-center flex-wrap"
@@ -98,14 +107,43 @@
                   id="girar"
                   class="btn btn-warning btn-lg fw-bold px-4 shadow-sm flex-grow-1"
                   style="max-width: 200px"
-                  onclick="if(window.AudioManager) AudioManager.play('click')"
                 >
                   ¡GIRAR! 🎡
                 </button>
               </div>
-              <div class="tablero-container mb-3">
+
+              <div class="roulette-board-container mb-4">
                 <div id="tablero" class="tablero"></div>
               </div>
+
+              <div
+                class="secciones-container mb-3 border-top border-secondary pt-3"
+              >
+                <h6 class="text-info small fw-bold text-uppercase mb-3">
+                  Apuestas de Sección (Cilindro)
+                </h6>
+                <div class="d-flex justify-content-center gap-2">
+                  <button
+                    class="btn btn-sm btn-outline-info flex-fill fw-bold py-2"
+                    id="bet-voisins"
+                  >
+                    VOISINS
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-info flex-fill fw-bold py-2"
+                    id="bet-orph"
+                  >
+                    ORPHELINS
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-info flex-fill fw-bold py-2"
+                    id="bet-tiers"
+                  >
+                    TIERS
+                  </button>
+                </div>
+              </div>
+
               <div
                 id="resultadoContainer"
                 class="min-h-50 mt-3 p-3 rounded bg-dark border border-secondary"
@@ -128,7 +166,6 @@
     <script src="../../assets/js/AudioManager.js"></script>
     <script src="../../assets/js/navbar_logic.js"></script>
     <script src="ruleta.js"></script>
-
     <script>
       fetch("../../partials/navbar.html")
         .then((r) => r.text())

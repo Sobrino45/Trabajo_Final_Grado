@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -19,7 +19,7 @@
     >
       <div class="container">
         <span class="navbar-brand fw-bold text-warning" id="role-badge"
-          ><i class="bi bi-shield-lock-fill"></i> CARGANDO...</span
+          ><i class="bi bi-shield-lock-fill"></i> PANEL ADMIN</span
         >
         <div class="d-flex align-items-center gap-3">
           <span
@@ -30,7 +30,7 @@
           <a
             href="../dashboard.html"
             class="btn btn-outline-light btn-sm"
-            onclick="if(window.AudioManager) AudioManager.play('click')"
+            onclick="if (window.AudioManager) AudioManager.play('click');"
             >⬅ DASHBOARD</a
           >
         </div>
@@ -38,6 +38,33 @@
     </nav>
 
     <div class="container">
+      <div class="card bg-black border-warning mb-4 shadow">
+        <div
+          class="card-header bg-dark border-warning text-warning fw-bold small"
+        >
+          <i class="bi bi-cash-stack"></i> SOLICITUDES DE RETIRO PENDIENTES
+        </div>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover mb-0 small">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Cantidad</th>
+                <th>Fecha</th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="withdrawalsTableBody">
+              <tr>
+                <td colspan="4" class="text-center py-3">
+                  No hay retiros pendientes.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="row mb-4 g-4 text-center">
         <div class="col-md-4">
           <div class="card bg-secondary border-0 p-3 shadow-sm">
@@ -67,7 +94,7 @@
             >
               <h5 class="m-0 small fw-bold">GESTIÓN DE USUARIOS</h5>
               <button
-                onclick="cargarDatosAdmin()"
+                onclick="cargarTodoAdmin()"
                 class="btn btn-sm btn-outline-info"
               >
                 <i class="bi bi-arrow-clockwise"></i> REFRESCAR
@@ -90,7 +117,6 @@
               </table>
             </div>
           </div>
-
           <div class="card bg-black border-info shadow">
             <div
               class="card-header bg-dark border-info text-info fw-bold small"
@@ -104,13 +130,12 @@
             </div>
           </div>
         </div>
-
         <div class="col-lg-4">
           <div class="card bg-black border-warning shadow h-100">
             <div
               class="card-header bg-dark border-warning text-warning fw-bold small"
             >
-              <i class="bi bi-incognito"></i> AUDITORÍA DE ACCESOS (IPs)
+              <i class="bi bi-incognito"></i> AUDITORÍA IPs
             </div>
             <div class="card-body p-0">
               <div
@@ -118,9 +143,7 @@
                 class="list-group list-group-flush"
                 style="max-height: 600px; overflow-y: auto"
               >
-                <p class="text-center py-4 text-white-50">
-                  Cargando registros...
-                </p>
+                <p class="text-center py-4 text-white-50">Cargando...</p>
               </div>
             </div>
           </div>
@@ -134,16 +157,16 @@
           <div class="modal-body p-4 text-center">
             <input type="hidden" id="edit-id" />
             <div class="mb-3">
-              <label class="small text-white-50">Usuario</label>
-              <input
+              <label class="small text-white-50">Usuario</label
+              ><input
                 type="text"
                 id="edit-username"
                 class="form-control bg-secondary text-white border-0"
               />
             </div>
             <div class="mb-3">
-              <label class="small text-warning">Saldo (€)</label>
-              <input
+              <label class="small text-warning">Saldo (€)</label
+              ><input
                 type="number"
                 step="0.01"
                 id="edit-saldo"
@@ -166,82 +189,88 @@
     <script>
       let usuariosCache = [];
       const editModal = new bootstrap.Modal(
-        document.getElementById("editModal")
+        document.getElementById("editModal"),
       );
       const API = "/CasinoDaw/public/api.php";
 
-      function cargarDatosAdmin() {
+      function cargarTodoAdmin() {
+        if (window.AudioManager) AudioManager.play("click");
         fetch(`${API}?action=admin_get_data&t=${Date.now()}`)
           .then((r) => r.json())
           .then((data) => {
             if (!data.success)
               return (window.location.href = "../dashboard.html");
-
-            document.getElementById(
-              "role-badge"
-            ).innerHTML = `<i class="bi bi-shield-check"></i> PANEL ${data.mi_rol.toUpperCase()}`;
-
+            document.getElementById("role-badge").innerHTML =
+              `<i class="bi bi-shield-check"></i> PANEL ${data.mi_rol.toUpperCase()}`;
             document.getElementById("totalUsers").textContent =
               data.stats.total_usuarios || 0;
             document.getElementById("totalMoney").textContent =
               (data.stats.dinero_en_juego || 0).toFixed(2) + " €";
             document.getElementById("totalSupport").textContent =
               data.stats.pendientes || 0;
-
-            const badge = document.getElementById("msg-badge");
-            if (data.stats.pendientes > 0) {
-              badge.textContent = `${data.stats.pendientes} tickets`;
-              badge.classList.remove("d-none");
-            } else {
-              badge.classList.add("d-none");
-            }
-
             usuariosCache = data.usuarios;
             renderUsuarios(data.usuarios, data.mi_rol);
             renderLogs(data.logs);
             cargarMensajesSoporte();
+            cargarRetirosPendientes();
           });
       }
 
+      function cargarRetirosPendientes() {
+        fetch(`${API}?action=admin_get_withdrawals`)
+          .then((r) => r.json())
+          .then((data) => {
+            const body = document.getElementById("withdrawalsTableBody");
+            if (!data.solicitudes.length) {
+              body.innerHTML =
+                '<tr><td colspan="4" class="text-center py-3">No hay retiros pendientes.</td></tr>';
+              return;
+            }
+            body.innerHTML = data.solicitudes
+              .map(
+                (s) => `
+                <tr>
+                    <td><strong>${s.username}</strong></td>
+                    <td class="text-warning fw-bold">${parseFloat(s.cantidad).toFixed(2)} €</td>
+                    <td>${new Date(s.fecha).toLocaleString()}</td>
+                    <td class="text-center">
+                        <button onclick="procesarRetiro(${s.id}, 'aprobar')" class="btn btn-sm btn-success">✅</button>
+                        <button onclick="procesarRetiro(${s.id}, 'rechazar')" class="btn btn-sm btn-danger">❌</button>
+                    </td>
+                </tr>
+            `,
+              )
+              .join("");
+          });
+      }
+
+      function procesarRetiro(id, decision) {
+        if (window.AudioManager) AudioManager.play("click");
+        fetch(`${API}?action=admin_process_withdrawal`, {
+          method: "POST",
+          body: JSON.stringify({ id, decision }),
+          headers: { "Content-Type": "application/json" },
+        }).then(() => cargarTodoAdmin());
+      }
+
       function renderUsuarios(lista, miRol) {
-        const tbody = document.getElementById("userTableBody");
-        tbody.innerHTML = lista
+        document.getElementById("userTableBody").innerHTML = lista
           .map(
             (u) => `
           <tr>
-            <td>#${u.id}</td>
-            <td class="fw-bold">${u.username}</td>
-            <td>
-              ${
-                miRol === "owner"
-                  ? `<select class="form-select form-select-sm bg-dark text-warning border-secondary" onchange="cambiarRango(${
-                      u.id
-                    }, this.value)">
-                    <option value="user" ${
-                      u.rol === "user" ? "selected" : ""
-                    }>User</option>
-                    <option value="admin" ${
-                      u.rol === "admin" ? "selected" : ""
-                    }>Admin</option>
-                    <option value="owner" ${
-                      u.rol === "owner" ? "selected" : ""
-                    }>Owner</option>
-                   </select>`
-                  : `<span class="badge bg-secondary">${u.rol}</span>`
-              }
-            </td>
-            <td class="text-end fw-bold">${parseFloat(u.saldo).toFixed(
-              2
-            )} €</td>
-            <td class="text-center">
-              <button onclick="abrirModalEditar(${
-                u.id
-              })" class="btn btn-sm btn-outline-warning">
-                <i class="bi bi-pencil"></i>
-              </button>
-            </td>
-          </tr>
-        `
+            <td>#${u.id}</td><td class="fw-bold">${u.username}</td>
+            <td>${
+              miRol === "owner"
+                ? `<select class="form-select form-select-sm bg-dark text-warning border-secondary" onchange="cambiarRango(${u.id}, this.value)">
+                <option value="user" ${u.rol === "user" ? "selected" : ""}>User</option>
+                <option value="admin" ${u.rol === "admin" ? "selected" : ""}>Admin</option>
+                <option value="owner" ${u.rol === "owner" ? "selected" : ""}>Owner</option>
+              </select>`
+                : `<span class="badge bg-secondary">${u.rol}</span>`
+            }</td>
+            <td class="text-end fw-bold">${parseFloat(u.saldo).toFixed(2)} €</td>
+            <td class="text-center"><button onclick="abrirModalEditar(${u.id})" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></button></td>
+          </tr>`,
           )
           .join("");
       }
@@ -250,29 +279,13 @@
         const container = document.getElementById("logsContainer");
         if (!logs || logs.length === 0) {
           container.innerHTML =
-            '<p class="text-center py-4 text-white-50 small">Sin registros recientes.</p>';
+            '<p class="text-center py-4 text-white-50 small">Sin registros.</p>';
           return;
         }
         container.innerHTML = logs
           .map(
-            (l) => `
-          <div class="list-group-item bg-black border-secondary text-light py-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="text-info fw-bold">${l.username}</span>
-              <span class="badge bg-dark border border-secondary text-white-50" style="font-size:0.6rem">${
-                l.ip_address
-              }</span>
-            </div>
-            <div class="small text-white-50" style="font-size:0.7rem">
-              <i class="bi bi-clock"></i> ${new Date(l.fecha).toLocaleString()}
-            </div>
-            <div class="small text-truncate text-muted mt-1" style="font-size:0.6rem" title="${
-              l.user_agent
-            }">
-              ${l.user_agent}
-            </div>
-          </div>
-        `
+            (l) =>
+              `<div class="list-group-item bg-black border-secondary text-light py-3"><div class="d-flex justify-content-between align-items-center mb-1"><span class="text-info fw-bold">${l.username}</span><span class="badge bg-dark border border-secondary text-white-50" style="font-size:0.6rem">${l.ip_address}</span></div><div class="small text-white-50" style="font-size:0.7rem"><i class="bi bi-clock"></i> ${new Date(l.fecha).toLocaleString()}</div></div>`,
           )
           .join("");
       }
@@ -282,35 +295,15 @@
           .then((r) => r.json())
           .then((d) => {
             const body = document.getElementById("supportTableBody");
-            if (!d.mensajes || !d.mensajes.length) {
+            if (!d.mensajes.length) {
               body.innerHTML =
                 '<tr><td class="text-center py-3">No hay mensajes.</td></tr>';
               return;
             }
             body.innerHTML = d.mensajes
               .map(
-                (m) => `
-              <tr class="${
-                m.leido == 0
-                  ? "bg-dark fw-bold border-start border-danger border-3"
-                  : "opacity-50"
-              }">
-                <td class="ps-3 py-2">
-                  <span class="text-info">${m.username}</span><br>
-                  <small class="text-white-50">${m.mensaje}</small>
-                </td>
-                <td class="px-2">
-                  ${
-                    m.respuesta
-                      ? `<small class="text-success"><i class="bi bi-check-all"></i> ${m.respuesta}</small>`
-                      : `<div class="input-group input-group-sm">
-                        <input type="text" id="reply-${m.id}" class="form-control bg-dark text-white border-secondary" placeholder="Respuesta...">
-                        <button onclick="responder(${m.id})" class="btn btn-info py-0">ENVIAR</button>
-                       </div>`
-                  }
-                </td>
-              </tr>
-            `
+                (m) =>
+                  `<tr class="${m.leido == 0 ? "bg-dark fw-bold border-start border-danger border-3" : "opacity-50"}"><td class="ps-3 py-2"><span class="text-info">${m.username}</span><br><small class="text-white-50">${m.mensaje}</small></td><td class="px-2">${m.respuesta ? `<small class="text-success"><i class="bi bi-check-all"></i> ${m.respuesta}</small>` : `<div class="input-group input-group-sm"><input type="text" id="reply-${m.id}" class="form-control bg-dark text-white border-secondary" placeholder="Respuesta..."><button onclick="responder(${m.id})" class="btn btn-info py-0">ENVIAR</button></div>`}</td></tr>`,
               )
               .join("");
           });
@@ -324,7 +317,7 @@
           method: "POST",
           body: JSON.stringify({ id, respuesta: res }),
           headers: { "Content-Type": "application/json" },
-        }).then(() => cargarDatosAdmin());
+        }).then(() => cargarTodoAdmin());
       }
 
       function abrirModalEditar(id) {
@@ -348,7 +341,7 @@
           headers: { "Content-Type": "application/json" },
         }).then(() => {
           editModal.hide();
-          cargarDatosAdmin();
+          cargarTodoAdmin();
         });
       }
 
@@ -358,10 +351,10 @@
           method: "POST",
           body: JSON.stringify({ id, nuevo_rol }),
           headers: { "Content-Type": "application/json" },
-        }).then(() => cargarDatosAdmin());
+        }).then(() => cargarTodoAdmin());
       }
 
-      document.addEventListener("DOMContentLoaded", cargarDatosAdmin);
+      document.addEventListener("DOMContentLoaded", cargarTodoAdmin);
     </script>
   </body>
 </html>

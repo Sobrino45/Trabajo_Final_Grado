@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -44,6 +44,7 @@
                     id="password"
                     class="form-control"
                     placeholder="******"
+                    autocomplete="current-password"
                     required
                   />
                 </div>
@@ -62,7 +63,7 @@
                 <button
                   type="submit"
                   class="btn btn-primary w-100"
-                  onclick="if(window.AudioManager) AudioManager.play('click')"
+                  onclick="if (window.AudioManager) AudioManager.play('click');"
                 >
                   Entrar
                 </button>
@@ -87,18 +88,24 @@
     </main>
 
     <script src="assets/js/AudioManager.js"></script>
+    <script src="assets/js/navbar_logic.js"></script>
     <script src="assets/js/auth.js"></script>
     <script src="assets/js/wallet.js"></script>
     <script src="assets/js/logout.js"></script>
     <script src="assets/js/login.js"></script>
 
     <script>
+      // Carga dinámica del Navbar
       fetch("partials/navbar.html")
         .then((response) => response.text())
         .then((html) => {
           document.getElementById("navbar").innerHTML = html;
-          NavbarManager.init();
-        });
+          // Verificamos que NavbarManager esté disponible antes de inicializar
+          if (window.NavbarManager) {
+            window.NavbarManager.init();
+          }
+        })
+        .catch((err) => console.error("Error al cargar el navbar:", err));
     </script>
   </body>
 </html>

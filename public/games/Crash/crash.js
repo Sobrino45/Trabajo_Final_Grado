@@ -1,3 +1,4 @@
+/* public/games/Crash/crash.js */
 const canvas = document.getElementById("crashGraph");
 const ctx = canvas.getContext("2d");
 const multiplierDisplay = document.getElementById("multiplierDisplay");
@@ -7,183 +8,217 @@ const betInput = document.getElementById("betInput");
 const walletDisplay = document.getElementById("walletDisplay");
 const historyDiv = document.getElementById("history");
 
+// ESTADOS GLOBAL
 let gameRunning = false;
-let userBet = 0;
 let userInGame = false;
 let userCashedOut = false;
 let currentMultiplier = 1.0;
 let crashPoint = 0;
-let animationId;
-let startTime;
+let startTime = 0;
+let animationId = null;
 let saldoActual = 0;
+let userBet = 0;
+
+// SISTEMA DE CÁMARA
+let maxX = 5;
+let maxY = 2;
 
 document.addEventListener("DOMContentLoaded", () => {
   cargarDatosUsuario();
+  window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
-  drawIdleGraph();
+  historyDiv.innerHTML =
+    '<small class="text-white-50 w-100">Esperando resultados...</small>';
 });
 
 function cargarDatosUsuario() {
-  fetch("../../api.php?action=get_user_info")
+  fetch("../../api.php?action=get_user_info&t=" + Date.now())
     .then((r) => r.json())
     .then((data) => {
       if (data.logged_in) {
         saldoActual = parseFloat(data.saldo);
-        updateWalletVisuals();
-      } else {
-        window.location.href = "../../login.html";
+        walletDisplay.textContent = saldoActual.toFixed(2) + " €";
       }
     });
 }
 
-window.addEventListener("resize", resizeCanvas);
+window.setBet = (n) => {
+  betInput.value = n;
+};
+window.doubleBet = () => {
+  betInput.value = (parseFloat(betInput.value) * 2).toFixed(2);
+};
 
 btnAction.addEventListener("click", () => {
-  if (gameRunning) {
-    if (userInGame && !userCashedOut) cashOut();
-  } else startGame();
+  if (!gameRunning) {
+    prepararPartida();
+  } else if (userInGame && !userCashedOut) {
+    cobrarGanancia();
+  }
 });
 
-function startGame() {
+function prepararPartida() {
   const bet = parseFloat(betInput.value);
-  if (isNaN(bet) || bet <= 0) return alert("Apuesta inválida");
-  if (saldoActual < bet) return alert("Saldo insuficiente");
+  if (isNaN(bet) || bet <= 0 || bet > saldoActual)
+    return alert("Saldo insuficiente.");
 
-  // SONIDOS DE INICIO
-  if (window.AudioManager) {
-    AudioManager.play("click");
-    AudioManager.play("spin"); // Sonido de motor/subida
-  }
+  // ACTUALIZACIÓN VISUAL INMEDIATA: Restar apuesta del saldo local
+  saldoActual -= bet;
+  walletDisplay.textContent = saldoActual.toFixed(2) + " €";
 
   userBet = bet;
   userInGame = true;
   userCashedOut = false;
   gameRunning = true;
   currentMultiplier = 1.0;
+  maxX = 5;
+  maxY = 2;
 
-  const r = Math.random();
-  crashPoint = 0.99 / (1 - r);
-  if (crashPoint > 100) crashPoint = 100;
-  if (Math.random() < 0.03) crashPoint = 1.0;
+  if (window.AudioManager) AudioManager.play("spin");
+
+  crashPoint = Math.max(1.01, 0.99 / (1 - Math.random()));
+  if (crashPoint > 30) crashPoint = 30;
 
   btnAction.classList.replace("btn-success", "btn-warning");
   btnAction.innerHTML = "💰 RETIRAR";
-  statusText.textContent = "¡SUBIENDO!";
+  statusText.textContent = "¡COHETE SUBIENDO!";
+  statusText.className = "text-warning fw-bold text-uppercase";
+
   startTime = Date.now();
-  animate();
+  requestAnimationFrame(animarJuego);
 }
 
-function animate() {
+function animarJuego() {
   if (!gameRunning) return;
   const elapsed = (Date.now() - startTime) / 1000;
-  currentMultiplier = 1 + Math.pow(elapsed, 2) / 10;
+  currentMultiplier = Math.pow(1.06, elapsed * 10) / 10 + 0.9;
   multiplierDisplay.textContent = currentMultiplier.toFixed(2) + "x";
 
   if (currentMultiplier >= crashPoint) {
-    gameOver();
+    finalizarPorExplosion();
     return;
   }
-  drawGraph(elapsed);
-  animationId = requestAnimationFrame(animate);
+
+  if (elapsed > maxX * 0.7) maxX = elapsed / 0.7;
+  if (currentMultiplier > maxY * 0.7) maxY = currentMultiplier / 0.7;
+
+  dibujarGrafico(elapsed, currentMultiplier);
+  animationId = requestAnimationFrame(animarJuego);
 }
 
-function cashOut() {
-  userCashedOut = true;
-  userInGame = false;
-  const winAmount = userBet * currentMultiplier;
+function dibujarGrafico(elapsed, mult) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const w = canvas.width - 100;
+  const h = canvas.height - 100;
+  const x = (elapsed / maxX) * w;
+  const y = canvas.height - (mult / maxY) * h;
 
-  // DETENER MOTOR Y SONIDO DE VICTORIA
+  ctx.beginPath();
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "#f1c40f";
+  ctx.lineCap = "round";
+  ctx.moveTo(0, canvas.height);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+
+  ctx.fillStyle = "#fff";
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = "#f1c40f";
+  ctx.beginPath();
+  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function cobrarGanancia() {
+  if (userCashedOut || !gameRunning) return;
+  userCashedOut = true;
+  const multCapturado = currentMultiplier;
+  const premio = userBet * multCapturado;
+
+  btnAction.classList.replace("btn-warning", "btn-secondary");
+  btnAction.innerHTML = `✅ RECIBIDO: ${premio.toFixed(2)}€`;
+  btnAction.disabled = true;
+
   if (window.AudioManager) {
-    AudioManager.stop("spin");
-    AudioManager.play("win");
+    try {
+      AudioManager.stop("spin");
+      AudioManager.play("win");
+    } catch (e) {}
   }
 
+  enviarResultado(userBet, premio, multCapturado);
+}
+
+function finalizarPorExplosion() {
+  gameRunning = false;
+  cancelAnimationFrame(animationId);
+
+  multiplierDisplay.textContent = crashPoint.toFixed(2) + "x";
+  multiplierDisplay.style.color = "#e74c3c";
+  statusText.textContent = "💥 ¡EXPLOTÓ!";
+  statusText.className = "text-danger fw-bold";
+
+  if (window.AudioManager) {
+    try {
+      AudioManager.stop("spin");
+      AudioManager.play("explosion");
+    } catch (e) {}
+  }
+
+  if (!userCashedOut) {
+    btnAction.classList.replace("btn-warning", "btn-danger");
+    btnAction.innerHTML = "PERDISTE";
+    btnAction.disabled = true;
+    // Si pierde, win es 0, el servidor restará la apuesta del saldo real
+    enviarResultado(userBet, 0, crashPoint);
+  }
+
+  actualizarHistorialVisual(crashPoint);
+
+  setTimeout(() => {
+    multiplierDisplay.style.color = "white";
+    btnAction.className = "btn btn-success w-100 py-4 fw-bold fs-4";
+    btnAction.innerHTML = "APOSTAR";
+    btnAction.disabled = false;
+    statusText.textContent = "Esperando...";
+    userInGame = false;
+  }, 3000);
+}
+
+function enviarResultado(apuesta, ganancia, mult) {
   fetch("../../api.php?action=game_result", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       game: "Crash Rocket",
-      bet: userBet,
-      win: winAmount,
+      bet: apuesta,
+      win: ganancia,
+      details: { multiplicador: mult.toFixed(2) },
     }),
   })
     .then((r) => r.json())
     .then((data) => {
       if (data.success) {
         saldoActual = parseFloat(data.new_balance);
-        updateWalletVisuals();
+        walletDisplay.textContent = saldoActual.toFixed(2) + " €";
       }
-    });
-
-  btnAction.classList.replace("btn-warning", "btn-secondary");
-  btnAction.disabled = true;
-  btnAction.innerHTML = `✅ GANADO: ${winAmount.toFixed(2)}€`;
+    })
+    .catch((err) => console.error("Error al actualizar dinero:", err));
 }
 
-function gameOver() {
-  gameRunning = false;
-  cancelAnimationFrame(animationId);
-
-  // DETENER MOTOR Y SONIDO DE EXPLOSIÓN
-  if (window.AudioManager) {
-    AudioManager.stop("spin");
-    AudioManager.play("explosion");
-  }
-
-  multiplierDisplay.textContent = crashPoint.toFixed(2) + "x";
-  statusText.textContent = "💥 CRASHED!";
-  statusText.className = "text-danger fw-bold";
-  btnAction.disabled = false;
-
-  if (!userCashedOut && userInGame) {
-    btnAction.innerHTML = "PERDISTE";
-    btnAction.className = "btn btn-danger w-100";
-    fetch("../../api.php?action=game_result", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ game: "Crash Rocket", bet: userBet, win: 0 }),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) {
-          saldoActual = d.new_balance;
-          updateWalletVisuals();
-        }
-      });
-  } else {
-    btnAction.className = "btn btn-success w-100";
-    btnAction.innerHTML = "JUGAR DE NUEVO";
-  }
-  addToHistory(crashPoint);
+function actualizarHistorialVisual(val) {
+  if (historyDiv.querySelector("small")) historyDiv.innerHTML = "";
+  const span = document.createElement("span");
+  span.className = `badge ${val >= 2 ? "bg-success" : "bg-danger"} p-2`;
+  span.style.fontSize = "0.9rem";
+  span.textContent = val.toFixed(2) + "x";
+  historyDiv.prepend(span);
+  if (historyDiv.children.length > 8) historyDiv.lastChild.remove();
 }
 
 function resizeCanvas() {
   const parent = canvas.parentElement;
   canvas.width = parent.clientWidth;
   canvas.height = parent.clientHeight;
-}
-
-function drawGraph(elapsed) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const x = elapsed * 30;
-  const y = canvas.height - Math.pow(elapsed, 2) * 5;
-  ctx.beginPath();
-  ctx.moveTo(0, canvas.height);
-  ctx.lineTo(x, y);
-  ctx.strokeStyle = "#f1c40f";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-}
-
-function drawIdleGraph() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-function updateWalletVisuals() {
-  walletDisplay.textContent = parseFloat(saldoActual).toFixed(2) + " €";
-}
-function addToHistory(val) {
-  const span = document.createElement("span");
-  span.className = `badge ${val >= 2 ? "bg-success" : "bg-danger"} me-1`;
-  span.textContent = val.toFixed(2) + "x";
-  historyDiv.prepend(span);
 }

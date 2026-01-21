@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -13,6 +13,59 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     />
     <link rel="stylesheet" href="assets/css/main.css" />
+    <style>
+      /* Estilos para medallas misteriosas */
+      .achievement-card {
+        opacity: 0.5;
+        transition: 0.4s;
+        border: 2px solid #333 !important;
+        background: #111 !important;
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      /* Cuando el logro está bloqueado, el icono es una interrogación suave */
+      .achievement-card .mystery-icon {
+        color: #444;
+        font-weight: bold;
+        font-size: 2rem;
+      }
+
+      .achievement-card.unlocked {
+        opacity: 1;
+        border-color: #ffc107 !important;
+        background: linear-gradient(145deg, #1a1a1a, #222) !important;
+        box-shadow: 0 0 15px rgba(255, 193, 7, 0.2);
+        transform: scale(1.05);
+      }
+      .achievement-name {
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-top: 5px;
+        color: #666;
+        text-align: center;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+      .unlocked .achievement-name {
+        color: #ffc107;
+      }
+
+      .ranking-item {
+        border-bottom: 1px solid #222;
+        padding: 10px;
+        font-size: 0.85rem;
+      }
+      .shadow-hover:hover {
+        transform: translateY(-5px);
+        transition: 0.3s;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+      }
+    </style>
   </head>
   <body class="bg-dark text-light">
     <div id="navbar"></div>
@@ -20,154 +73,129 @@
     <main class="container py-5">
       <div class="row align-items-center mb-5">
         <div class="col-md-8">
-          <h1 class="display-5 fw-bold">
+          <h1 class="display-4 fw-bold">
             Hola, <span id="username" class="text-warning">...</span>
           </h1>
           <div class="d-flex gap-2 mt-2">
-            <button id="btnDashLogout" class="btn btn-sm btn-outline-danger">
+            <button onclick="logout()" class="btn btn-sm btn-outline-danger">
               Cerrar Sesión
             </button>
             <div id="admin-btn-container"></div>
           </div>
         </div>
         <div class="col-md-4 mt-4 mt-md-0">
-          <div class="card bg-secondary text-white border-0 shadow-sm">
-            <div class="card-body py-4 text-md-end">
-              <small class="text-uppercase opacity-75">Saldo Disponible</small>
-              <h2 class="fw-bold mb-0"><span id="saldo">0.00</span> €</h2>
-            </div>
+          <div
+            class="card bg-secondary text-white border-0 shadow-sm text-md-end p-4"
+          >
+            <small class="text-uppercase opacity-75">Saldo Disponible</small>
+            <h2 class="fw-bold mb-0 text-success">
+              <span id="saldo">0.00</span> €
+            </h2>
           </div>
         </div>
       </div>
 
-      <section
-        class="mb-5 p-4 bg-dark rounded border border-secondary shadow-sm"
-      >
-        <h4 class="mb-4 text-info">💰 Gestión de Saldo</h4>
-        <div class="row g-3">
-          <div class="col-md-4">
-            <input
-              type="number"
-              id="walletAmount"
-              class="form-control"
-              placeholder="0.00"
-            />
-          </div>
-          <div class="col-md-4 col-6">
-            <button id="btnDeposit" class="btn btn-success w-100 fw-bold">
-              📥 INGRESAR
-            </button>
-          </div>
-          <div class="col-md-4 col-6">
-            <button id="btnWithdraw" class="btn btn-danger w-100 fw-bold">
-              📤 RETIRAR
-            </button>
-          </div>
-        </div>
-      </section>
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <section class="mb-5">
+            <h4 class="mb-3 text-warning fw-bold text-uppercase small">
+              <i class="bi bi-award"></i> Tus Medallas
+            </h4>
+            <div id="achievementsContainer" class="row g-2"></div>
+          </section>
 
-      <section class="mb-5">
-        <div class="card bg-black border-secondary">
-          <div
-            class="card-header border-secondary d-flex justify-content-between align-items-center bg-dark"
+          <section
+            class="mb-5 p-4 bg-dark rounded border border-secondary shadow-sm"
           >
-            <h5 class="m-0 small fw-bold text-uppercase">
-              Últimos Movimientos
-            </h5>
-            <div class="btn-group btn-group-sm">
-              <button
-                class="btn btn-outline-secondary active"
-                onclick="filtrar('todos', this)"
-              >
-                Todos
-              </button>
-              <button
-                class="btn btn-outline-success"
-                onclick="filtrar('ingreso', this)"
-              >
-                Ingresos
-              </button>
-              <button
-                class="btn btn-outline-danger"
-                onclick="filtrar('retiro', this)"
-              >
-                Retiros
-              </button>
+            <h4 class="mb-4 text-info text-uppercase small fw-bold">
+              Gestión de Saldo
+            </h4>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <input
+                  type="number"
+                  id="walletAmount"
+                  class="form-control bg-black text-white border-secondary"
+                  placeholder="0.00"
+                />
+              </div>
+              <div class="col-md-4 col-6">
+                <button
+                  onclick="procesar('deposit')"
+                  class="btn btn-success w-100 fw-bold"
+                >
+                  📥 INGRESAR
+                </button>
+              </div>
+              <div class="col-md-4 col-6">
+                <button
+                  onclick="procesar('withdraw')"
+                  class="btn btn-danger w-100 fw-bold"
+                >
+                  📤 RETIRAR
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-dark table-hover mb-0 small">
-              <thead>
-                <tr class="text-white-50">
-                  <th>Fecha</th>
-                  <th>Tipo</th>
-                  <th class="text-end">Monto</th>
-                  <th class="text-end text-info">Saldo Final</th>
-                </tr>
-              </thead>
-              <tbody id="txTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section class="mb-5">
-        <div class="card bg-black border-info shadow-sm">
-          <div class="card-header bg-dark border-info text-info fw-bold small">
-            💬 CENTRO DE SOPORTE
-          </div>
-          <div class="card-body">
+          <section class="mb-5">
+            <div class="card bg-black border-secondary shadow">
+              <div class="card-header bg-dark border-secondary py-2">
+                <h6 class="m-0 small fw-bold text-white-50 text-uppercase">
+                  Últimos Movimientos
+                </h6>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 small">
+                  <thead>
+                    <tr class="text-white-50">
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th class="text-end">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody id="txTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card bg-black border-warning shadow h-100">
             <div
-              id="chatHistory"
-              class="mb-3 p-3 rounded"
-              style="max-height: 200px; overflow-y: auto; background: #0a0a0a"
-            ></div>
-            <div class="input-group">
-              <input
-                type="text"
-                id="supportMsg"
-                class="form-control bg-secondary text-white border-0"
-                placeholder="¿Dudas?"
-              />
-              <button onclick="enviarSoporte()" class="btn btn-info fw-bold">
-                ENVIAR
-              </button>
+              class="card-header bg-dark border-warning text-warning fw-bold small"
+            >
+              🏆 TOP 10 JUGADORES
             </div>
+            <div id="leaderboardContainer" class="card-body p-0"></div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="pb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h3 class="m-0">🎮 Sala de Juegos</h3>
-          <a
-            href="../Instrucciones/index.html"
-            class="btn btn-sm btn-outline-info fw-bold"
-            onclick="if(window.AudioManager) AudioManager.play('click')"
-            >📘 VER REGLAS</a
-          >
-        </div>
+      <section class="py-5 mt-4">
+        <h3 class="mb-4 fw-bold text-uppercase small text-white-50">
+          <i class="bi bi-controller"></i> Sala de Juegos
+        </h3>
         <div class="row g-4 text-center">
           <div class="col-md-4">
             <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
-              <div class="display-3 mb-2">🎡</div>
+              <div class="display-4 mb-2">🎡</div>
               <h5>Ruleta</h5>
               <a
                 href="games/Ruleta/index.html"
                 class="btn btn-warning mt-auto fw-bold text-dark"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
           </div>
           <div class="col-md-4">
             <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
-              <div class="display-3 mb-2">🎰</div>
+              <div class="display-4 mb-2">🎰</div>
               <h5>Tragaperras</h5>
               <a
                 href="games/Tragaperras/index.html"
                 class="btn btn-danger mt-auto fw-bold"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
@@ -176,53 +204,46 @@
             <div
               class="card bg-secondary border-warning h-100 p-4 shadow-hover"
             >
-              <div class="display-3 mb-2">🚀</div>
+              <div class="display-4 mb-2">🚀</div>
               <h5>CRASH</h5>
               <a
                 href="games/Crash/index.html"
                 class="btn btn-warning mt-auto fw-bold text-dark"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
           </div>
-
           <div class="col-md-4">
             <div
               class="card bg-primary bg-gradient border-0 h-100 p-4 shadow-hover"
             >
-              <div class="display-3 mb-2">🃏</div>
-              <h5 class="fw-bold">Poker Club</h5>
-              <p class="small text-white-50">Clásico & Texas Hold'em</p>
+              <div class="display-4 mb-2">🃏</div>
+              <h5>Poker Club</h5>
               <a
                 href="games/Poker/index.html"
                 class="btn btn-light mt-auto fw-bold text-primary"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >ENTRAR</a
               >
             </div>
           </div>
-
           <div class="col-md-4">
             <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
-              <div class="display-3 mb-2">🃏</div>
+              <div class="display-4 mb-2">♠️</div>
               <h5>Blackjack</h5>
               <a
                 href="games/Blackjack/index.html"
                 class="btn btn-success mt-auto fw-bold"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
           </div>
           <div class="col-md-4">
             <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
-              <div class="display-3 mb-2">🐎</div>
+              <div class="display-4 mb-2">🐎</div>
               <h5>Carrera</h5>
               <a
                 href="games/Carrera/index.html"
                 class="btn btn-primary mt-auto fw-bold"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
                 >JUGAR</a
               >
             </div>
@@ -231,163 +252,111 @@
       </section>
     </main>
 
+    <footer class="bg-black border-top border-secondary py-5">
+      <div class="container text-center">
+        <div class="text-warning fw-bold fs-5 mb-1 text-uppercase">
+          Casino DAW
+        </div>
+        <p class="text-white-50 small mb-0">
+          Juego responsable. Mayores de 18 años. © 2026
+        </p>
+      </div>
+    </footer>
+
     <script src="assets/js/AudioManager.js"></script>
-    <script src="assets/js/navbar_logic.js"></script>
     <script>
-      let transacciones = [];
+      const API = "api.php";
 
       function cargarTodo() {
-        fetch("api.php?action=get_user_info&t=" + Date.now())
+        fetch(`${API}?action=get_user_info&t=${Date.now()}`)
           .then((r) => r.json())
           .then((data) => {
             if (!data.logged_in) return window.location.replace("login.html");
             document.getElementById("username").textContent = data.username;
             document.getElementById("saldo").textContent = parseFloat(
-              data.saldo
+              data.saldo,
             ).toFixed(2);
             if (data.rol === "admin" || data.rol === "owner") {
-              const txt =
-                data.rol === "owner" ? "👑 Panel OWNER" : "👮 Panel ADMIN";
-              document.getElementById(
-                "admin-btn-container"
-              ).innerHTML = `<a href="partials/admin.html" class="btn btn-outline-warning btn-sm fw-bold" onclick="if(window.AudioManager) AudioManager.play('click')">${txt}</a>`;
+              document.getElementById("admin-btn-container").innerHTML =
+                `<a href="partials/admin.html" class="btn btn-outline-warning btn-sm fw-bold">${data.rol.toUpperCase()}</a>`;
             }
             cargarHistorial();
-            cargarMisMensajes();
+            cargarLogros();
+            cargarRanking();
           });
       }
 
-      document.addEventListener("DOMContentLoaded", cargarTodo);
-      window.onpageshow = function (e) {
-        if (e.persisted) cargarTodo();
-      };
-
-      function procesar(action) {
-        const amount = parseFloat(
-          document.getElementById("walletAmount").value
-        );
-        if (!amount || amount <= 0) return alert("Cantidad no válida");
-        fetch(`api.php?action=${action}`, {
-          method: "POST",
-          body: JSON.stringify({ amount }),
-          headers: { "Content-Type": "application/json" },
-        })
+      function cargarLogros() {
+        fetch(`${API}?action=get_achievements`)
           .then((r) => r.json())
           .then((d) => {
-            if (d.success) {
-              if (window.AudioManager) AudioManager.play("chips");
-              cargarTodo();
-            } else alert("Error");
-          });
-      }
-
-      function cargarHistorial() {
-        fetch("api.php?action=get_transactions&t=" + Date.now())
-          .then((r) => r.json())
-          .then((d) => {
-            if (d.success) {
-              transacciones = d.transacciones;
-              renderTabla(transacciones);
-            }
-          });
-      }
-
-      function renderTabla(lista) {
-        const body = document.getElementById("txTableBody");
-        if (!lista.length)
-          return (body.innerHTML =
-            '<tr><td colspan="4" class="text-center py-4 opacity-50">Sin movimientos.</td></tr>');
-        body.innerHTML = lista
-          .map((t) => {
-            const esGanancia = t.tipo === "ingreso" || t.tipo === "ganancia";
-            const color = esGanancia ? "text-success" : "text-danger";
-            const signo = esGanancia ? "+" : "-";
-
-            return `<tr>
-                    <td class="text-white-50 small">${new Date(
-                      t.fecha
-                    ).toLocaleString()}</td>
-                    <td class="text-uppercase" style="font-size:0.6rem">${
-                      t.tipo
-                    }</td>
-                    <td class="text-end fw-bold ${color}">${signo}${parseFloat(
-              t.cantidad
-            ).toFixed(2)} €</td>
-                    <td class="text-end fw-bold text-info">${parseFloat(
-                      t.saldo_posterior
-                    ).toFixed(2)} €</td>
-                </tr>`;
-          })
-          .join("");
-      }
-
-      function filtrar(tipo, btn) {
-        if (window.AudioManager) AudioManager.play("click");
-        document
-          .querySelectorAll(".btn-group .btn")
-          .forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        renderTabla(
-          tipo === "todos"
-            ? transacciones
-            : transacciones.filter((t) =>
-                tipo === "ingreso"
-                  ? t.tipo === "ingreso" || t.tipo === "ganancia"
-                  : t.tipo === "retiro" || t.tipo === "apuesta"
-              )
-        );
-      }
-
-      function cargarMisMensajes() {
-        fetch("api.php?action=get_my_messages&t=" + Date.now())
-          .then((r) => r.json())
-          .then((d) => {
-            const container = document.getElementById("chatHistory");
-            if (!d.mensajes || !d.mensajes.length)
-              return (container.innerHTML =
-                '<p class="text-center text-white-50 small py-3">Sin mensajes.</p>');
-            container.innerHTML = d.mensajes
+            const container = document.getElementById("achievementsContainer");
+            // LÓGICA DE INCÓGNITA: Si no está obtenido, mostramos "?"
+            container.innerHTML = d.logros
               .map(
-                (m) =>
-                  `<div class="mb-2"><div class="text-end"><small class="bg-secondary px-2 py-1 rounded">Tú: ${
-                    m.mensaje
-                  }</small></div>${
-                    m.respuesta
-                      ? `<div class="text-start mt-1"><small class="bg-info text-dark px-2 py-1 rounded fw-bold">ADMIN: ${m.respuesta}</small></div>`
-                      : ""
-                  }</div>`
+                (l) => `
+                <div class="col-md-2 col-4">
+                    <div class="card achievement-card ${l.obtenido ? "unlocked" : ""}" title="${l.obtenido ? l.descripcion : "Logro bloqueado"}">
+                        <div class="${l.obtenido ? "fs-2" : "mystery-icon"}">
+                            ${l.obtenido ? l.icono || "❓" : "?"}
+                        </div>
+                        <div class="achievement-name">${l.nombre}</div>
+                    </div>
+                </div>`,
               )
               .join("");
           });
       }
 
-      function enviarSoporte() {
-        if (window.AudioManager) AudioManager.play("click");
-        const msg = document.getElementById("supportMsg").value;
-        if (!msg) return;
-        fetch("api.php?action=send_support_message", {
+      function cargarRanking() {
+        fetch(`${API}?action=get_leaderboard`)
+          .then((r) => r.json())
+          .then((d) => {
+            document.getElementById("leaderboardContainer").innerHTML =
+              d.ranking
+                .map(
+                  (u, i) => `
+                <div class="ranking-item d-flex align-items-center">
+                    <span class="fw-bold me-3 text-white-50">#${i + 1}</span>
+                    <div class="flex-grow-1"><strong>${u.username}</strong><br><small class="text-warning">${u.medallas} MEDALLAS</small></div>
+                    <div class="text-success fw-bold">${Math.round(u.saldo)}€</div>
+                </div>`,
+                )
+                .join("");
+          });
+      }
+
+      function cargarHistorial() {
+        fetch(`${API}?action=get_transactions`)
+          .then((r) => r.json())
+          .then((d) => {
+            document.getElementById("txTableBody").innerHTML = d.transacciones
+              .map(
+                (t) =>
+                  `<tr><td>${new Date(t.fecha).toLocaleDateString()}</td><td class="text-uppercase">${t.tipo}</td><td class="text-end fw-bold">${parseFloat(t.cantidad).toFixed(2)} €</td></tr>`,
+              )
+              .join("");
+          });
+      }
+
+      function procesar(action) {
+        const amt = document.getElementById("walletAmount").value;
+        if (!amt || amt <= 0) return alert("Ingresa un monto válido");
+        fetch(`${API}?action=${action}`, {
           method: "POST",
-          body: JSON.stringify({ mensaje: msg }),
-          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: amt }),
         }).then(() => {
-          document.getElementById("supportMsg").value = "";
-          cargarMisMensajes();
+          if (window.AudioManager) AudioManager.play("chips");
+          cargarTodo();
         });
       }
 
-      document
-        .getElementById("btnDeposit")
-        .addEventListener("click", () => procesar("deposit"));
-      document.getElementById("btnWithdraw").addEventListener("click", () => {
-        if (confirm("¿Retirar dinero?")) procesar("withdraw");
-      });
-      document.getElementById("btnDashLogout").addEventListener("click", () => {
-        if (window.AudioManager) AudioManager.play("click");
-        localStorage.clear();
-        fetch("api.php?action=logout").then(() =>
-          window.location.replace("index.html")
+      function logout() {
+        fetch(`${API}?action=logout`).then(() =>
+          window.location.replace("index.html"),
         );
-      });
+      }
+      document.addEventListener("DOMContentLoaded", cargarTodo);
     </script>
   </body>
 </html>
