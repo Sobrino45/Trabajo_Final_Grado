@@ -1,123 +1,135 @@
 /* public/games/Ruleta/ruleta.css */
 
-/* --- DISCO DE LA RULETA (SOLUCIÓN AL COLAPSO) --- */
 .ruleta-container {
   position: relative;
-  width: 320px;
-  height: 320px;
-  margin: 0 auto 30px auto;
+  width: 340px;
+  height: 340px;
+  margin: 0 auto;
 }
-
+.flecha {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #f1c40f;
+  font-size: 26px;
+  z-index: 10;
+}
 .ruleta {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  border: 8px solid #222;
   position: relative;
-  overflow: hidden;
-  transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
-  background-color: #2c3e50;
-  border: 6px solid #2c3e50;
-  box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+  background: #111;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+  transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
 }
 
-.numero {
-  position: absolute; /* CLAVE: evita la lista vertical */
+.numero-spoke {
+  position: absolute;
   top: 50%;
   left: 50%;
-  width: 0;
-  height: 0;
-  transform-origin: 0 0;
+  width: 2px;
+  height: 50%;
+  transform-origin: 50% 0;
 }
-
-.numero span {
+.numero-spoke span {
   display: block;
-  position: absolute;
-  top: -10px;
-  left: 0;
-  transform: rotate(90deg) translate(0, -128px);
   font-weight: bold;
   font-size: 13px;
-  width: 20px;
-  text-align: center;
-  text-shadow: 1px 1px 2px black;
+  transform: translateY(-155px);
+  text-shadow: 1px 1px 2px #000;
 }
-
 .ruleta-centro {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 140px;
-  height: 140px;
+  width: 155px;
+  height: 155px;
+  background: radial-gradient(circle, #333, #000);
+  border: 4px solid #f1c40f;
   border-radius: 50%;
-  background: radial-gradient(circle, #34495e, #2c3e50);
-  border: 4px solid #f39c12;
   z-index: 5;
 }
 
-/* --- TABLERO PROFESIONAL --- */
-.tablero {
-  background-color: #064e3b;
-  padding: 15px;
-  border-radius: 12px;
-  border: 4px solid #1e3a2f;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+/* Mesa Profesional */
+.tablero-container {
+  background: #064e3b;
+  padding: 20px;
+  border-radius: 15px;
+  border: 5px solid #042f24;
   display: inline-block;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-.celda-0 {
-  width: 50px;
-  height: 136px; /* 3 x 44px + gaps */
-  font-size: 24px !important;
-  border-radius: 8px 0 0 8px;
-}
-
-.grid-numeros {
-  display: grid;
-  grid-template-columns: repeat(12, 40px) 45px;
-  grid-template-rows: repeat(3, 44px);
-  gap: 2px;
-}
-
+/* CORRECCIÓN AQUÍ: Se añade 'color: #fff' para que el texto sea blanco */
 .celda {
+  position: relative;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  color: white;
+  color: #fff;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.1s;
   user-select: none;
-  transition: 0.2s;
 }
-
 .celda:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
 }
-.bg-red {
-  background: #d32f2f;
-}
-.bg-black {
-  background: #1a1a1a;
-}
-.bg-green {
-  background: #2e7d32;
+.celda-0 {
+  height: 136px;
+  width: 55px;
+  font-size: 26px;
+  border-radius: 10px 0 0 10px;
 }
 
+/* Grid de 13 columnas: 12 números + 1 columna de apuestas */
+.nums-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+}
+.dozens-margin {
+  margin-left: 59px;
+}
+
+/* Fichas */
 .ficha-visual {
   position: absolute;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   background: radial-gradient(circle, #f1c40f, #d35400);
   border: 2px dashed #fff;
   border-radius: 50%;
-  color: black;
-  font-size: 9px;
-  font-weight: bold;
+  color: #fff;
+  font-size: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+.bg-red {
+  background: #b91c1c;
+}
+.bg-black {
+  background: #000;
+}
+.bg-green {
+  background: #15803d;
+}
+.bg-dark-gray {
+  background: #333;
+}
+.small-cell {
+  font-size: 0.7rem;
 }

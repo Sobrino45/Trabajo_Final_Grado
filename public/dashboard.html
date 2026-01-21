@@ -14,7 +14,6 @@
     />
     <link rel="stylesheet" href="assets/css/main.css" />
     <style>
-      /* Estilos para medallas misteriosas */
       .achievement-card {
         opacity: 0.5;
         transition: 0.4s;
@@ -28,13 +27,6 @@
         position: relative;
         overflow: hidden;
       }
-      /* Cuando el logro está bloqueado, el icono es una interrogación suave */
-      .achievement-card .mystery-icon {
-        color: #444;
-        font-weight: bold;
-        font-size: 2rem;
-      }
-
       .achievement-card.unlocked {
         opacity: 1;
         border-color: #ffc107 !important;
@@ -48,13 +40,11 @@
         margin-top: 5px;
         color: #666;
         text-align: center;
-        line-height: 1;
         text-transform: uppercase;
       }
       .unlocked .achievement-name {
         color: #ffc107;
       }
-
       .ranking-item {
         border-bottom: 1px solid #222;
         padding: 10px;
@@ -142,7 +132,7 @@
             <div class="card bg-black border-secondary shadow">
               <div class="card-header bg-dark border-secondary py-2">
                 <h6 class="m-0 small fw-bold text-white-50 text-uppercase">
-                  Últimos Movimientos
+                  Historial Detallado
                 </h6>
               </div>
               <div class="table-responsive">
@@ -252,21 +242,12 @@
       </section>
     </main>
 
-    <footer class="bg-black border-top border-secondary py-5">
-      <div class="container text-center">
-        <div class="text-warning fw-bold fs-5 mb-1 text-uppercase">
-          Casino DAW
-        </div>
-        <p class="text-white-50 small mb-0">
-          Juego responsable. Mayores de 18 años. © 2026
-        </p>
-      </div>
-    </footer>
+    <footer id="footer"></footer>
 
     <script src="assets/js/AudioManager.js"></script>
+    <script src="assets/js/navbar_logic.js"></script>
     <script>
       const API = "api.php";
-
       function cargarTodo() {
         fetch(`${API}?action=get_user_info&t=${Date.now()}`)
           .then((r) => r.json())
@@ -286,25 +267,49 @@
           });
       }
 
+      function cargarHistorial() {
+        //
+        fetch(`${API}?action=get_transactions`)
+          .then((r) => r.json())
+          .then((d) => {
+            document.getElementById("txTableBody").innerHTML = d.transacciones
+              .map((t) => {
+                let infoExtra = "";
+                if (t.detalles_json) {
+                  try {
+                    const det = JSON.parse(t.detalles_json);
+                    if (det.multiplicador)
+                      infoExtra = `<br><span class="text-warning" style="font-size:0.6rem">🚀 Crash: ${det.multiplicador}x</span>`;
+                    if (det.numero !== undefined)
+                      infoExtra = `<br><span class="text-info" style="font-size:0.6rem">🎡 Ruleta: Nº ${det.numero}</span>`;
+                  } catch (e) {}
+                }
+                const color =
+                  t.tipo === "ganancia" || t.tipo === "ingreso"
+                    ? "text-success"
+                    : "text-danger";
+                return `<tr><td>${new Date(t.fecha).toLocaleDateString()}</td><td class="text-uppercase fw-bold" style="font-size:0.7rem">${t.tipo.replace("_", " ")} ${infoExtra}</td><td class="text-end fw-bold ${color}">${parseFloat(t.cantidad).toFixed(2)} €</td></tr>`;
+              })
+              .join("");
+          });
+      }
+
       function cargarLogros() {
         fetch(`${API}?action=get_achievements`)
           .then((r) => r.json())
           .then((d) => {
-            const container = document.getElementById("achievementsContainer");
-            // LÓGICA DE INCÓGNITA: Si no está obtenido, mostramos "?"
-            container.innerHTML = d.logros
-              .map(
-                (l) => `
-                <div class="col-md-2 col-4">
-                    <div class="card achievement-card ${l.obtenido ? "unlocked" : ""}" title="${l.obtenido ? l.descripcion : "Logro bloqueado"}">
-                        <div class="${l.obtenido ? "fs-2" : "mystery-icon"}">
-                            ${l.obtenido ? l.icono || "❓" : "?"}
-                        </div>
-                        <div class="achievement-name">${l.nombre}</div>
-                    </div>
-                </div>`,
-              )
-              .join("");
+            document.getElementById("achievementsContainer").innerHTML =
+              d.logros
+                .map(
+                  (l) => `
+            <div class="col-md-2 col-4">
+              <div class="card achievement-card ${l.obtenido ? "unlocked" : ""}" title="${l.obtenido ? l.descripcion : "Logro bloqueado"}">
+                <div class="${l.obtenido ? "fs-2" : "mystery-icon"}">${l.obtenido ? l.icono || "❓" : "?"}</div>
+                <div class="achievement-name">${l.nombre}</div>
+              </div>
+            </div>`,
+                )
+                .join("");
           });
       }
 
@@ -316,39 +321,19 @@
               d.ranking
                 .map(
                   (u, i) => `
-                <div class="ranking-item d-flex align-items-center">
-                    <span class="fw-bold me-3 text-white-50">#${i + 1}</span>
-                    <div class="flex-grow-1"><strong>${u.username}</strong><br><small class="text-warning">${u.medallas} MEDALLAS</small></div>
-                    <div class="text-success fw-bold">${Math.round(u.saldo)}€</div>
-                </div>`,
+            <div class="ranking-item d-flex align-items-center"><span class="fw-bold me-3 text-white-50">#${i + 1}</span><div class="flex-grow-1"><strong>${u.username}</strong><br><small class="text-warning">${u.medallas} MEDALLAS</small></div><div class="text-success fw-bold">${Math.round(u.saldo)}€</div></div>`,
                 )
                 .join("");
           });
       }
 
-      function cargarHistorial() {
-        fetch(`${API}?action=get_transactions`)
-          .then((r) => r.json())
-          .then((d) => {
-            document.getElementById("txTableBody").innerHTML = d.transacciones
-              .map(
-                (t) =>
-                  `<tr><td>${new Date(t.fecha).toLocaleDateString()}</td><td class="text-uppercase">${t.tipo}</td><td class="text-end fw-bold">${parseFloat(t.cantidad).toFixed(2)} €</td></tr>`,
-              )
-              .join("");
-          });
-      }
-
       function procesar(action) {
         const amt = document.getElementById("walletAmount").value;
-        if (!amt || amt <= 0) return alert("Ingresa un monto válido");
+        if (!amt || amt <= 0) return alert("Monto válido");
         fetch(`${API}?action=${action}`, {
           method: "POST",
           body: JSON.stringify({ amount: amt }),
-        }).then(() => {
-          if (window.AudioManager) AudioManager.play("chips");
-          cargarTodo();
-        });
+        }).then(() => cargarTodo());
       }
 
       function logout() {
@@ -356,7 +341,19 @@
           window.location.replace("index.html"),
         );
       }
-      document.addEventListener("DOMContentLoaded", cargarTodo);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        cargarTodo();
+        fetch("partials/navbar.html")
+          .then((r) => r.text())
+          .then((data) => {
+            document.getElementById("navbar").innerHTML = data;
+            if (window.NavbarManager) window.NavbarManager.init();
+          });
+        fetch("partials/footer.html")
+          .then((r) => r.text())
+          .then((data) => (document.getElementById("footer").innerHTML = data));
+      });
     </script>
   </body>
 </html>

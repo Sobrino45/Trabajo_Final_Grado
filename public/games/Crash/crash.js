@@ -5,30 +5,28 @@ const multiplierDisplay = document.getElementById("multiplierDisplay");
 const statusText = document.getElementById("statusText");
 const btnAction = document.getElementById("btnAction");
 const betInput = document.getElementById("betInput");
+const autoCashoutInput = document.getElementById("autoCashoutInput");
 const walletDisplay = document.getElementById("walletDisplay");
 const historyDiv = document.getElementById("history");
 
-// ESTADOS GLOBAL
-let gameRunning = false;
-let userInGame = false;
-let userCashedOut = false;
-let currentMultiplier = 1.0;
-let crashPoint = 0;
-let startTime = 0;
-let animationId = null;
-let saldoActual = 0;
-let userBet = 0;
-
-// SISTEMA DE CÁMARA
-let maxX = 5;
-let maxY = 2;
+let gameRunning = false,
+  userInGame = false,
+  userCashedOut = false;
+let currentMultiplier = 1.0,
+  crashPoint = 0,
+  startTime = 0,
+  animationId = null;
+let saldoActual = 0,
+  userBet = 0,
+  maxX = 5,
+  maxY = 2;
 
 document.addEventListener("DOMContentLoaded", () => {
   cargarDatosUsuario();
   window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
   historyDiv.innerHTML =
-    '<small class="text-white-50 w-100">Esperando resultados...</small>';
+    '<small class="text-white-50">Esperando resultados...</small>';
 });
 
 function cargarDatosUsuario() {
@@ -50,11 +48,8 @@ window.doubleBet = () => {
 };
 
 btnAction.addEventListener("click", () => {
-  if (!gameRunning) {
-    prepararPartida();
-  } else if (userInGame && !userCashedOut) {
-    cobrarGanancia();
-  }
+  if (!gameRunning) prepararPartida();
+  else if (userInGame && !userCashedOut) cobrarGanancia();
 });
 
 function prepararPartida() {
@@ -62,10 +57,8 @@ function prepararPartida() {
   if (isNaN(bet) || bet <= 0 || bet > saldoActual)
     return alert("Saldo insuficiente.");
 
-  // ACTUALIZACIÓN VISUAL INMEDIATA: Restar apuesta del saldo local
   saldoActual -= bet;
   walletDisplay.textContent = saldoActual.toFixed(2) + " €";
-
   userBet = bet;
   userInGame = true;
   userCashedOut = false;
@@ -75,15 +68,13 @@ function prepararPartida() {
   maxY = 2;
 
   if (window.AudioManager) AudioManager.play("spin");
-
   crashPoint = Math.max(1.01, 0.99 / (1 - Math.random()));
-  if (crashPoint > 30) crashPoint = 30;
+  if (crashPoint > 40) crashPoint = 40;
 
   btnAction.classList.replace("btn-success", "btn-warning");
   btnAction.innerHTML = "💰 RETIRAR";
-  statusText.textContent = "¡COHETE SUBIENDO!";
+  statusText.textContent = "¡SUBIENDO!";
   statusText.className = "text-warning fw-bold text-uppercase";
-
   startTime = Date.now();
   requestAnimationFrame(animarJuego);
 }
@@ -99,20 +90,26 @@ function animarJuego() {
     return;
   }
 
+  // LÓGICA DE AUTO-RETIRO
+  if (autoCashoutInput && autoCashoutInput.value) {
+    const autoValue = parseFloat(autoCashoutInput.value);
+    if (!userCashedOut && autoValue > 1.0 && currentMultiplier >= autoValue) {
+      cobrarGanancia();
+    }
+  }
+
   if (elapsed > maxX * 0.7) maxX = elapsed / 0.7;
   if (currentMultiplier > maxY * 0.7) maxY = currentMultiplier / 0.7;
-
   dibujarGrafico(elapsed, currentMultiplier);
   animationId = requestAnimationFrame(animarJuego);
 }
 
 function dibujarGrafico(elapsed, mult) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const w = canvas.width - 100;
-  const h = canvas.height - 100;
-  const x = (elapsed / maxX) * w;
-  const y = canvas.height - (mult / maxY) * h;
-
+  const w = canvas.width - 100,
+    h = canvas.height - 100;
+  const x = (elapsed / maxX) * w,
+    y = canvas.height - (mult / maxY) * h;
   ctx.beginPath();
   ctx.lineWidth = 8;
   ctx.strokeStyle = "#f1c40f";
@@ -120,7 +117,6 @@ function dibujarGrafico(elapsed, mult) {
   ctx.moveTo(0, canvas.height);
   ctx.lineTo(x, y);
   ctx.stroke();
-
   ctx.fillStyle = "#fff";
   ctx.shadowBlur = 20;
   ctx.shadowColor = "#f1c40f";
@@ -135,47 +131,38 @@ function cobrarGanancia() {
   userCashedOut = true;
   const multCapturado = currentMultiplier;
   const premio = userBet * multCapturado;
-
   btnAction.classList.replace("btn-warning", "btn-secondary");
   btnAction.innerHTML = `✅ RECIBIDO: ${premio.toFixed(2)}€`;
   btnAction.disabled = true;
-
   if (window.AudioManager) {
     try {
       AudioManager.stop("spin");
       AudioManager.play("win");
     } catch (e) {}
   }
-
   enviarResultado(userBet, premio, multCapturado);
 }
 
 function finalizarPorExplosion() {
   gameRunning = false;
   cancelAnimationFrame(animationId);
-
   multiplierDisplay.textContent = crashPoint.toFixed(2) + "x";
   multiplierDisplay.style.color = "#e74c3c";
   statusText.textContent = "💥 ¡EXPLOTÓ!";
   statusText.className = "text-danger fw-bold";
-
   if (window.AudioManager) {
     try {
       AudioManager.stop("spin");
       AudioManager.play("explosion");
     } catch (e) {}
   }
-
   if (!userCashedOut) {
     btnAction.classList.replace("btn-warning", "btn-danger");
     btnAction.innerHTML = "PERDISTE";
     btnAction.disabled = true;
-    // Si pierde, win es 0, el servidor restará la apuesta del saldo real
     enviarResultado(userBet, 0, crashPoint);
   }
-
   actualizarHistorialVisual(crashPoint);
-
   setTimeout(() => {
     multiplierDisplay.style.color = "white";
     btnAction.className = "btn btn-success w-100 py-4 fw-bold fs-4";
@@ -203,15 +190,13 @@ function enviarResultado(apuesta, ganancia, mult) {
         saldoActual = parseFloat(data.new_balance);
         walletDisplay.textContent = saldoActual.toFixed(2) + " €";
       }
-    })
-    .catch((err) => console.error("Error al actualizar dinero:", err));
+    });
 }
 
 function actualizarHistorialVisual(val) {
   if (historyDiv.querySelector("small")) historyDiv.innerHTML = "";
   const span = document.createElement("span");
   span.className = `badge ${val >= 2 ? "bg-success" : "bg-danger"} p-2`;
-  span.style.fontSize = "0.9rem";
   span.textContent = val.toFixed(2) + "x";
   historyDiv.prepend(span);
   if (historyDiv.children.length > 8) historyDiv.lastChild.remove();

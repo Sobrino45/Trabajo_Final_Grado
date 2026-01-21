@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -24,10 +24,9 @@
         <a
           href="../../dashboard.html"
           class="btn btn-outline-secondary btn-sm"
-          onclick="if(window.AudioManager) AudioManager.play('click')"
+          onclick="if (window.AudioManager) AudioManager.play('click');"
           >⬅ Volver</a
         >
-
         <div
           class="bg-black border border-secondary rounded px-3 py-1 d-flex align-items-center gap-2 shadow-inset"
         >
@@ -94,51 +93,64 @@
                     min="1"
                   />
                 </div>
-                <div class="d-flex gap-2 mt-2">
-                  <button
-                    class="btn btn-sm btn-outline-secondary flex-fill"
-                    onclick="if(window.AudioManager) AudioManager.play('click'); setBet(10);"
+              </div>
+
+              <div>
+                <label
+                  class="form-label text-info fw-bold small text-uppercase"
+                  style="font-size: 0.7rem"
+                  >Auto-Retiro (Opcional)</label
+                >
+                <div class="input-group input-group-sm">
+                  <input
+                    type="number"
+                    id="autoCashoutInput"
+                    class="form-control bg-dark text-white border-secondary fw-bold"
+                    placeholder="Ej: 2.00"
+                    step="0.1"
+                    min="1.1"
+                  />
+                  <span
+                    class="input-group-text bg-dark border-secondary text-secondary"
+                    >x</span
                   >
-                    10
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-secondary flex-fill"
-                    onclick="if(window.AudioManager) AudioManager.play('click'); setBet(50);"
-                  >
-                    50
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-secondary flex-fill"
-                    onclick="if(window.AudioManager) AudioManager.play('click'); setBet(100);"
-                  >
-                    100
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-warning flex-fill"
-                    onclick="if(window.AudioManager) AudioManager.play('click'); doubleBet();"
-                  >
-                    x2
-                  </button>
                 </div>
               </div>
-              <div class="mt-auto">
+
+              <div class="d-flex gap-2">
                 <button
-                  id="btnAction"
-                  class="btn btn-success w-100 py-4 fw-bold text-uppercase fs-4 shadow-lg border-0 position-relative overflow-hidden"
-                  onclick="if(window.AudioManager) AudioManager.play('click')"
+                  class="btn btn-sm btn-outline-secondary flex-fill"
+                  onclick="setBet(10)"
                 >
-                  <span class="position-relative z-1">APOSTAR</span>
+                  10
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary flex-fill"
+                  onclick="setBet(50)"
+                >
+                  50
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-warning flex-fill"
+                  onclick="doubleBet()"
+                >
+                  x2
                 </button>
               </div>
+
+              <button
+                id="btnAction"
+                class="btn btn-success w-100 py-4 fw-bold text-uppercase fs-4 border-0"
+              >
+                APOSTAR
+              </button>
+
               <div class="bg-dark rounded p-3 border border-secondary mt-3">
                 <small class="text-white-50 d-block mb-1">Último Crash:</small>
                 <div
                   id="history"
                   class="d-flex gap-2 flex-wrap justify-content-start"
-                >
-                  <span class="badge bg-danger">1.10x</span>
-                  <span class="badge bg-success">5.45x</span>
-                </div>
+                ></div>
               </div>
             </div>
           </div>
@@ -147,24 +159,19 @@
     </main>
 
     <div id="footer"></div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/AudioManager.js"></script>
-    <script src="../../assets/js/auth.js"></script>
-    <script src="../../assets/js/logout.js"></script>
     <script src="../../assets/js/navbar_logic.js"></script>
     <script src="crash.js"></script>
-
     <script>
       fetch("../../partials/navbar.html")
-        .then((response) => response.text())
+        .then((r) => r.text())
         .then((data) => {
           document.getElementById("navbar").innerHTML = data;
           if (window.NavbarManager) window.NavbarManager.init();
         });
-
       fetch("../../partials/footer.html")
-        .then((response) => response.text())
+        .then((r) => r.text())
         .then((data) => (document.getElementById("footer").innerHTML = data));
     </script>
   </body>
