@@ -1,3 +1,4 @@
+/* public/games/Carrera/carrera.js */
 const TODA_LA_CUADRA = [
   { id: "h1", icon: "🐎", name: "Relámpago", cuota: 1.5 },
   { id: "h2", icon: "🦄", name: "Fantasma", cuota: 2.5 },
@@ -8,20 +9,18 @@ const TODA_LA_CUADRA = [
 const TRACK_WIDTH_PERCENT = 90;
 const PROBABILIDAD_TURBO = 0.3;
 const POTENCIA_TURBO = 4.0;
-
-let corredoresActuales = [];
-let saldoActual = 0;
-let caballoSeleccionado = null;
-let carreraEnCurso = false;
-let idCaballoConTurbo = null;
-
-const track = document.getElementById("track");
-const panelSeleccion = document.getElementById("horseSelection");
-const btnStart = document.getElementById("btnStart");
-const betInput = document.getElementById("betAmount");
-const walletDisplay = document.getElementById("walletDisplay");
-const statusText = document.getElementById("raceStatus");
-const btnNewRace = document.getElementById("btnNewRace");
+let corredoresActuales = [],
+  saldoActual = 0,
+  caballoSeleccionado = null,
+  carreraEnCurso = false,
+  idCaballoConTurbo = null;
+const track = document.getElementById("track"),
+  panelSeleccion = document.getElementById("horseSelection"),
+  btnStart = document.getElementById("btnStart"),
+  betInput = document.getElementById("betAmount"),
+  walletDisplay = document.getElementById("walletDisplay"),
+  statusText = document.getElementById("raceStatus"),
+  btnNewRace = document.getElementById("btnNewRace");
 
 document.addEventListener("DOMContentLoaded", () => {
   cargarSaldo();
@@ -75,16 +74,7 @@ function renderizarBotones() {
     const btn = document.createElement("button");
     btn.className =
       "btn btn-outline-secondary d-flex justify-content-between align-items-center mb-2 horse-btn p-2";
-    btn.setAttribute("data-id", caballo.id);
-    btn.innerHTML = `
-            <div class="d-flex align-items-center gap-3">
-                <span class="fs-2">${caballo.icon}</span>
-                <div class="text-start lh-1">
-                    <div class="fw-bold text-white">${caballo.name}</div>
-                    <small class="text-white-50" style="font-size:0.75em">Se paga a:</small>
-                </div>
-            </div>
-            <span class="badge bg-warning text-dark fw-bold fs-5">x${caballo.cuota}</span>`;
+    btn.innerHTML = `<div class="d-flex align-items-center gap-3"><span class="fs-2">${caballo.icon}</span><div class="text-start lh-1"><div class="fw-bold text-white">${caballo.name}</div><small class="text-white-50" style="font-size:0.75em">Se paga a:</small></div></div><span class="badge bg-warning text-dark fw-bold fs-5">x${caballo.cuota}</span>`;
     btn.onclick = () => seleccionar(caballo.id, btn);
     panelSeleccion.appendChild(btn);
   });
@@ -104,8 +94,8 @@ function seleccionar(id, btnElement) {
 
 btnStart.addEventListener("click", () => {
   const apuesta = parseFloat(betInput.value);
-  if (isNaN(apuesta) || apuesta <= 0) return alert("Apuesta incorrecta");
-  if (apuesta > saldoActual) return alert("Saldo insuficiente");
+  if (isNaN(apuesta) || apuesta <= 0 || apuesta > saldoActual)
+    return alert("Error en apuesta");
   carreraEnCurso = true;
   deshabilitarControles(true);
   statusText.innerHTML = "🔴 ¡CARRERA EN CURSO!";
@@ -128,9 +118,7 @@ function correr(apuesta) {
       const sprite = document.getElementById(`sprite-${caballo.id}`);
       if (sprite) {
         const visualPos = Math.min(posiciones[caballo.id], 92);
-        sprite.style.transform = `translateX(${
-          visualPos * (carrilAnchoPx / 100)
-        }px)`;
+        sprite.style.transform = `translateX(${visualPos * (carrilAnchoPx / 100)}px)`;
       }
       if (posiciones[caballo.id] >= TRACK_WIDTH_PERCENT) ganador = caballo.id;
     });
@@ -145,21 +133,16 @@ function finCarrera(ganadorId, apuesta) {
   const caballoGanador = corredoresActuales.find((c) => c.id === ganadorId);
   const hasGanado = ganadorId === caballoSeleccionado;
   let ganancia = hasGanado ? apuesta * caballoGanador.cuota : 0;
-
   if (hasGanado) {
-    statusText.innerHTML = `🏆 ¡GANA ${
-      caballoGanador.name
-    }! <br> <span class="text-success display-6">Has ganado ${ganancia.toFixed(
-      2
-    )}€</span>`;
+    statusText.innerHTML = `🏆 ¡GANA ${caballoGanador.name}! <br> <span class="text-success display-6">Has ganado ${ganancia.toFixed(2)}€</span>`;
     statusText.className =
       "text-center mt-3 fw-bold fs-4 text-white p-3 rounded bg-success border border-light";
+    if (window.ConfettiManager) ConfettiManager.celebrate(); // Confeti victoria
   } else {
     statusText.innerHTML = `🏁 Gana ${caballoGanador.name}. <br> <span class="text-white-50">Inténtalo de nuevo.</span>`;
     statusText.className =
       "text-center mt-3 fw-bold fs-4 text-white p-3 rounded bg-dark border border-secondary";
   }
-
   fetch("../../api.php?action=game_result", {
     method: "POST",
     body: JSON.stringify({
@@ -176,7 +159,6 @@ function finCarrera(ganadorId, apuesta) {
         actualizarSaldoVisual();
       }
     });
-
   setTimeout(() => {
     carreraEnCurso = false;
     deshabilitarControles(false);

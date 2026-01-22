@@ -1,5 +1,4 @@
 /* public/games/Poker/PokerClassic/poker.js */
-
 const suits = ["♥", "♦", "♣", "♠"];
 const values = [
   "2",
@@ -31,21 +30,19 @@ const valueMap = {
   K: 13,
   A: 14,
 };
-
 const API_PATH = "/CasinoDaw/public/api.php";
 
-let deck = [];
-let playerHand = [];
-let dealerHand = [];
-let holds = [false, false, false, false, false];
-let gameState = "BETTING";
-let saldoActual = 0;
-
-const btnAction = document.getElementById("btnAction");
-const cardsContainer = document.getElementById("cards-container");
-const dealerContainer = document.getElementById("dealer-cards");
-const msgBox = document.getElementById("poker-message");
-const betInput = document.getElementById("betAmount");
+let deck = [],
+  playerHand = [],
+  dealerHand = [],
+  holds = [false, false, false, false, false],
+  gameState = "BETTING",
+  saldoActual = 0;
+const btnAction = document.getElementById("btnAction"),
+  cardsContainer = document.getElementById("cards-container"),
+  dealerContainer = document.getElementById("dealer-cards"),
+  msgBox = document.getElementById("poker-message"),
+  betInput = document.getElementById("betAmount");
 
 document.addEventListener("DOMContentLoaded", () => {
   cargarSaldo();
@@ -93,15 +90,11 @@ function iniciarMano() {
   playerHand = [];
   dealerHand = [];
   holds = [false, false, false, false, false];
-
-  // SONIDO DE REPARTO INICIAL
   if (window.AudioManager) AudioManager.play("card");
-
   for (let i = 0; i < 5; i++) {
     playerHand.push(deck.pop());
     dealerHand.push(deck.pop());
   }
-
   gameState = "DISCARDING";
   btnAction.textContent = "CAMBIAR CARTAS";
   msgBox.textContent = "MANTÉN TUS MEJORES CARTAS";
@@ -121,7 +114,6 @@ function renderHands(revealDealer) {
     };
     cardsContainer.appendChild(div);
   });
-
   dealerContainer.innerHTML = "";
   dealerHand.forEach((card) => {
     if (revealDealer) {
@@ -137,11 +129,7 @@ function renderHands(revealDealer) {
 function createCardUI(card, red, isHeld) {
   const div = document.createElement("div");
   div.className = `poker-card ${red ? "red" : "black"} ${isHeld ? "held" : ""}`;
-  div.innerHTML = `
-        <div class="card-value">${card.value}</div>
-        <div class="card-suit">${card.suit}</div>
-        ${isHeld ? '<div class="hold-badge">HOLD</div>' : ""}
-    `;
+  div.innerHTML = `<div class="card-value">${card.value}</div><div class="card-suit">${card.suit}</div>${isHeld ? '<div class="hold-badge">HOLD</div>' : ""}`;
   return div;
 }
 
@@ -150,45 +138,38 @@ function isRed(s) {
 }
 
 function finalizarMano() {
-  // SONIDO DE NUEVAS CARTAS TRAS EL DESCARTE
   if (window.AudioManager) AudioManager.play("card");
-
   for (let i = 0; i < 5; i++) {
     if (!holds[i]) playerHand[i] = deck.pop();
   }
-
   const evalDealerInit = evaluateHand(dealerHand);
   if (evalDealerInit.score < 1) {
     for (let i = 0; i < 3; i++) dealerHand[i] = deck.pop();
   }
-
   renderHands(true);
-
-  const pEval = evaluateHand(playerHand);
-  const dEval = evaluateHand(dealerHand);
-  const apuesta = parseFloat(betInput.value);
-  let win = 0;
-  let finalMsg = "";
-
+  const pEval = evaluateHand(playerHand),
+    dEval = evaluateHand(dealerHand),
+    apuesta = parseFloat(betInput.value);
+  let win = 0,
+    finalMsg = "";
   if (pEval.tieBreakScore > dEval.tieBreakScore) {
     win = apuesta * 2;
     finalMsg = `🏆 ¡GANASTE! con ${pEval.name}`;
     msgBox.className = "text-success fw-bold fs-4";
-    if (window.AudioManager) AudioManager.play("win"); //
+    if (window.AudioManager) AudioManager.play("win");
+    if (window.ConfettiManager) ConfettiManager.celebrate(); // Confeti victoria
   } else if (pEval.tieBreakScore < dEval.tieBreakScore) {
     win = 0;
     finalMsg = `❌ BANCA GANA con ${dEval.name}`;
     msgBox.className = "text-danger fw-bold fs-4";
-    if (window.AudioManager) AudioManager.play("loss"); //
+    if (window.AudioManager) AudioManager.play("loss");
   } else {
     win = apuesta;
     finalMsg = "🤝 EMPATE (PUSH)";
     msgBox.className = "text-warning fw-bold fs-4";
     if (window.AudioManager) AudioManager.play("chips");
   }
-
   msgBox.textContent = finalMsg;
-
   fetch(API_PATH + "?action=game_result", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -203,35 +184,29 @@ function finalizarMano() {
           navSaldo.textContent = parseFloat(saldoActual).toFixed(2) + " €";
       }
     });
-
   gameState = "BETTING";
   btnAction.textContent = "NUEVA MANO";
 }
 
 function evaluateHand(h) {
-  const counts = {};
-  const suitsCount = {};
-  const vNums = h.map((c) => valueMap[c.value]).sort((a, b) => b - a);
-
+  const counts = {},
+    suitsCount = {},
+    vNums = h.map((c) => valueMap[c.value]).sort((a, b) => b - a);
   h.forEach((c) => {
     counts[c.value] = (counts[c.value] || 0) + 1;
     suitsCount[c.suit] = (suitsCount[c.suit] || 0) + 1;
   });
-
-  const isFlush = Object.values(suitsCount).some((c) => c === 5);
-  const isStraight = vNums.every((v, i) => i === 0 || v === vNums[i - 1] - 1);
-
+  const isFlush = Object.values(suitsCount).some((c) => c === 5),
+    isStraight = vNums.every((v, i) => i === 0 || v === vNums[i - 1] - 1);
   const pairValues = Object.keys(counts)
     .filter((v) => counts[v] === 2)
     .map((v) => valueMap[v])
     .sort((a, b) => b - a);
-  const trioValue = Object.keys(counts).find((v) => counts[v] === 3);
-  const pokerValue = Object.keys(counts).find((v) => counts[v] === 4);
-
-  let score = 0;
-  let name = "Carta Alta";
-  let tieValue = vNums[0];
-
+  const trioValue = Object.keys(counts).find((v) => counts[v] === 3),
+    pokerValue = Object.keys(counts).find((v) => counts[v] === 4);
+  let score = 0,
+    name = "Carta Alta",
+    tieValue = vNums[0];
   if (isFlush && isStraight && vNums[0] === 14) {
     score = 9;
     name = "Escalera Real";
@@ -268,7 +243,6 @@ function evaluateHand(h) {
     name = "Pareja";
     tieValue = pairValues[0];
   }
-
   const tieBreakScore = score * 1000000 + tieValue * 1000 + vNums[0];
   return { score, name, tieBreakScore };
 }

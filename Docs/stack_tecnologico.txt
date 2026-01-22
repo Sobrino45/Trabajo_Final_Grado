@@ -1,50 +1,66 @@
-DOCUMENTACIÓN TÉCNICA - CASINO DAW
-==================================
-
+DOCUMENTACIÓN TÉCNICA - CASINO DAW 
 1. ARQUITECTURA GENERAL
-   El proyecto sigue una arquitectura modular donde el Portal actúa como cliente centralizado.
-   Los juegos funcionan como módulos independientes que consumen servicios de backend compartidos o microservicios dedicados.
+El proyecto emplea una arquitectura modular donde el Dashboard centraliza la experiencia del usuario. Los juegos funcionan como nodos independientes integrados mediante una API REST (PHP) que garantiza la persistencia de datos en una base de datos MySQL y la sincronización del saldo en tiempo real.
 
-2. PORTAL Y FRONTEND COMÚN
-   - Tecnologías: HTML5, CSS3 (SCSS), Bootstrap 5.3, JavaScript (ES6).
-   - Estructura: Single Page Application "like" navigation con carga dinámica de componentes (Navbar).
+2. FRONTEND Y COMPONENTES GLOBALES
+Tecnologías: HTML5, CSS3, Bootstrap 5.3 y JavaScript ES6 funcional.
 
-3. BACKEND CORE (Gestión de Usuarios)
-   - Tecnologías: PHP 8.x, MySQL.
-   - Funcionalidad: Login, Registro, Sesiones, Billetera (Depósitos/Retiros).
+Gestión Visual: Uso de ConfettiManager.js para disparar celebraciones basadas en la librería Canvas Confetti al detectar hitos o premios.
 
-4. MÓDULOS DE JUEGO (Detalle Tecnológico)
+Gestión de Audio: AudioManager.js centraliza los efectos de sonido (giros, clics, victorias y pérdidas) en todos los módulos.
 
-   A. RULETA EUROPEA
-      - Ruta: /RuletaJava
-      - Frontend: JavaScript nativo con motor de físicas simulado.
-      - Backend: Integración con Backend Core (PHP) para transacciones.
+Navegación: Sistema de componentes dinámicos para navbar.html y footer.html.
 
-   B. MÁQUINA TRAGAPERRAS
-      - Ruta: /Tragaperras
-      - Frontend: JavaScript + CSS Animations.
-      - Backend: Lógica de probabilidad en cliente (Demo) / PHP (Producción).
+3. SISTEMAS TRANSVERSALES
+Billetera Unificada: El saldo se gestiona mediante peticiones POST a api.php?action=game_result, actualizando el estado global sin necesidad de recargar la página.
 
-   C. CRASH (COHETE)
-      - Ruta: /Crash
-      - Frontend: HTML5 Canvas + JavaScript para gráficos en tiempo real.
-      - Backend: Algoritmo de multiplicador aleatorio.
+Sistema de Logros: Implementación de medallas dinámicas (Primer Paso, Ganador Novel, Superviviente, Poker Face, Estratega Texas) que se desbloquean al cumplir condiciones específicas en los juegos.
 
-   D. CARRERA DE CABALLOS
-      - Ruta: /Carrera
-      - Frontend: JavaScript asíncrono.
-      - Lógica: Algoritmo de velocidad aleatoria ponderada por cuotas (JS).
+4. MÓDULOS DE JUEGO (DETALLE TECNOLÓGICO)
+A. RULETA EUROPEA
+Ruta: /games/Ruleta
 
-   E. BLACKJACK
-      - Ruta: /Blackjack (Frontend) y /BlackjackAPI (Backend)
-      - Arquitectura: Microservicio.
-      - Backend: Java con Spring Boot (API REST).
-      - Frontend: Cliente JS que consume la API REST del microservicio.
+Lógica: Basada en el orden oficial del cilindro europeo (37 números).
 
-   F. POKER (CLÁSICO)
-      - Ruta: /Poker
-      - Backend: PHP (Gestión de turnos y manos).
+Innovación: Cálculo de rotación negativa precisa para alinear el número ganador con el indicador visual y sistema de fichas acumulativas que suma el valor en la misma celda para evitar saturación del DOM.
 
-   G. TEXAS HOLD'EM
-      - Estado: En desarrollo.
-      - Backend Planificado: Java Spring Boot.
+B. MÁQUINA TRAGAPERRAS (SUPER SLOTS)
+Ruta: /games/Tragaperras
+
+Motor de Azar: Sistema de probabilidades pesadas (Cereza 40% a Diamante 5%) que garantiza la sostenibilidad del casino.
+
+Frontend: Animaciones CSS para el giro y parada secuencial de carretes (efecto cascada) con un intervalo de 1.2 segundos entre cada uno para aumentar la tensión del usuario.
+
+C. CRASH (COHETE)
+Ruta: /games/Crash
+
+Gráficos: HTML5 Canvas para renderizar la curva exponencial del multiplicador en tiempo real.
+
+Lógica: Algoritmo de explosión aleatorio limitado a un máximo de 40x con funcionalidad de Auto-Retiro configurable por el usuario.
+
+D. CARRERA DE CABALLOS
+Ruta: /games/Carrera
+
+Algoritmo: Simulación de velocidad asíncrona ponderada por las cuotas de cada corredor (Relámpago, Fantasma, etc.) y probabilidad de "Turbo" aleatorio.
+
+E. BLACKJACK (MICROSERVICIO)
+Ruta: /games/Blackjack
+
+Backend: Java con Spring Boot actuando como motor de lógica de cartas independiente (Microservicio en puerto 8080).
+
+Comunicación: Fetch API para consumir el estado de la mano, puntos y validación de reglas de la banca.
+
+F. POKER CLÁSICO Y TEXAS HOLD'EM
+Ruta: /games/Poker
+
+Estado: Funcionales y habilitados.
+
+Lógica Texas: Sistema de 2 cartas propias y 5 comunitarias con evaluador de manos de alta jerarquía (desde Carta Alta hasta Escalera Real).
+
+Lógica Clásico: Modalidad 5-Card Draw con sistema de descarte y mantenimiento de cartas.
+
+5. AUTOMATIZACIÓN Y CI
+
+Scripts de Mantenimiento: Carpeta /CI con herramientas de respaldo.
+
+Persistencia Crítica: El script backup_db.sh garantiza la integridad de las tablas de usuarios y logros ante fallos en el despliegue.

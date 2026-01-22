@@ -1,0 +1,11 @@
+/* COLORES */
+/* UI */
+.btn-casino {
+  background: linear-gradient(135deg, #ffd700, crimson);
+  color: #000;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+}
+.btn-casino:hover {
+  opacity: 0.9;
+}/*# sourceMappingURL=buttons.css.map */

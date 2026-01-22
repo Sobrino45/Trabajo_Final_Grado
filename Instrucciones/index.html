@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -37,6 +37,14 @@
       }
       .hand-rank-list li:last-child {
         border-bottom: none;
+      }
+      /* Estilo para las pistas de logros */
+      .clue-card {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-left: 4px solid #f1c40f;
+        padding: 12px 18px;
+        margin-bottom: 12px;
+        border-radius: 0 8px 8px 0;
       }
     </style>
   </head>
@@ -144,6 +152,15 @@
               ♠️ Texas Hold'em
             </button>
             <button
+              class="nav-link text-start text-warning fw-bold"
+              id="v-pills-logros-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#v-pills-logros"
+              type="button"
+            >
+              🏆 Logros y Medallas
+            </button>
+            <button
               class="nav-link text-start"
               id="v-pills-faq-tab"
               data-bs-toggle="pill"
@@ -230,32 +247,64 @@
 
             <div class="tab-pane fade" id="v-pills-slots">
               <div class="card bg-secondary text-white border-0 shadow-sm p-4">
-                <h3 class="mb-4">🎰 Tragaperras (Slots)</h3>
+                <h3 class="mb-4">🎰 Super Slots DAW</h3>
                 <p>
-                  Juego de azar puro. Alinea 3 símbolos idénticos en la línea
-                  central para ganar.
+                  Alinea el caos en la línea central. Nuestra máquina utiliza
+                  <strong>pesos de probabilidad</strong> y parada en cascada
+                  para revelar tu destino.
                 </p>
 
                 <div class="row mt-4">
-                  <div class="col-md-6">
-                    <h5 class="text-warning">Símbolos Especiales</h5>
-                    <ul class="list-unstyled">
-                      <li class="mb-2">
-                        💎 <strong>Diamante:</strong> Premio Máximo (Jackpot).
-                      </li>
-                      <li class="mb-2">
-                        ⭐ <strong>Estrella:</strong> Premio Alto.
-                      </li>
-                      <li class="mb-2">
-                        🍋 <strong>Limón / 🍒 Cereza:</strong> Premios menores
-                        frecuentes.
-                      </li>
-                    </ul>
+                  <div class="col-md-7">
+                    <h5 class="text-warning">Premios (x3 Iguales)</h5>
+                    <div class="table-responsive">
+                      <table class="table table-dark table-borderless table-sm">
+                        <tbody>
+                          <tr>
+                            <td class="fs-4">💎</td>
+                            <td><strong>Diamante</strong></td>
+                            <td class="text-warning fw-bold">+100 €</td>
+                          </tr>
+                          <tr>
+                            <td class="fs-4">⭐</td>
+                            <td><strong>Estrella</strong></td>
+                            <td class="text-warning fw-bold">+50 €</td>
+                          </tr>
+                          <tr>
+                            <td class="fs-4">🔔</td>
+                            <td><strong>Campana</strong></td>
+                            <td class="text-warning fw-bold">+20 €</td>
+                          </tr>
+                          <tr>
+                            <td class="fs-4">🍋</td>
+                            <td><strong>Limón</strong></td>
+                            <td class="text-warning fw-bold">+10 €</td>
+                          </tr>
+                          <tr>
+                            <td class="fs-4">🍒</td>
+                            <td><strong>Cereza</strong></td>
+                            <td class="text-warning fw-bold">+5 €</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div class="col-md-6">
-                    <div class="alert alert-dark border-info">
-                      <strong>Coste por giro:</strong> Fijo (ej. 5€).<br />
-                      El premio se suma automáticamente a tu saldo.
+                  <div class="col-md-5">
+                    <div class="alert alert-dark border-info h-100">
+                      <h6 class="text-info fw-bold">Mecánica:</h6>
+                      <ul class="small ps-3">
+                        <li class="mb-2">
+                          <strong>Coste Fijo:</strong> 5€ por giro.
+                        </li>
+                        <li class="mb-2">
+                          <strong>Efecto Cascada:</strong> Los carretes se
+                          detienen uno a uno.
+                        </li>
+                        <li class="mb-2">
+                          <strong>¡Confeti!:</strong> Las victorias grandes
+                          disparan celebraciones visuales.
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -425,6 +474,56 @@
                     <span>🃏 Carta Alta</span> <span>Débil</span>
                   </li>
                 </ul>
+              </div>
+            </div>
+
+            <div class="tab-pane fade" id="v-pills-logros">
+              <div class="card bg-secondary text-white border-0 shadow-sm p-4">
+                <h3 class="mb-4 text-warning">🏆 El Camino del Jugador</h3>
+                <p>
+                  Ciertas acciones iluminan medallas en tu vitrina personal.
+                  ¿Serás capaz de descifrar cómo obtenerlas todas?
+                </p>
+
+                <div class="clue-card">
+                  <h6 class="text-warning fw-bold m-0">💰 PRIMER PASO</h6>
+                  <p class="small m-0 text-white-50">
+                    "Has cruzado el umbral del templo. El viaje de mil monedas
+                    comienza con un solo clic."
+                  </p>
+                </div>
+
+                <div class="clue-card">
+                  <h6 class="text-warning fw-bold m-0">🏆 GANADOR NOVEL</h6>
+                  <p class="small m-0 text-white-50">
+                    "El brillo del oro es más dulce la primera vez. Has
+                    demostrado que la fortuna te sonríe."
+                  </p>
+                </div>
+
+                <div class="clue-card">
+                  <h6 class="text-warning fw-bold m-0">🚀 SUPERVIVIENTE</h6>
+                  <p class="small m-0 text-white-50">
+                    "Jugaste con fuego y no te quemaste. El cronómetro es tu
+                    aliado, pero solo si sabes cuándo abandonarlo."
+                  </p>
+                </div>
+
+                <div class="clue-card">
+                  <h6 class="text-warning fw-bold m-0">🃏 POKER FACE</h6>
+                  <p class="small m-0 text-white-50">
+                    "Ni un solo músculo se movió en tu rostro. Tus cartas
+                    hablaron por ti en el silencio de la mesa."
+                  </p>
+                </div>
+
+                <div class="clue-card">
+                  <h6 class="text-warning fw-bold m-0">🤠 ESTRATEGA TEXAS</h6>
+                  <p class="small m-0 text-white-50">
+                    "El trono de las dos cartas tiene un nuevo dueño. Venciste
+                    en el duelo bajo el sol implacable."
+                  </p>
+                </div>
               </div>
             </div>
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -21,7 +21,7 @@
           <a
             href="../../dashboard.html"
             class="btn btn-outline-secondary btn-sm"
-            onclick="if(window.AudioManager) AudioManager.play('click')"
+            onclick="if (window.AudioManager) AudioManager.play('click');"
             >⬅ Volver al Dashboard</a
           >
           <div
@@ -66,44 +66,52 @@
               <button
                 id="spinBtn"
                 class="btn btn-danger btn-lg w-50 fw-bold shadow-sm"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
+                onclick="if (window.AudioManager) AudioManager.play('click');"
               >
                 GIRAR (-5€)
               </button>
               <button
                 id="paytableBtn"
                 class="btn btn-outline-light"
-                onclick="if(window.AudioManager) AudioManager.play('click')"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#paytable"
+                aria-expanded="false"
+                aria-controls="paytable"
+                onclick="if (window.AudioManager) AudioManager.play('click');"
               >
                 ℹ️ Premios
               </button>
             </div>
             <div id="result" class="result mt-3 fw-bold"></div>
+
             <div
               id="paytable"
-              class="paytable d-none mt-4 text-start mx-auto"
+              class="collapse mt-4 text-start mx-auto"
               style="max-width: 300px"
             >
-              <h6 class="text-warning border-bottom border-secondary pb-2">
-                Tabla de pagos
-              </h6>
-              <ul class="list-unstyled mt-2 small">
-                <li class="d-flex justify-content-between">
-                  <span>💎💎💎</span> <span class="text-warning">+100 €</span>
-                </li>
-                <li class="d-flex justify-content-between">
-                  <span>⭐⭐⭐</span> <span class="text-warning">+50 €</span>
-                </li>
-                <li class="d-flex justify-content-between">
-                  <span>🔔🔔🔔</span> <span class="text-warning">+20 €</span>
-                </li>
-                <li class="d-flex justify-content-between">
-                  <span>🍋🍋🍋</span> <span class="text-warning">+10 €</span>
-                </li>
-                <li class="d-flex justify-content-between">
-                  <span>🍒🍒🍒</span> <span class="text-warning">+5 €</span>
-                </li>
-              </ul>
+              <div class="card card-body bg-dark border-secondary">
+                <h6 class="text-warning border-bottom border-secondary pb-2">
+                  Tabla de pagos
+                </h6>
+                <ul class="list-unstyled mt-2 small">
+                  <li class="d-flex justify-content-between">
+                    <span>💎💎💎</span> <span class="text-warning">+100 €</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>⭐⭐⭐</span> <span class="text-warning">+50 €</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🔔🔔🔔</span> <span class="text-warning">+20 €</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🍋🍋🍋</span> <span class="text-warning">+10 €</span>
+                  </li>
+                  <li class="d-flex justify-content-between">
+                    <span>🍒🍒🍒</span> <span class="text-warning">+5 €</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -112,6 +120,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/AudioManager.js"></script>
+    <script src="../../assets/js/ConfettiManager.js"></script>
     <script src="../../assets/js/navbar_logic.js"></script>
     <script src="tragaperras.js"></script>
 

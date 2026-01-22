@@ -1,5 +1,4 @@
 /* public/games/Poker/PokerTexas/texas.js */
-
 const suits = ["♥", "♦", "♣", "♠"];
 const values = [
   "2",
@@ -31,22 +30,20 @@ const valueMap = {
   K: 13,
   A: 14,
 };
-
 const API_PATH = "/CasinoDaw/public/api.php";
 
-let deck = [];
-let playerCards = [];
-let dealerCards = [];
-let communityCards = [];
-let currentPhase = "BETTING";
-let saldoActual = 0;
-let apuestaActual = 0;
-
-const btnAction = document.getElementById("btnAction");
-const btnFold = document.getElementById("btnFold");
-const msgBox = document.getElementById("poker-message");
-const phaseBox = document.getElementById("game-phase");
-const walletNav = document.getElementById("nav-saldo");
+let deck = [],
+  playerCards = [],
+  dealerCards = [],
+  communityCards = [],
+  currentPhase = "BETTING",
+  saldoActual = 0,
+  apuestaActual = 0;
+const btnAction = document.getElementById("btnAction"),
+  btnFold = document.getElementById("btnFold"),
+  msgBox = document.getElementById("poker-message"),
+  phaseBox = document.getElementById("game-phase"),
+  walletNav = document.getElementById("nav-saldo");
 
 document.addEventListener("DOMContentLoaded", cargarSaldo);
 
@@ -103,23 +100,17 @@ btnFold.addEventListener("click", () => {
 function iniciarPartida() {
   const amount = parseFloat(document.getElementById("betAmount").value);
   if (isNaN(amount) || amount <= 0 || amount > saldoActual)
-    return alert("Apuesta no válida o saldo insuficiente");
-
+    return alert("Apuesta no válida");
   apuestaActual = amount;
   initDeck();
-
-  // SONIDO DE REPARTO INICIAL
   if (window.AudioManager) AudioManager.play("card");
-
   playerCards = [deck.pop(), deck.pop()];
   dealerCards = [deck.pop(), deck.pop()];
   communityCards = [];
-
   renderCards("player-cards", playerCards);
   renderCards("dealer-cards", [{}, {}], true);
   document.getElementById("community-area").innerHTML =
     '<span class="text-white-50 small">REPARTIENDO...</span>';
-
   currentPhase = "PREFLOP";
   btnAction.textContent = "VER FLOP";
   btnFold.classList.remove("d-none");
@@ -128,14 +119,13 @@ function iniciarPartida() {
 }
 
 function mostrarFlop() {
-  if (window.AudioManager) AudioManager.play("card"); //
+  if (window.AudioManager) AudioManager.play("card");
   communityCards.push(deck.pop(), deck.pop(), deck.pop());
   renderCards("community-area", communityCards);
   currentPhase = "FLOP";
   btnAction.textContent = "VER TURN";
   phaseBox.textContent = "EL FLOP";
 }
-
 function mostrarTurn() {
   if (window.AudioManager) AudioManager.play("card");
   communityCards.push(deck.pop());
@@ -144,7 +134,6 @@ function mostrarTurn() {
   btnAction.textContent = "VER RIVER";
   phaseBox.textContent = "EL TURN";
 }
-
 function mostrarRiver() {
   if (window.AudioManager) AudioManager.play("card");
   communityCards.push(deck.pop());
@@ -157,28 +146,26 @@ function mostrarRiver() {
 function resolverPartida() {
   if (window.AudioManager) AudioManager.play("card");
   renderCards("dealer-cards", dealerCards);
-
-  const pEval = evaluateTexasHand(playerCards, communityCards);
-  const dEval = evaluateTexasHand(dealerCards, communityCards);
-
+  const pEval = evaluateTexasHand(playerCards, communityCards),
+    dEval = evaluateTexasHand(dealerCards, communityCards);
   let premio = 0;
   if (pEval.tieBreakScore > dEval.tieBreakScore) {
     premio = apuestaActual * 2;
     msgBox.textContent = `🏆 ¡GANASTE! con ${pEval.name}`;
     msgBox.className = "text-success fw-bold fs-3";
-    if (window.AudioManager) AudioManager.play("win"); //
+    if (window.AudioManager) AudioManager.play("win");
+    if (window.ConfettiManager) ConfettiManager.celebrate(); // Confeti victoria
   } else if (pEval.tieBreakScore < dEval.tieBreakScore) {
     premio = 0;
     msgBox.textContent = `❌ BANCA GANA con ${dEval.name}`;
     msgBox.className = "text-danger fw-bold fs-3";
-    if (window.AudioManager) AudioManager.play("loss"); //
+    if (window.AudioManager) AudioManager.play("loss");
   } else {
     premio = apuestaActual;
     msgBox.textContent = `🤝 EMPATE: Ambos ${pEval.name}`;
     msgBox.className = "text-warning fw-bold fs-3";
     if (window.AudioManager) AudioManager.play("chips");
   }
-
   registrarResultado(apuestaActual, premio);
   currentPhase = "SHOWDOWN";
   btnAction.textContent = "NUEVA PARTIDA";
@@ -186,23 +173,20 @@ function resolverPartida() {
 }
 
 function evaluateTexasHand(hole, community) {
-  const all = [...hole, ...community];
-  const vNums = all.map((c) => valueMap[c.v]).sort((a, b) => b - a);
-  const suitsCount = {};
-  const counts = {};
-
+  const all = [...hole, ...community],
+    vNums = all.map((c) => valueMap[c.v]).sort((a, b) => b - a),
+    suitsCount = {},
+    counts = {};
   all.forEach((c) => {
     suitsCount[c.s] = (suitsCount[c.s] || 0) + 1;
     counts[c.v] = (counts[c.v] || 0) + 1;
   });
-
   const isFlush = Object.values(suitsCount).some((s) => s >= 5);
   let uniqueValues = [...new Set(vNums)];
   if (uniqueValues.includes(14)) uniqueValues.push(1);
   uniqueValues.sort((a, b) => b - a);
-
-  let isStraight = false;
-  let straightHigh = 0;
+  let isStraight = false,
+    straightHigh = 0;
   for (let i = 0; i <= uniqueValues.length - 5; i++) {
     if (uniqueValues[i] - uniqueValues[i + 4] === 4) {
       isStraight = true;
@@ -210,18 +194,15 @@ function evaluateTexasHand(hole, community) {
       break;
     }
   }
-
   const pairValues = Object.entries(counts)
     .filter(([v, c]) => c === 2)
     .map(([v]) => valueMap[v])
     .sort((a, b) => b - a);
-  const trioValue = Object.entries(counts).find(([v, c]) => c === 3);
-  const pokerValue = Object.entries(counts).find(([v, c]) => c === 4);
-
-  let score = 0;
-  let name = "Carta Alta";
-  let mainVal = vNums[0];
-
+  const trioValue = Object.entries(counts).find(([v, c]) => c === 3),
+    pokerValue = Object.entries(counts).find(([v, c]) => c === 4);
+  let score = 0,
+    name = "Carta Alta",
+    mainVal = vNums[0];
   if (isFlush && isStraight && straightHigh === 14) {
     score = 9;
     name = "Escalera Real";
@@ -262,7 +243,6 @@ function evaluateTexasHand(hole, community) {
     name = "Pareja";
     mainVal = pairValues[0];
   }
-
   let tieBreakScore = score * Math.pow(15, 6) + mainVal * Math.pow(15, 5);
   vNums.slice(0, 5).forEach((val, i) => {
     tieBreakScore += val * Math.pow(15, 4 - i);

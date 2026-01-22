@@ -55,6 +55,58 @@
         transition: 0.3s;
         box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
       }
+      /* Estilos para la barra de prestigio neón */
+      .user-status .progress-bar {
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 10px #f1c40f;
+      }
+      /* Estilos para el sistema de soporte flotante */
+      .support-wrapper {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 1050;
+      }
+      .support-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f1c40f, #dc143c);
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        font-size: 1.5rem;
+        color: white;
+        transition: transform 0.3s ease;
+      }
+      .support-btn:hover {
+        transform: scale(1.1);
+      }
+      .support-dropdown {
+        position: absolute;
+        bottom: 75px;
+        right: 0;
+        width: 300px;
+        background: #1a1a1a;
+        border: 1px solid rgba(241, 196, 15, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .support-dropdown.show {
+        display: block;
+        animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
     </style>
   </head>
   <body class="bg-dark text-light">
@@ -66,7 +118,10 @@
           <h1 class="display-4 fw-bold">
             Hola, <span id="username" class="text-warning">...</span>
           </h1>
-          <div class="d-flex gap-2 mt-2">
+
+          <div id="user-status-container" class="mt-2"></div>
+
+          <div class="d-flex gap-2 mt-3">
             <button onclick="logout()" class="btn btn-sm btn-outline-danger">
               Cerrar Sesión
             </button>
@@ -74,9 +129,7 @@
           </div>
         </div>
         <div class="col-md-4 mt-4 mt-md-0">
-          <div
-            class="card bg-secondary text-white border-0 shadow-sm text-md-end p-4"
-          >
+          <div class="card balance-card text-white text-md-end p-4">
             <small class="text-uppercase opacity-75">Saldo Disponible</small>
             <h2 class="fw-bold mb-0 text-success">
               <span id="saldo">0.00</span> €
@@ -164,9 +217,18 @@
       </div>
 
       <section class="py-5 mt-4">
-        <h3 class="mb-4 fw-bold text-uppercase small text-white-50">
-          <i class="bi bi-controller"></i> Sala de Juegos
-        </h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="m-0 fw-bold text-uppercase small text-white-50">
+            <i class="bi bi-controller"></i> Sala de Juegos
+          </h3>
+          <a
+            href="../Instrucciones/index.html"
+            class="btn btn-outline-info btn-sm fw-bold px-3"
+          >
+            <i class="bi bi-book"></i> REGLAS DEL CASINO
+          </a>
+        </div>
+
         <div class="row g-4 text-center">
           <div class="col-md-4">
             <div class="card bg-secondary border-0 h-100 p-4 shadow-hover">
@@ -242,24 +304,78 @@
       </section>
     </main>
 
+    <div class="support-wrapper">
+      <div id="supportBox" class="support-dropdown">
+        <h6 class="text-warning mb-3 small fw-bold text-uppercase">
+          📞 Soporte al Templo
+        </h6>
+        <textarea
+          id="supportMsg"
+          class="form-control mb-3 bg-black text-white border-secondary"
+          rows="4"
+          placeholder="Escribe tu duda al Admin..."
+        ></textarea>
+        <button
+          onclick="enviarSoporte()"
+          class="btn btn-warning btn-sm w-100 fw-bold"
+        >
+          ENVIAR DUDA
+        </button>
+      </div>
+      <button onclick="toggleSupport()" class="support-btn">
+        <i class="bi bi-chat-dots"></i>
+      </button>
+    </div>
+
     <footer id="footer"></footer>
 
     <script src="assets/js/AudioManager.js"></script>
     <script src="assets/js/navbar_logic.js"></script>
     <script>
       const API = "api.php";
+
       function cargarTodo() {
         fetch(`${API}?action=get_user_info&t=${Date.now()}`)
           .then((r) => r.json())
           .then((data) => {
             if (!data.logged_in) return window.location.replace("login.html");
-            document.getElementById("username").textContent = data.username;
-            document.getElementById("saldo").textContent = parseFloat(
-              data.saldo,
-            ).toFixed(2);
+
+            // Actualización sincronizada (Navbar + Cuerpo)
+            const usernameElems = ["username", "nav-username"];
+            const balanceElems = ["saldo", "nav-saldo"];
+
+            usernameElems.forEach((id) => {
+              const el = document.getElementById(id);
+              if (el) el.textContent = data.username;
+            });
+
+            balanceElems.forEach((id) => {
+              const el = document.getElementById(id);
+              if (el) el.textContent = parseFloat(data.saldo).toFixed(2);
+            });
+
+            // Inyectar Estatus VIP y Barra de Prestigio
+            const statusContainer = document.getElementById(
+              "user-status-container",
+            );
+            if (statusContainer && data.rango) {
+              statusContainer.innerHTML = `
+                <div class="user-status">
+                  <span class="badge bg-warning text-dark shadow-sm">${data.rango}</span>
+                  <div class="progress mt-2" style="height: 6px; background: rgba(255,255,255,0.1); width: 250px;">
+                    <div class="progress-bar bg-warning" style="width: ${data.progreso}%;"></div>
+                  </div>
+                </div>
+              `;
+            }
+
             if (data.rol === "admin" || data.rol === "owner") {
-              document.getElementById("admin-btn-container").innerHTML =
-                `<a href="partials/admin.html" class="btn btn-outline-warning btn-sm fw-bold">${data.rol.toUpperCase()}</a>`;
+              const adminContainer = document.getElementById(
+                "admin-btn-container",
+              );
+              if (adminContainer) {
+                adminContainer.innerHTML = `<a href="partials/admin.html" class="btn btn-outline-warning btn-sm fw-bold">${data.rol.toUpperCase()}</a>`;
+              }
             }
             cargarHistorial();
             cargarLogros();
@@ -268,7 +384,6 @@
       }
 
       function cargarHistorial() {
-        //
         fetch(`${API}?action=get_transactions`)
           .then((r) => r.json())
           .then((d) => {
@@ -302,12 +417,12 @@
               d.logros
                 .map(
                   (l) => `
-            <div class="col-md-2 col-4">
-              <div class="card achievement-card ${l.obtenido ? "unlocked" : ""}" title="${l.obtenido ? l.descripcion : "Logro bloqueado"}">
-                <div class="${l.obtenido ? "fs-2" : "mystery-icon"}">${l.obtenido ? l.icono || "❓" : "?"}</div>
-                <div class="achievement-name">${l.nombre}</div>
-              </div>
-            </div>`,
+                <div class="col-md-2 col-4">
+                  <div class="card achievement-card ${l.obtenido ? "unlocked" : ""}" title="${l.obtenido ? l.descripcion : "Logro bloqueado"}">
+                    <div class="${l.obtenido ? "fs-2" : "mystery-icon"}">${l.obtenido ? l.icono || "❓" : "?"}</div>
+                    <div class="achievement-name">${l.nombre}</div>
+                  </div>
+                </div>`,
                 )
                 .join("");
           });
@@ -321,19 +436,42 @@
               d.ranking
                 .map(
                   (u, i) => `
-            <div class="ranking-item d-flex align-items-center"><span class="fw-bold me-3 text-white-50">#${i + 1}</span><div class="flex-grow-1"><strong>${u.username}</strong><br><small class="text-warning">${u.medallas} MEDALLAS</small></div><div class="text-success fw-bold">${Math.round(u.saldo)}€</div></div>`,
+                <div class="ranking-item d-flex align-items-center">
+                  <span class="fw-bold me-3 text-white-50">#${i + 1}</span>
+                  <div class="flex-grow-1">
+                    <strong>${u.username}</strong><br>
+                    <small class="text-warning">${u.medallas} MEDALLAS</small>
+                  </div>
+                  <div class="text-success fw-bold">${Math.round(u.saldo)}€</div>
+                </div>`,
                 )
                 .join("");
           });
       }
 
       function procesar(action) {
-        const amt = document.getElementById("walletAmount").value;
-        if (!amt || amt <= 0) return alert("Monto válido");
-        fetch(`${API}?action=${action}`, {
+        const amtInput = document.getElementById("walletAmount");
+        const amt = parseFloat(amtInput.value);
+        if (isNaN(amt) || amt <= 0) return alert("Introduce un monto válido.");
+
+        fetch(`api.php?action=${action}`, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ amount: amt }),
-        }).then(() => cargarTodo());
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.success) {
+              amtInput.value = "";
+              cargarTodo();
+            } else {
+              alert("Error: " + data.message);
+            }
+          })
+          .catch((err) => {
+            console.error("Error crítico:", err);
+            alert("Error de conexión con el servidor.");
+          });
       }
 
       function logout() {
@@ -342,12 +480,39 @@
         );
       }
 
+      function toggleSupport() {
+        document.getElementById("supportBox").classList.toggle("show");
+      }
+
+      function enviarSoporte() {
+        const msgInput = document.getElementById("supportMsg");
+        const msg = msgInput.value.trim();
+        if (!msg) return alert("Por favor, escribe tu duda primero.");
+
+        fetch(`${API}?action=send_support_ticket`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mensaje: msg }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.success) {
+              alert("✅ " + data.message);
+              msgInput.value = "";
+              toggleSupport();
+            } else {
+              alert("❌ " + data.message);
+            }
+          });
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
-        cargarTodo();
         fetch("partials/navbar.html")
           .then((r) => r.text())
           .then((data) => {
             document.getElementById("navbar").innerHTML = data;
+            // Forzar actualización una vez inyectado el navbar
+            cargarTodo();
             if (window.NavbarManager) window.NavbarManager.init();
           });
         fetch("partials/footer.html")

@@ -101,4 +101,159 @@ footer {
 
 .dashboard {
   padding: 2rem 0;
+}
+.dashboard .user-status {
+  max-width: 300px;
+}
+.dashboard .user-status .badge {
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+  border: 1px solid rgba(241, 196, 15, 0.3);
+}
+.dashboard .user-status .progress {
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.dashboard .user-status .progress .progress-bar {
+  box-shadow: 0 0 12px #f1c40f;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dashboard #achievements-container {
+  margin-top: 1.5rem;
+}
+.dashboard #achievements-container .medal-item {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: 1.2rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 1rem;
+}
+.dashboard #achievements-container .medal-item .medal-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  transition: transform 0.3s ease;
+}
+.dashboard #achievements-container .medal-item small {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+}
+.dashboard #achievements-container .medal-item.locked {
+  filter: grayscale(1);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.dashboard #achievements-container .medal-item.unlocked {
+  filter: none;
+  opacity: 1;
+  background: radial-gradient(circle, rgba(241, 196, 15, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+  border: 1px solid rgba(241, 196, 15, 0.2);
+  animation: unlockGlow 1.5s ease-out;
+}
+.dashboard #achievements-container .medal-item.unlocked .medal-icon {
+  text-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+}
+.dashboard #achievements-container .medal-item.unlocked small {
+  color: #f1c40f;
+  font-weight: bold;
+}
+.dashboard #achievements-container .medal-item.unlocked:hover {
+  transform: translateY(-5px);
+  background: radial-gradient(circle, rgba(241, 196, 15, 0.15) 0%, rgba(0, 0, 0, 0) 80%);
+  border-color: rgba(241, 196, 15, 0.4);
+}
+.dashboard .support-wrapper {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+.dashboard .support-wrapper .support-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f1c40f, crimson);
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+.dashboard .support-wrapper .support-btn:hover {
+  transform: scale(1.1);
+}
+.dashboard .support-wrapper .support-dropdown {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 300px;
+  background: #1a1a1a;
+  border: 1px solid rgba(241, 196, 15, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.dashboard .support-wrapper .support-dropdown.show {
+  display: block;
+  animation: slideUp 0.3s ease;
+}
+.dashboard .support-wrapper .support-dropdown textarea {
+  background: #000;
+  color: white;
+  border: 1px solid #333;
+  font-size: 0.85rem;
+  resize: none;
+}
+.dashboard .support-wrapper .support-dropdown textarea:focus {
+  border-color: #f1c40f;
+  box-shadow: none;
+}
+.dashboard .balance-card {
+  background: #000000 !important;
+  border: 1px solid rgba(241, 196, 15, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  border-radius: 1rem;
+}
+.dashboard .balance-card small {
+  color: #f1c40f !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  display: block;
+  opacity: 1 !important;
+}
+.dashboard .balance-card h2 {
+  color: #2ecc71 !important;
+  text-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+  font-size: 2.5rem;
+  margin-top: 0.5rem;
+}
+
+@keyframes unlockGlow {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0px rgba(241, 196, 15, 0);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(241, 196, 15, 0.1);
+  }
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }/*# sourceMappingURL=main.css.map */

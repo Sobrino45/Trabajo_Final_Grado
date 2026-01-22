@@ -1,3 +1,4 @@
+/* public/games/Tragaperras/tragaperras.js */
 const symbols = [
   { icon: "🍒", weight: 40 },
   { icon: "🍋", weight: 30 },
@@ -8,11 +9,10 @@ const symbols = [
 const payouts = { "💎": 100, "⭐": 50, "🔔": 20, "🍋": 10, "🍒": 5 };
 const COST_PER_SPIN = 5;
 let saldoActual = 0;
-
-const reels = document.querySelectorAll(".reel");
-const spinBtn = document.getElementById("spinBtn");
-const resultText = document.getElementById("result");
-const walletDisplay = document.getElementById("walletDisplay");
+const reels = document.querySelectorAll(".reel"),
+  spinBtn = document.getElementById("spinBtn"),
+  resultText = document.getElementById("result"),
+  walletDisplay = document.getElementById("walletDisplay");
 
 document.addEventListener("DOMContentLoaded", cargarDatosUsuario);
 
@@ -29,52 +29,73 @@ function cargarDatosUsuario() {
     });
 }
 
+function getWeightedSymbol() {
+  const totalWeight = symbols.reduce((acc, s) => acc + s.weight, 0);
+  let random = Math.random() * totalWeight;
+  for (const s of symbols) {
+    if (random < s.weight) return s.icon;
+    random -= s.weight;
+  }
+  return symbols[0].icon;
+}
+
 spinBtn.addEventListener("click", () => {
   if (saldoActual < COST_PER_SPIN) return alert("Saldo insuficiente");
   spinBtn.disabled = true;
-
-  // SONIDO DE GIRO CARRETES
+  resultText.textContent = "¡Mucha suerte!";
+  const resultadosFinales = [];
   if (window.AudioManager) AudioManager.play("spin");
-
-  reels.forEach((r) => r.classList.add("spinning"));
-
-  setTimeout(() => {
-    const res = [];
-    reels.forEach((r) => {
-      const sym = symbols[Math.floor(Math.random() * symbols.length)].icon;
-      r.textContent = sym;
-      r.classList.remove("spinning");
-      res.push(sym);
-    });
-
-    const win = res[0] === res[1] && res[1] === res[2] ? payouts[res[0]] : 0;
-
-    fetch("../../api.php?action=game_result", {
-      method: "POST",
-      body: JSON.stringify({
-        game: "Tragaperras",
-        bet: COST_PER_SPIN,
-        win: win,
-      }),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) {
-          // SONIDO DE PREMIO O PÉRDIDA
-          if (window.AudioManager) {
-            AudioManager.play(win > 0 ? "win" : "loss");
-          }
-
-          saldoActual = d.new_balance;
-          updateGUI();
-          resultText.textContent = win > 0 ? "¡GANASTE!" : "Suerte...";
-        }
-        spinBtn.disabled = false;
-      });
-  }, 1000);
+  reels.forEach((r) => {
+    r.classList.add("spinning");
+    r.textContent = "?";
+  });
+  reels.forEach((reel, index) => {
+    const delay = 1000 + index * 1200;
+    setTimeout(() => {
+      const sym = getWeightedSymbol();
+      reel.classList.remove("spinning");
+      reel.textContent = sym;
+      resultadosFinales[index] = sym;
+      reel.style.transform = "scale(1.2)";
+      setTimeout(() => (reel.style.transform = "scale(1)"), 100);
+      if (window.AudioManager) AudioManager.play("click");
+      if (index === reels.length - 1) {
+        setTimeout(() => procesarResultadoFinal(resultadosFinales), 300);
+      }
+    }, delay);
+  });
 });
 
+function procesarResultadoFinal(res) {
+  const win = res[0] === res[1] && res[1] === res[2] ? payouts[res[0]] : 0;
+  fetch("../../api.php?action=game_result", {
+    method: "POST",
+    body: JSON.stringify({ game: "Tragaperras", bet: COST_PER_SPIN, win: win }),
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((r) => r.json())
+    .then((d) => {
+      if (d.success) {
+        if (window.AudioManager) AudioManager.play(win > 0 ? "win" : "loss");
+        saldoActual = d.new_balance;
+        updateGUI();
+        if (win > 0) {
+          resultText.innerHTML = `<span class="text-success fw-bold fs-4">¡PREMIO DE ${win}€!</span>`;
+          if (window.ConfettiManager) {
+            win === 100
+              ? ConfettiManager.victoryBlast()
+              : ConfettiManager.celebrate();
+          } // Jackpot blast
+        } else {
+          resultText.innerHTML = `<span class="text-white-50">Sigue probando...</span>`;
+        }
+      }
+      spinBtn.disabled = false;
+    });
+}
+
 function updateGUI() {
-  walletDisplay.textContent = parseFloat(saldoActual).toFixed(2) + " €";
+  if (walletDisplay) {
+    walletDisplay.textContent = parseFloat(saldoActual).toFixed(2) + " €";
+  }
 }

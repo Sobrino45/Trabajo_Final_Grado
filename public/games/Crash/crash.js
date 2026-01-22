@@ -40,13 +40,6 @@ function cargarDatosUsuario() {
     });
 }
 
-window.setBet = (n) => {
-  betInput.value = n;
-};
-window.doubleBet = () => {
-  betInput.value = (parseFloat(betInput.value) * 2).toFixed(2);
-};
-
 btnAction.addEventListener("click", () => {
   if (!gameRunning) prepararPartida();
   else if (userInGame && !userCashedOut) cobrarGanancia();
@@ -56,7 +49,6 @@ function prepararPartida() {
   const bet = parseFloat(betInput.value);
   if (isNaN(bet) || bet <= 0 || bet > saldoActual)
     return alert("Saldo insuficiente.");
-
   saldoActual -= bet;
   walletDisplay.textContent = saldoActual.toFixed(2) + " €";
   userBet = bet;
@@ -66,11 +58,9 @@ function prepararPartida() {
   currentMultiplier = 1.0;
   maxX = 5;
   maxY = 2;
-
   if (window.AudioManager) AudioManager.play("spin");
   crashPoint = Math.max(1.01, 0.99 / (1 - Math.random()));
   if (crashPoint > 40) crashPoint = 40;
-
   btnAction.classList.replace("btn-success", "btn-warning");
   btnAction.innerHTML = "💰 RETIRAR";
   statusText.textContent = "¡SUBIENDO!";
@@ -84,20 +74,15 @@ function animarJuego() {
   const elapsed = (Date.now() - startTime) / 1000;
   currentMultiplier = Math.pow(1.06, elapsed * 10) / 10 + 0.9;
   multiplierDisplay.textContent = currentMultiplier.toFixed(2) + "x";
-
   if (currentMultiplier >= crashPoint) {
     finalizarPorExplosion();
     return;
   }
-
-  // LÓGICA DE AUTO-RETIRO
   if (autoCashoutInput && autoCashoutInput.value) {
     const autoValue = parseFloat(autoCashoutInput.value);
-    if (!userCashedOut && autoValue > 1.0 && currentMultiplier >= autoValue) {
+    if (!userCashedOut && autoValue > 1.0 && currentMultiplier >= autoValue)
       cobrarGanancia();
-    }
   }
-
   if (elapsed > maxX * 0.7) maxX = elapsed / 0.7;
   if (currentMultiplier > maxY * 0.7) maxY = currentMultiplier / 0.7;
   dibujarGrafico(elapsed, currentMultiplier);
@@ -135,11 +120,10 @@ function cobrarGanancia() {
   btnAction.innerHTML = `✅ RECIBIDO: ${premio.toFixed(2)}€`;
   btnAction.disabled = true;
   if (window.AudioManager) {
-    try {
-      AudioManager.stop("spin");
-      AudioManager.play("win");
-    } catch (e) {}
+    AudioManager.stop("spin");
+    AudioManager.play("win");
   }
+  if (window.ConfettiManager) ConfettiManager.celebrate(); // Confeti al cobrar
   enviarResultado(userBet, premio, multCapturado);
 }
 
@@ -151,10 +135,8 @@ function finalizarPorExplosion() {
   statusText.textContent = "💥 ¡EXPLOTÓ!";
   statusText.className = "text-danger fw-bold";
   if (window.AudioManager) {
-    try {
-      AudioManager.stop("spin");
-      AudioManager.play("explosion");
-    } catch (e) {}
+    AudioManager.stop("spin");
+    AudioManager.play("explosion");
   }
   if (!userCashedOut) {
     btnAction.classList.replace("btn-warning", "btn-danger");
