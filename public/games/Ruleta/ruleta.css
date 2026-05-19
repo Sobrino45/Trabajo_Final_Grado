@@ -1,5 +1,3 @@
-/* public/games/Ruleta/ruleta.css */
-
 .ruleta-container {
   position: relative;
   width: 340px;
@@ -25,7 +23,6 @@
   box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
   transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1);
 }
-
 .numero-spoke {
   position: absolute;
   top: 50%;
@@ -53,8 +50,6 @@
   border-radius: 50%;
   z-index: 5;
 }
-
-/* Mesa Profesional */
 .tablero-container {
   background: #064e3b;
   padding: 20px;
@@ -63,8 +58,6 @@
   display: inline-block;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
 }
-
-/* CORRECCIÓN AQUÍ: Se añade 'color: #fff' para que el texto sea blanco */
 .celda {
   position: relative;
   width: 44px;
@@ -88,19 +81,20 @@
   font-size: 26px;
   border-radius: 10px 0 0 10px;
 }
-
-/* Grid de 13 columnas: 12 números + 1 columna de apuestas */
 .nums-grid {
   display: grid;
   grid-template-columns: repeat(13, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 2px;
 }
-.dozens-margin {
-  margin-left: 59px;
+.btn-seccion {
+  transition: all 0.2s ease;
+  border-width: 2px !important;
 }
-
-/* Fichas */
+.btn-seccion:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+}
 .ficha-visual {
   position: absolute;
   width: 28px;
@@ -117,7 +111,6 @@
   pointer-events: none;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
 }
-
 .bg-red {
   background: #b91c1c;
 }

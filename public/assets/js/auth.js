@@ -11,14 +11,13 @@ const Auth = {
     // ==========================================
     login: async function(identifier, password) {
         try {
-            // Enviamos "identifier" como "email" para compatibilidad con el backend
             const response = await fetch('api.php?action=login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // <-- CORRECCIÓN: Asegura el envío de cookies
                 body: JSON.stringify({ email: identifier, password: password })
             });
 
-            // Evitamos el error "Unexpected end of JSON" verificando si hay contenido
             const text = await response.text(); 
             let data;
             try {
@@ -28,18 +27,19 @@ const Auth = {
                 return { success: false, message: "Error del servidor (respuesta inválida)" };
             }
 
-            if (response.ok) {
+            // CORRECCIÓN: Evitamos falsos positivos validando el contenido
+            if (response.ok && data.success === true && data.user) {
                 const sessionData = {
-                    id: data.user_id,
-                    nombre: data.nombre, 
-                    saldo: data.saldo,
+                    id: data.user.id,
+                    nombre: data.user.username, 
+                    saldo: data.user.saldo,
                     isLoggedIn: true
                 };
                 
                 localStorage.setItem(this.USER_KEY, JSON.stringify(sessionData));
                 return { success: true };
             } else {
-                return { success: false, message: data.message || "Error al iniciar sesión" };
+                return { success: false, message: data.message || "Usuario o contraseña incorrectos" };
             }
 
         } catch (error) {
@@ -56,12 +56,13 @@ const Auth = {
             const response = await fetch('api.php?action=register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // Para coherencia
                 body: JSON.stringify({ username, email, password, saldo })
             });
 
             const data = await response.json();
 
-            if (response.ok) {
+            if (response.ok && data.success !== false) {
                 return { success: true, message: data.message };
             } else {
                 return { success: false, message: data.message || "Error en el registro" };
@@ -78,8 +79,7 @@ const Auth = {
     // ==========================================
     logout: function() {
         localStorage.removeItem(this.USER_KEY);
-        // Llamada opcional al backend para matar sesión PHP
-        fetch('api.php?action=logout').finally(() => {
+        fetch('api.php?action=logout', { credentials: 'include' }).finally(() => {
              window.location.href = 'login.html';
         });
     },
@@ -94,8 +94,6 @@ const Auth = {
         return user || null;
     },
 
-    // --- CORRECCIÓN DEL ERROR ---
-    // Añadimos este alias porque logout.js lo está buscando
     getCurrentUser: function() {
         return this.getUser();
     },

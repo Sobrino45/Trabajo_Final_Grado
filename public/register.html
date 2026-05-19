@@ -122,12 +122,16 @@
     <script src="assets/js/wallet.js"></script>
     <script src="assets/js/logout.js"></script>
     <script src="assets/js/register.js"></script>
+    
+    <!-- Archivo NavbarManager corregido -->
+    <script src="assets/js/navbar_logic.js"></script>
 
     <script>
       fetch("partials/navbar.html")
         .then((response) => response.text())
         .then((html) => {
           document.getElementById("navbar").innerHTML = html;
+          // Iniciar NavbarManager después de cargar el HTML del navbar
           NavbarManager.init();
         });
     </script>

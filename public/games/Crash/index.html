@@ -3,22 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crash | Casino DAW</title>
+    <title>Crash Rocket | Casino DAW</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>"
+    />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../assets/css/main.css" />
     <link rel="stylesheet" href="crash.css" />
-    <link
-      rel="icon"
-      type="image/png"
-      href="../../assets/img/icons/logo-casino.png"
-    />
   </head>
   <body class="bg-dark text-light">
     <div id="navbar"></div>
-
     <main class="container py-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <a
@@ -33,12 +31,12 @@
           <span
             class="text-uppercase small text-secondary fw-bold"
             style="font-size: 0.7rem"
-            >Tu Saldo:</span
+            >Saldo:</span
           >
           <span
             id="walletDisplay"
             class="text-success fw-bold font-monospace fs-5"
-            >...</span
+            >0.00 €</span
           >
         </div>
       </div>
@@ -78,7 +76,7 @@
             <div class="card-body d-flex flex-column gap-3">
               <div>
                 <label class="form-label text-white-50 fw-bold small"
-                  >Importe Apuesta (€)</label
+                  >APUESTA (€)</label
                 >
                 <div class="input-group input-group-lg">
                   <span
@@ -94,29 +92,6 @@
                   />
                 </div>
               </div>
-
-              <div>
-                <label
-                  class="form-label text-info fw-bold small text-uppercase"
-                  style="font-size: 0.7rem"
-                  >Auto-Retiro (Opcional)</label
-                >
-                <div class="input-group input-group-sm">
-                  <input
-                    type="number"
-                    id="autoCashoutInput"
-                    class="form-control bg-dark text-white border-secondary fw-bold"
-                    placeholder="Ej: 2.00"
-                    step="0.1"
-                    min="1.1"
-                  />
-                  <span
-                    class="input-group-text bg-dark border-secondary text-secondary"
-                    >x</span
-                  >
-                </div>
-              </div>
-
               <div class="d-flex gap-2">
                 <button
                   class="btn btn-sm btn-outline-secondary flex-fill"
@@ -137,7 +112,6 @@
                   x2
                 </button>
               </div>
-
               <button
                 id="btnAction"
                 class="btn btn-success w-100 py-4 fw-bold text-uppercase fs-4 border-0"
@@ -146,7 +120,11 @@
               </button>
 
               <div class="bg-dark rounded p-3 border border-secondary mt-3">
-                <small class="text-white-50 d-block mb-1">Último Crash:</small>
+                <small
+                  class="text-white-50 d-block mb-2 text-uppercase fw-bold"
+                  style="font-size: 0.6rem"
+                  >Últimos Resultados:</small
+                >
                 <div
                   id="history"
                   class="d-flex gap-2 flex-wrap justify-content-start"
@@ -157,7 +135,6 @@
         </div>
       </div>
     </main>
-
     <div id="footer"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/AudioManager.js"></script>

@@ -12,10 +12,11 @@ window.NavbarManager = {
     const saldoSpan = document.getElementById("nav-saldo");
     const btnLogout = document.getElementById("btnLogout");
 
-    // RUTA ABSOLUTA: Esto evita errores 404 en carpetas profundas
-    const API_PATH = "/CasinoDaw/public/api.php";
+    // CORRECCIÓN: Ruta en mayúsculas para coincidir exactamente con el navegador
+    const API_PATH = "/CasinoDAW/public/api.php";
 
-    fetch(API_PATH + "?action=get_user_info&t=" + Date.now())
+    // CORRECCIÓN: Se añade credentials 'include' para que PHP reconozca la sesión
+    fetch(API_PATH + "?action=get_user_info&t=" + Date.now(), { credentials: 'include' })
       .then((response) => {
         if (!response.ok) throw new Error("No se encontró api.php");
         return response.json();
@@ -32,8 +33,9 @@ window.NavbarManager = {
           if (btnLogout) {
             btnLogout.onclick = (e) => {
               e.preventDefault();
-              fetch(API_PATH + "?action=logout").then(() => {
-                window.location.replace("/CasinoDaw/public/index.html");
+              fetch(API_PATH + "?action=logout", { credentials: 'include' }).then(() => {
+                // CORRECCIÓN: Mayúsculas aquí también
+                window.location.replace("/CasinoDAW/public/index.html");
               });
             };
           }

@@ -5,7 +5,6 @@ const multiplierDisplay = document.getElementById("multiplierDisplay");
 const statusText = document.getElementById("statusText");
 const btnAction = document.getElementById("btnAction");
 const betInput = document.getElementById("betInput");
-const autoCashoutInput = document.getElementById("autoCashoutInput");
 const walletDisplay = document.getElementById("walletDisplay");
 const historyDiv = document.getElementById("history");
 
@@ -23,14 +22,50 @@ let saldoActual = 0,
 
 document.addEventListener("DOMContentLoaded", () => {
   cargarDatosUsuario();
+  cargarHistorialDesdeDB();
   window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
-  historyDiv.innerHTML =
-    '<small class="text-white-50">Esperando resultados...</small>';
 });
 
+// Funciones de utilidad para los botones del HTML
+function setBet(v) {
+  betInput.value = v;
+}
+function doubleBet() {
+  betInput.value = (parseFloat(betInput.value) * 2).toFixed(0);
+}
+
+function cargarHistorialDesdeDB() {
+  fetch("../../api.php?action=get_transactions&t=" + Date.now())
+    .then((r) => r.json())
+    .then((data) => {
+      if (data.success && data.transacciones) {
+        historyDiv.innerHTML = "";
+        const crashes = data.transacciones
+          .map((t) => {
+            try {
+              return JSON.parse(t.detalles_json);
+            } catch (e) {
+              return null;
+            }
+          })
+          .filter((d) => d && d.multiplicador)
+          .slice(0, 8);
+        if (crashes.length > 0)
+          crashes.forEach((c) => agregarBadge(parseFloat(c.multiplicador)));
+      }
+    });
+}
+
+function agregarBadge(val) {
+  const span = document.createElement("span");
+  span.className = `badge ${val >= 2 ? "bg-success" : "bg-danger"} p-2 shadow-sm me-1 mb-1`;
+  span.textContent = val.toFixed(2) + "x";
+  historyDiv.prepend(span);
+}
+
 function cargarDatosUsuario() {
-  fetch("../../api.php?action=get_user_info&t=" + Date.now())
+  fetch("../../api.php?action=get_user_info")
     .then((r) => r.json())
     .then((data) => {
       if (data.logged_in) {
@@ -41,16 +76,18 @@ function cargarDatosUsuario() {
 }
 
 btnAction.addEventListener("click", () => {
-  if (!gameRunning) prepararPartida();
-  else if (userInGame && !userCashedOut) cobrarGanancia();
+  if (!gameRunning) empezarPartida();
+  else if (userInGame && !userCashedOut) cobrar();
 });
 
-function prepararPartida() {
+function empezarPartida() {
   const bet = parseFloat(betInput.value);
   if (isNaN(bet) || bet <= 0 || bet > saldoActual)
     return alert("Saldo insuficiente.");
+
   saldoActual -= bet;
   walletDisplay.textContent = saldoActual.toFixed(2) + " €";
+
   userBet = bet;
   userInGame = true;
   userCashedOut = false;
@@ -58,134 +95,149 @@ function prepararPartida() {
   currentMultiplier = 1.0;
   maxX = 5;
   maxY = 2;
+  startTime = Date.now();
+
   if (window.AudioManager) AudioManager.play("spin");
+
   crashPoint = Math.max(1.01, 0.99 / (1 - Math.random()));
   if (crashPoint > 40) crashPoint = 40;
-  btnAction.classList.replace("btn-success", "btn-warning");
-  btnAction.innerHTML = "💰 RETIRAR";
-  statusText.textContent = "¡SUBIENDO!";
+
+  btnAction.className =
+    "btn btn-warning w-100 py-4 fw-bold fs-4 border-0 pulse-anim";
+  btnAction.innerHTML = "💰 COBRAR";
+  statusText.textContent = "COHETE EN VUELO";
   statusText.className = "text-warning fw-bold text-uppercase";
-  startTime = Date.now();
-  requestAnimationFrame(animarJuego);
+
+  loop();
 }
 
-function animarJuego() {
+function loop() {
   if (!gameRunning) return;
   const elapsed = (Date.now() - startTime) / 1000;
   currentMultiplier = Math.pow(1.06, elapsed * 10) / 10 + 0.9;
   multiplierDisplay.textContent = currentMultiplier.toFixed(2) + "x";
+
   if (currentMultiplier >= crashPoint) {
-    finalizarPorExplosion();
+    explotar();
     return;
   }
-  if (autoCashoutInput && autoCashoutInput.value) {
-    const autoValue = parseFloat(autoCashoutInput.value);
-    if (!userCashedOut && autoValue > 1.0 && currentMultiplier >= autoValue)
-      cobrarGanancia();
-  }
-  if (elapsed > maxX * 0.7) maxX = elapsed / 0.7;
-  if (currentMultiplier > maxY * 0.7) maxY = currentMultiplier / 0.7;
-  dibujarGrafico(elapsed, currentMultiplier);
-  animationId = requestAnimationFrame(animarJuego);
+
+  if (elapsed > maxX * 0.8) maxX = elapsed / 0.8;
+  if (currentMultiplier > maxY * 0.8) maxY = currentMultiplier / 0.8;
+
+  render(elapsed, currentMultiplier);
+  animationId = requestAnimationFrame(loop);
 }
 
-function dibujarGrafico(elapsed, mult) {
+function render(elapsed, mult) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const w = canvas.width - 100,
-    h = canvas.height - 100;
+  const w = canvas.width - 80,
+    h = canvas.height - 80;
   const x = (elapsed / maxX) * w,
     y = canvas.height - (mult / maxY) * h;
+
   ctx.beginPath();
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 10;
   ctx.strokeStyle = "#f1c40f";
   ctx.lineCap = "round";
   ctx.moveTo(0, canvas.height);
   ctx.lineTo(x, y);
   ctx.stroke();
+
   ctx.fillStyle = "#fff";
   ctx.shadowBlur = 20;
   ctx.shadowColor = "#f1c40f";
   ctx.beginPath();
-  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.arc(x, y, 12, 0, Math.PI * 2);
   ctx.fill();
   ctx.shadowBlur = 0;
 }
 
-function cobrarGanancia() {
+function cobrar() {
   if (userCashedOut || !gameRunning) return;
   userCashedOut = true;
-  const multCapturado = currentMultiplier;
-  const premio = userBet * multCapturado;
-  btnAction.classList.replace("btn-warning", "btn-secondary");
-  btnAction.innerHTML = `✅ RECIBIDO: ${premio.toFixed(2)}€`;
+  const finalMult = currentMultiplier;
+  const win = userBet * finalMult;
+
+  btnAction.className = "btn btn-secondary w-100 py-4 fw-bold fs-4 border-0";
+  btnAction.innerHTML = `+${win.toFixed(2)}€`;
   btnAction.disabled = true;
+
   if (window.AudioManager) {
     AudioManager.stop("spin");
     AudioManager.play("win");
   }
-  if (window.ConfettiManager) ConfettiManager.celebrate(); // Confeti al cobrar
-  enviarResultado(userBet, premio, multCapturado);
+  if (window.ConfettiManager) ConfettiManager.celebrate();
+
+  actualizarAPI(userBet, win, finalMult);
 }
 
-function finalizarPorExplosion() {
+function explotar() {
   gameRunning = false;
   cancelAnimationFrame(animationId);
+
   multiplierDisplay.textContent = crashPoint.toFixed(2) + "x";
   multiplierDisplay.style.color = "#e74c3c";
-  statusText.textContent = "💥 ¡EXPLOTÓ!";
+  statusText.textContent = "💥 EXPLOTÓ";
   statusText.className = "text-danger fw-bold";
+
   if (window.AudioManager) {
     AudioManager.stop("spin");
     AudioManager.play("explosion");
   }
+
   if (!userCashedOut) {
-    btnAction.classList.replace("btn-warning", "btn-danger");
-    btnAction.innerHTML = "PERDISTE";
+    btnAction.className = "btn btn-danger w-100 py-4 fw-bold fs-4 border-0";
+    btnAction.innerHTML = "¡PERDISTE!";
     btnAction.disabled = true;
-    enviarResultado(userBet, 0, crashPoint);
+    actualizarAPI(userBet, 0, crashPoint);
   }
-  actualizarHistorialVisual(crashPoint);
+
+  agregarBadge(crashPoint);
+  if (historyDiv.children.length > 8) historyDiv.lastChild.remove();
+
+  // RESET TOTAL INFALIBLE TRAS 3 SEGUNDOS
   setTimeout(() => {
-    multiplierDisplay.style.color = "white";
-    btnAction.className = "btn btn-success w-100 py-4 fw-bold fs-4";
-    btnAction.innerHTML = "APOSTAR";
-    btnAction.disabled = false;
-    statusText.textContent = "Esperando...";
-    userInGame = false;
+    resetGame();
   }, 3000);
 }
 
-function enviarResultado(apuesta, ganancia, mult) {
+function resetGame() {
+  multiplierDisplay.style.color = "white";
+  multiplierDisplay.textContent = "1.00x";
+  btnAction.className = "btn btn-success w-100 py-4 fw-bold fs-4 border-0";
+  btnAction.innerHTML = "APOSTAR";
+  btnAction.disabled = false;
+  btnAction.classList.remove("pulse-anim");
+  statusText.textContent = "Esperando...";
+  statusText.className = "text-secondary small tracking-widest";
+  userInGame = false;
+  userCashedOut = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function actualizarAPI(bet, win, mult) {
   fetch("../../api.php?action=game_result", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       game: "Crash Rocket",
-      bet: apuesta,
-      win: ganancia,
+      bet: bet,
+      win: win,
       details: { multiplicador: mult.toFixed(2) },
     }),
   })
     .then((r) => r.json())
-    .then((data) => {
-      if (data.success) {
-        saldoActual = parseFloat(data.new_balance);
+    .then((d) => {
+      if (d.success) {
+        saldoActual = parseFloat(d.new_balance);
         walletDisplay.textContent = saldoActual.toFixed(2) + " €";
       }
     });
 }
 
-function actualizarHistorialVisual(val) {
-  if (historyDiv.querySelector("small")) historyDiv.innerHTML = "";
-  const span = document.createElement("span");
-  span.className = `badge ${val >= 2 ? "bg-success" : "bg-danger"} p-2`;
-  span.textContent = val.toFixed(2) + "x";
-  historyDiv.prepend(span);
-  if (historyDiv.children.length > 8) historyDiv.lastChild.remove();
-}
-
 function resizeCanvas() {
-  const parent = canvas.parentElement;
-  canvas.width = parent.clientWidth;
-  canvas.height = parent.clientHeight;
+  const p = canvas.parentElement;
+  canvas.width = p.clientWidth;
+  canvas.height = p.clientHeight;
 }

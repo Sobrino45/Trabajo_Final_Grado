@@ -42,6 +42,42 @@ function verificarAdmin() {
 try {
     switch ($action) {
         // --- SECCIÓN: USUARIO ---
+        
+        case 'register':
+            ob_clean();
+            $d = json_decode(file_get_contents('php://input'), true);
+            $username = trim($d['username'] ?? '');
+            $email = trim($d['email'] ?? '');
+            $password = trim($d['password'] ?? '');
+            $saldo = floatval($d['saldo'] ?? 1000);
+
+            if (empty($username) || empty($email) || empty($password)) {
+                echo json_encode(["success" => false, "message" => "Faltan campos obligatorios."]);
+                exit;
+            }
+
+            // Verificar si el usuario o email ya existen
+            $stmt = $db->prepare("SELECT id FROM usuarios WHERE username = ? OR email = ?");
+            $stmt->execute([$username, $email]);
+            if ($stmt->rowCount() > 0) {
+                echo json_encode(["success" => false, "message" => "El usuario o email ya están registrados."]);
+                exit;
+            }
+
+            // Encriptar la contraseña
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+            // Insertar el nuevo usuario
+            $stmtInsert = $db->prepare("INSERT INTO usuarios (username, email, password, saldo, rol) VALUES (?, ?, ?, ?, 'user')");
+            $inserted = $stmtInsert->execute([$username, $email, $passwordHash, $saldo]);
+
+            if ($inserted) {
+                echo json_encode(["success" => true, "message" => "Usuario registrado correctamente."]);
+            } else {
+                echo json_encode(["success" => false, "message" => "No se pudo registrar el usuario en la base de datos."]);
+            }
+            exit;
+
         case 'login':
             ob_clean();
             require __DIR__ . '/../Backend/login.php';
